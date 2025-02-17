@@ -1,0 +1,1 @@
+Cadastrar agendamento apartir do painel admin, enviando o userId apartir do body

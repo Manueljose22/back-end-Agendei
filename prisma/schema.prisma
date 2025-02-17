@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String
+  password String
+
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @map("updated_at")
+  Appointment Appointment[]
+
+  @@map("Users")
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  name     String
+  email    String
+  password String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("Admins")
+}
+
+model Doctor {
+  id         String @id @default(uuid())
+  name       String
+  especialty String
+  photo      String
+
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @default(now()) @map("updated_at")
+  Doctor_Service Doctor_Service[]
+  Appointment    Appointment[]
+
+  @@map("Doctors")
+}
+
+model Service {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @default(now()) @map("updated_at")
+  Doctor_Service Doctor_Service[]
+  Appointment    Appointment[]
+
+  @@map("Services")
+}
+
+model Hour {
+  id        String   @id @default(uuid())
+  hour      String
+  status    String @default(value: "A")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("Hours")
+}
+
+model Doctor_Service {
+  doctorId   String
+  serviceId  String
+  price      Float
+  status     String   @default(value: "A")
+  created_at DateTime @default(now())
+  Doctor     Doctor   @relation(fields: [doctorId], references: [id])
+  Service    Service  @relation(fields: [serviceId], references: [id])
+
+  @@id([doctorId, serviceId])
+  @@map("Doctors_Services")
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  userId      String
+  doctorId    String
+  serviceId   String
+  bookingDate DateTime @map("booking_date")
+  bookingHour String   @map("booking_hour")
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  upadatedAt DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id])
+  Doctor     Doctor   @relation(fields: [doctorId], references: [id])
+  Service    Service  @relation(fields: [serviceId], references: [id])
+
+  @@map("Appointments")
+}
