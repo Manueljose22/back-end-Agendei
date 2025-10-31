@@ -1,6 +1,6 @@
 import { compare } from "bcrypt";
-import { payloadRequest, payloadSave } from "../../repositorys/sessions/ISessionsRepository";
-import { SessionRepository } from "../../repositorys/sessions/SessionsRepository";
+import { payloadRequest, payloadSave } from "../../repositories/sessions/ISessionsRepository";
+import { SessionRepository } from "../../repositories/sessions/SessionsRepository";
 import { createUsersToken } from "../../middlewares/auth/create-users-token";
 
 
@@ -14,18 +14,16 @@ class SessionServices {
 
         const user = await this.ISessionRepository.findByEmail(email)
 
-        if (email != user?.email) {
-            throw new Error('Email inválido, por favor tente novamente!');
-        }  else if(!await compare(password, user.password) ) {
-            throw new Error('Senha inválida, por favor tente novamente!');
-        }
+        if (email != user?.email && !await compare(password, user!.password)) {
+            throw new Error("Credenciais inválidas!");
+        }  
 
         const token = await createUsersToken(user);
         
-        user.password = ''
+        user!.password = ''
 
         return {
-            user: user,
+            user: user!,
             token: token
         }
     }

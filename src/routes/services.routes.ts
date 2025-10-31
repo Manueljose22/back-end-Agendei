@@ -14,7 +14,7 @@ const router = Router();
 
 
 router.get('/services/', ensuredAuthenticated, GetAllServicesController.handle);
-router.post('/services/register', ensuredAuthenticated, CreateServicesController.handle);
+router.post('/services', ensuredAuthenticated, CreateServicesController.handle);
 router.get('/services/:id', ensuredAuthenticated, GetByIdServicesController.handle);
 router.put('/services/:id', ensuredAuthenticated, UpdateServicesController.handle);
 router.delete('/services/:id', ensuredAuthenticated, DeleteServicesController.handle);

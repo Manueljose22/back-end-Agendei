@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppointmentsRepository } from '../../repositorys/appointments/AppointmentsRepository';
+import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
 import { ListAppointmentsServices } from '../../services/appointments/ListAppointmentsServices';
 
 

@@ -1,5 +1,5 @@
 {
-  "name": "barbercarabela",
+  "name": "back-end-agendei",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,24 +10,28 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "@supabase/supabase-js": "^2.56.1",
+    "axios": "^1.11.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
-    "prisma": "^5.19.1",
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "multer": "^2.0.2",
+    "reflect-metadata": "^0.2.2",
+    "tsx": "^4.20.5",
+    "tsyringe": "^4.10.0",
+    "typescript": "^5.9.2"
   },
   "devDependencies": {
-	  "@types/node": "^22.5.5",
-    "@prisma/client": "^5.19.1",
-    "@types/bcrypt": "^5.0.2",
-    "@types/cors": "^2.8.17",
-    "@types/dotenv": "^8.2.0",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/multer": "^1.4.12"
+    "@prisma/client": "^6.15.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^8.2.3",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.3.0",
+    "prisma": "^6.15.0"
   }
 }

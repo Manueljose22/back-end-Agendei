@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { payloadRequest } from '../../repositorys/sessions/ISessionsRepository';
-import { SessionRepository } from '../../repositorys/sessions/SessionsRepository';
+import { payloadRequest } from '../../repositories/sessions/ISessionsRepository';
+import { SessionRepository } from '../../repositories/sessions/SessionsRepository';
 import { SessionServices } from '../../services/session/SessionServices';
 
 

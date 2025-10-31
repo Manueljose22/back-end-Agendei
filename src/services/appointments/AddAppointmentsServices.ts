@@ -1,4 +1,4 @@
-import { appointmentsRequest, IAppointmentsRepository } from "../../repositorys/appointments/IAppointmentsRepository";
+import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
 
 
@@ -8,7 +8,7 @@ class AddAppointmentsServices {
 
     constructor(private IAppointmentsRepository: IAppointmentsRepository) { }
 
-    async execute({ userId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void | Error> {
+    async execute({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void | Error> {
         
         if (!serviceId) {
             throw new Error('Informe o serviço a agendar.')
@@ -20,7 +20,7 @@ class AddAppointmentsServices {
             throw new Error('Informe a hora a agendar.')
         }
 
-        await this.IAppointmentsRepository.save({ userId, serviceId, doctorId, bookingDate, bookingHour });
+        await this.IAppointmentsRepository.save({ patientId, serviceId, doctorId, bookingDate, bookingHour });
     }
 }
 

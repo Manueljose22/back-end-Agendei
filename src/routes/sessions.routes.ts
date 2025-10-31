@@ -5,7 +5,7 @@ import SessionsControllers from "../controllers/sessions/SessionsControllers";
 const router = Router();
 
 
-router.post('/session/login', SessionsControllers.handle);
+router.post("/session/login", SessionsControllers.handle);
 
 
 

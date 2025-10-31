@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { UsersRepository } from '../../repositorys/clients/ClientsRepository';
-import { ProfileUsersServices } from '../../services/clients/ProfileClientsServices';
-import { AdminRepository } from '../../repositorys/admin/AdminRepository';
+import { AdminRepository } from '../../repositories/admin/AdminRepository';
+import { ProfileAdminServices } from '../../services/admin/ProfileAdminServices';
 
 
 
@@ -16,7 +15,7 @@ class ProfileAdminControllers {
         try {
 
             const adminRepository = new AdminRepository();
-            const service = new ProfileUsersServices(adminRepository);
+            const service = new ProfileAdminServices(adminRepository);
 
             const result = await service.execute(userId)
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppointmentsRepository } from '../../repositorys/appointments/AppointmentsRepository';
+import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
 import { AddAppointmentsServices } from '../../services/appointments/AddAppointmentsServices';
 
 
@@ -18,7 +18,7 @@ class AddAppointmentsControllers {
             const appointmentsRepository = new AppointmentsRepository();
             const service = new AddAppointmentsServices(appointmentsRepository);
 
-            const result = await service.execute({ userId, serviceId, doctorId, bookingDate, bookingHour })
+            const result = await service.execute({ patientId:userId, serviceId, doctorId, bookingDate, bookingHour })
 
             return response.status(200).json({message: 'Agendamento feito com sucesso.'});
 

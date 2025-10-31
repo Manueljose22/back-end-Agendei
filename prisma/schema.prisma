@@ -3,47 +3,100 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
 }
 
-model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String
-  password String
 
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @default(now()) @map("updated_at")
-  Appointment Appointment[]
-
-  @@map("Users")
-}
 
 model Admin {
-  id       String @id @default(uuid())
-  name     String
-  email    String
-  password String
-
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default(value: "admin")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
 
   @@map("Admins")
 }
 
-model Doctor {
-  id         String @id @default(uuid())
-  name       String
-  especialty String
-  photo      String
+model Patient {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  photo     String?
+  phone     String?
+  dateBirth DateTime?
+  address   String?
+  gender    String?
+  pushToken String?
 
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @default(now()) @map("updated_at")
-  Doctor_Service Doctor_Service[]
-  Appointment    Appointment[]
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @default(now()) @map("updated_at")
+  Appointment     Appointment[]
+  history_Medical history_Medical[]
+
+  @@map("Patients")
+}
+
+model Doctor {
+  id                String  @id @default(uuid())
+  name              String
+  photo             String?
+  email             String  @unique
+  password          String?
+  phone             String?
+  bio               String? @db.Text
+  address           String?
+  yaersOfExperience Int?
+  numberOfPatients  Int?
+  rating            Float?
+  specialtyId       String
+  hospitalId        String?
+  pushToken         String?
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @default(now()) @map("updated_at")
+  Doctor_Service  Doctor_Service[]
+  Appointment     Appointment[]
+  Specialty       Specialty?        @relation(fields: [specialtyId], references: [id])
+  history_Medical history_Medical[]
+  Availability    Availability[]
+  Hospital        Hospital?         @relation(fields: [hospitalId], references: [id])
 
   @@map("Doctors")
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  doctorId    String
+  serviceId   String
+  status      String   @default(value: "Pendente")
+  bookingDate DateTime @map("booking_date")
+  bookingHour String   @map("booking_hour")
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  upadatedAt DateTime @default(now())
+
+  Patient Patient @relation(fields: [patientId], references: [id])
+  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
+  Service Service @relation(fields: [serviceId], references: [id])
+
+  @@map("Appointments")
+}
+
+model Specialty {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  doctor Doctor[]
+
+  @@map("Specialties")
 }
 
 model Service {
@@ -59,21 +112,10 @@ model Service {
   @@map("Services")
 }
 
-model Hour {
-  id        String   @id @default(uuid())
-  hour      String
-  status    String @default(value: "A")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
-
-  @@map("Hours")
-}
-
 model Doctor_Service {
   doctorId   String
   serviceId  String
   price      Float
-  status     String   @default(value: "A")
   created_at DateTime @default(now())
   Doctor     Doctor   @relation(fields: [doctorId], references: [id])
   Service    Service  @relation(fields: [serviceId], references: [id])
@@ -82,19 +124,66 @@ model Doctor_Service {
   @@map("Doctors_Services")
 }
 
-model Appointment {
-  id          String   @id @default(uuid())
-  userId      String
-  doctorId    String
-  serviceId   String
-  bookingDate DateTime @map("booking_date")
-  bookingHour String   @map("booking_hour")
+model Availability {
+  id        String   @id @default(uuid())
+  doctorId  String
+  data      DateTime // dia específico (ex: 2025-08-25)
+  hourStart DateTime // ex: 08:00
+  hourEnd   DateTime // ex: 12:00
+  createdAt DateTime @default(now())
 
-  createdAt  DateTime @default(now()) @map("created_at")
-  upadatedAt DateTime @default(now())
-  User       User     @relation(fields: [userId], references: [id])
-  Doctor     Doctor   @relation(fields: [doctorId], references: [id])
-  Service    Service  @relation(fields: [serviceId], references: [id])
+  doctor     Doctor                   @relation(fields: [doctorId], references: [id])
+  timetables Timetables_Appointment[]
 
-  @@map("Appointments")
+  @@map("availabilities")
+}
+
+model Timetables_Appointment {
+  id             String       @id @default(uuid())
+  availabilityId String
+  hour           DateTime
+  available      Boolean      @default(true)
+  availability   Availability @relation(fields: [availabilityId], references: [id])
+
+  @@map("timetables_appointments")
+}
+
+model history_Medical {
+  id        String   @id @default(uuid())
+  patientId String
+  doctorId  String
+  diagnosis String
+  treatment String
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Patient Patient @relation(fields: [patientId], references: [id])
+  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
+
+  @@map("history_medicals")
+}
+
+model ImagesHospitals {
+  id         String @id @default(uuid())
+  urlImagem  String
+  hospitalId String
+
+  Hospital Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@map("Images_Hospitals")
+}
+
+model Hospital {
+  id        String            @id @default(uuid())
+  name      String
+  address   String
+  phone     String?
+  email     String?
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @default(now()) @map("updated_at")
+  images    ImagesHospitals[]
+  doctors   Doctor[]
+
+  @@map("Hospitals")
 }

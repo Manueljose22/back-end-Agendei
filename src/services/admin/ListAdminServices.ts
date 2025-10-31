@@ -1,4 +1,4 @@
-import { adminSave, IAdminRepository } from "../../repositorys/admin/IAdminRepository";
+import { adminSave, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 
 

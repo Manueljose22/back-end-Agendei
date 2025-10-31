@@ -1,5 +1,5 @@
 import { hash } from "bcrypt";
-import { adminRequest, IAdminRepository } from "../../repositorys/admin/IAdminRepository";
+import { adminRequest, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 
 

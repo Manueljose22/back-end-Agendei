@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DoctorsRepository } from '../../repositorys/doctors/DoctorsRepository';
+import { DoctorsRepository } from '../../repositories/doctors/DoctorsRepository';
 import { ListDoctorsServices } from '../../services/doctors/ListDoctorsServices';
 
 
@@ -9,14 +9,12 @@ class ListDoctorController {
 
     async handle(request: Request, response: Response) {
         
-        const { search } = request.query;
-
         try {
 
             const doctorsRepository = new DoctorsRepository();
             const service = new ListDoctorsServices(doctorsRepository);
 
-            const result = await service.execute(search as string);
+            const result = await service.execute();
 
             return response.status(200).json(result);
 

@@ -1,4 +1,4 @@
-import { IServicesRepository, servicesSaved } from "../../repositorys/services/IServicesRepository";
+import { IServicesRepository, servicesSaved } from "../../repositories/services/IServicesRepository";
 
 
 
@@ -13,7 +13,7 @@ class GetByIdServicesService {
         const service = await this.IServiceRepository.findById(id);
 
         if (!service) {
-           throw new Error('Serviço invalido!'); 
+           throw new Error('Serviço invalido!');
         }
         
         return service;

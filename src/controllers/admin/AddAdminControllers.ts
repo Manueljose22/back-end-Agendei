@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { adminRequest } from '../../repositorys/admin/IAdminRepository';
-import { AdminRepository } from '../../repositorys/admin/AdminRepository';
+import { adminRequest } from '../../repositories/admin/IAdminRepository';
+import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { AddAdminServices } from '../../services/admin/AddAdminServices';
 
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DoctorsRepository } from '../../repositorys/doctors/DoctorsRepository';
+import { DoctorsRepository } from '../../repositories/doctors/DoctorsRepository';
 import { GetDoctorsByIdServices } from '../../services/doctors/GetDoctorsByIdServices';
 
 

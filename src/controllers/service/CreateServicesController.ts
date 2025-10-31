@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { servicesRequest } from '../../repositorys/services/IServicesRepository';
-import { ServicesRepository } from '../../repositorys/services/ServicesRepository';
+import { servicesRequest } from '../../repositories/services/IServicesRepository';
+import { ServicesRepository } from '../../repositories/services/ServicesRepository';
 import { CreateServiceServices } from '../../services/services/CreateServiceServices';
 
 
@@ -18,7 +18,7 @@ class CreateServicesController {
 
             const result = await service.execute({title, description});
 
-            return response.status(201).json(result)
+            return response.status(201).json({message: "Serviço criado com sucesso!"});
 
         } catch (error: any) {
             return response.status(400).json({ message: error.message })

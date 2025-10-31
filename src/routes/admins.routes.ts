@@ -18,7 +18,7 @@ const router = Router();
 // Usur admin
 router.get('/admin/profile', ensuredAuthenticated, ProfileAdminControllers.handle);
 router.get('/admin/', ensuredAuthenticated, ListAdminController.handle);
-router.post('/admin/register', AddAdminControllers.handle);
+router.post('/admin', AddAdminControllers.handle);
 router.get('/admin/:id', ensuredAuthenticated, GetAdminByIdControllers.handle);
 router.put('/admin/:id', ensuredAuthenticated, UpdateAdminControllers.handle);
 router.delete('/admin/:id', ensuredAuthenticated, DeleteAdminControllers.handle);

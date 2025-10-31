@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { doctorRequest } from '../../repositorys/doctors/IDoctorsRepository';
-import { DoctorsRepository } from '../../repositorys/doctors/DoctorsRepository';
+import { doctorRequest } from '../../repositories/doctors/IDoctorsRepository';
+import { DoctorsRepository } from '../../repositories/doctors/DoctorsRepository';
 import { AddDoctorsServices } from '../../services/doctors/AddDoctorsServices';
+import { uploadsFiles } from '../../middlewares/upload/uploadsFiles';
 
 
 
@@ -12,6 +13,10 @@ class AddDoctorsControllers {
         
         const data = request.body as doctorRequest;
         
+        if (request.file) {
+            data.photo = await uploadsFiles(request.file) as string;
+        }
+
         try {
 
             const doctorRepository = new DoctorsRepository();

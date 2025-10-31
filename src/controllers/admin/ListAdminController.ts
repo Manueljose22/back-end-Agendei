@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AdminRepository } from '../../repositorys/admin/AdminRepository';
+import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { ListAdminServices } from '../../services/admin/ListAdminServices';
 
 

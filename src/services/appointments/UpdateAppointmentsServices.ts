@@ -1,4 +1,4 @@
-import { appointmentsRequest, IAppointmentsRepository } from "../../repositorys/appointments/IAppointmentsRepository";
+import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
 
 

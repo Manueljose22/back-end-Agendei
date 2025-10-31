@@ -1,4 +1,4 @@
-import { IServicesRepository} from "../../repositorys/services/IServicesRepository";
+import { IServicesRepository} from "../../repositories/services/IServicesRepository";
 
 
 

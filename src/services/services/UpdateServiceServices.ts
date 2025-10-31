@@ -1,4 +1,4 @@
-import { IServicesRepository, servicesRequest,  } from "../../repositorys/services/IServicesRepository";
+import { IServicesRepository, servicesRequest,  } from "../../repositories/services/IServicesRepository";
 
 
 
@@ -19,7 +19,7 @@ class UpdateServiceServices {
 
         const updateData = {
             id: service.id,
-            titulo: data.title ?? service.title,
+            title: data.title ?? service.title,
             description: data.title ?? service.title,
         }
 

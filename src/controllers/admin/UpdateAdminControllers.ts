@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { usersRequest } from '../../repositorys/clients/IClientsRepository';
-import { AdminRepository } from '../../repositorys/admin/AdminRepository';
+import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { UpdateAdminServices } from '../../services/admin/UpdateAdminServices';
 
 
@@ -12,7 +11,7 @@ class UpdateAdminControllers {
     async handle(request: Request, response: Response) {
 
         const { id } = request.params;
-        const data = request.body as usersRequest;
+        const data = request.body
 
         try {
 

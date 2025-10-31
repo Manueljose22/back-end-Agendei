@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { servicesRequest } from '../../repositorys/services/IServicesRepository';
-import { ServicesRepository } from '../../repositorys/services/ServicesRepository';
+import { servicesRequest } from '../../repositories/services/IServicesRepository';
+import { ServicesRepository } from '../../repositories/services/ServicesRepository';
 import { UpdateServiceServices } from '../../services/services/UpdateServiceServices';
 
 

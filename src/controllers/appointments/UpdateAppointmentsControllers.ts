@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { AppointmentsRepository } from '../../repositorys/appointments/AppointmentsRepository';
-import { DeleteAppointmentsServices } from '../../services/appointments/DeleteAppointmentsServices';
+import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
 import { UpdateAppointmentsServices } from '../../services/appointments/UpdateAppointmentsServices';
 
 

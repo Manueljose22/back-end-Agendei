@@ -1,6 +1,6 @@
 import { hash } from "bcrypt";
 import { createUsersToken } from "../../middlewares/auth/create-users-token";
-import { adminRequest, adminSave, IAdminRepository } from "../../repositorys/admin/IAdminRepository";
+import { adminRequest, adminSave, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 
 
@@ -33,7 +33,7 @@ class AddAdminServices {
         const token = await createUsersToken(userCreated)
 
         return {
-                user: userCreated,
+                user: {...userCreated, password: ''},
                 token: token
         }
     }

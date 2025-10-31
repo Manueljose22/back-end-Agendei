@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { DeleteUsersServices } from '../../services/clients/DeleteClientsServices';
-import { AdminRepository } from '../../repositorys/admin/AdminRepository';
+import { AdminRepository } from '../../repositories/admin/AdminRepository';
+import { DeleteAdminServices } from '../../services/admin/DeleteAdminServices';
 
 
 
@@ -14,7 +14,7 @@ class DeleteAdminControllers {
         try {
 
             const adminRepository = new AdminRepository();
-            const service = new DeleteUsersServices(adminRepository);
+            const service = new DeleteAdminServices(adminRepository);
 
             const result = await service.execute(id);
 

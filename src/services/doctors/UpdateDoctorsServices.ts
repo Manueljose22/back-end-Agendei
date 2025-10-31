@@ -1,4 +1,4 @@
-import { IDoctorsRepository, doctorRequest } from "../../repositorys/doctors/IDoctorsRepository";
+import { IDoctorsRepository, UpdateDoctor, doctorRequest } from "../../repositories/doctors/IDoctorsRepository";
 
 
 
@@ -10,7 +10,7 @@ class UpdateDoctorsServices {
     constructor(private IDoctorsRepository: IDoctorsRepository) { }
 
 
-    async execute(id: string, {name, especialty, photo}: doctorRequest): Promise<void | Error> {
+    async execute(id: string, {name, specialtyId, photo}: UpdateDoctor): Promise<void | Error> {
 
         const doctor = await this.IDoctorsRepository.findById(id);
 
@@ -20,7 +20,7 @@ class UpdateDoctorsServices {
 
         const data = {
             name: name ?? doctor.name,
-            especialty: especialty ?? doctor.especialty,
+            especialty: specialtyId ?? doctor.Specialty?.id,
             photo: photo ?? doctor.photo
         }
         

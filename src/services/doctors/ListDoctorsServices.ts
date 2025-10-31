@@ -1,4 +1,4 @@
-import { doctorSave, IDoctorsRepository } from "../../repositorys/doctors/IDoctorsRepository";
+import { doctorSave, IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
 
 
@@ -10,9 +10,9 @@ class ListDoctorsServices {
 
     constructor(private IDoctorsRepository: IDoctorsRepository) { }
 
-    async execute(search: string): Promise<doctorSave[] | null> {
+    async execute(): Promise<doctorSave[] | null> {
         
-        const doctor = await this.IDoctorsRepository.findAll(search);
+        const doctor = await this.IDoctorsRepository.findAll();
         
         return doctor;
     }

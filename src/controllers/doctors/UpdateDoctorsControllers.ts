@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { DoctorsRepository } from '../../repositorys/doctors/DoctorsRepository';
-import { doctorRequest } from '../../repositorys/doctors/IDoctorsRepository';
+import { DoctorsRepository } from '../../repositories/doctors/DoctorsRepository';
+import { doctorRequest } from '../../repositories/doctors/IDoctorsRepository';
 import { UpdateDoctorsServices } from '../../services/doctors/UpdateDoctorsServices';
 
 
