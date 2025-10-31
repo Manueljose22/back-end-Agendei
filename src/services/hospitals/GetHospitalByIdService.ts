@@ -1,4 +1,3 @@
-import { HospitalsRepository } from "../../repositories/hospitals/HospitalsRepository";
 import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 
@@ -6,11 +5,8 @@ import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals
 
 class GetHospitalByIdService {
 
-    private IHospitalsRepository: IHospitalsRepository;
+    constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    constructor() {
-        this.IHospitalsRepository = new HospitalsRepository();
-    }
 
     async execute(id: string): Promise<hospitalSave | null> {
 

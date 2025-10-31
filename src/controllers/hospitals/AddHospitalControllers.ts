@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { uploadsFiles } from '../../middlewares/upload/uploadsFiles';
 import { AddHospitalService } from '../../services/hospitals/AddHospitalService';
+import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 
 
@@ -14,7 +15,8 @@ class AddHospitalControllers {
         try {
 
             const urls = await uploadsFiles(images)
-            const service = new AddHospitalService()
+            const hospitalsRepository = new HospitalsRepository();
+            const service = new AddHospitalService(hospitalsRepository)
             const result = await service.execute(data, urls)
 
             return response.json({message: "Hospital cadastrado com sucesso."})

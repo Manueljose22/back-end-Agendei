@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { uploadsFiles } from '../../middlewares/upload/uploadsFiles';
 import { UpdateHospitalService } from '../../services/hospitals/UpdateHospitalService';
+import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 
 
@@ -14,7 +15,8 @@ class UpdateHospitalControllers {
 
         try {
             const urls = await uploadsFiles(images);
-            const service = new UpdateHospitalService();
+            const hospitalsRepository = new HospitalsRepository();
+            const service = new UpdateHospitalService(hospitalsRepository);
             const result = await service.execute(id, data, urls);
 
             return response.json({message: "Dados actualizados com sucesso."});

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { GetHospitalByIdService } from '../../services/hospitals/GetHospitalByIdService';
+import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 
 
@@ -10,8 +11,8 @@ class GetHospitalByIdControllers {
         const {id} = request.params
 
         try {
-
-            const service = new GetHospitalByIdService;
+            const hospitalsRepository = new HospitalsRepository();
+            const service = new GetHospitalByIdService(hospitalsRepository);
             const result = await service.execute(id);
             return response.json(result)
 

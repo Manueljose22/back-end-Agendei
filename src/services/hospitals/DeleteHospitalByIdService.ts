@@ -1,16 +1,12 @@
-import { HospitalsRepository } from "../../repositories/hospitals/HospitalsRepository";
-import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
+import { IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 
 
 
 class DeleteHospitalByIdService {
 
-    private IHospitalsRepository: IHospitalsRepository;
+    constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    constructor() {
-        this.IHospitalsRepository = new HospitalsRepository();
-    }
 
     async execute(id: string): Promise<void> {
 
