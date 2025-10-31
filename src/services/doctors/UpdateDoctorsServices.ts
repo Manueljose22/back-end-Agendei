@@ -1,4 +1,4 @@
-import { IDoctorsRepository, UpdateDoctor, doctorRequest } from "../../repositories/doctors/IDoctorsRepository";
+import { IDoctorsRepository, UpdateDoctor} from "../../repositories/doctors/IDoctorsRepository";
 
 
 

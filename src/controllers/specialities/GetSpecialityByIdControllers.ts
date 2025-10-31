@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { GetSpecialityByIdService } from '../../services/specialities/GetSpecialityByIdService';
+import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
 
 
@@ -11,8 +12,8 @@ class GetSpecialityByIdControllers {
         const { id } = request.params
 
         try {
-
-            const service = new GetSpecialityByIdService;
+            const specialityRepository = new SpecialityRepository()
+            const service = new GetSpecialityByIdService(specialityRepository);
             const result = await service.execute(id);
             return response.json(result)
 

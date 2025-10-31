@@ -1,5 +1,4 @@
 import { ISpecialityRepository, specialityInput, specialitySaved } from "../../repositories/specialities/ISpecialityRepository";
-import { SpecialityRepository } from "../../repositories/specialities/SpecialityRepository";
 
 
 

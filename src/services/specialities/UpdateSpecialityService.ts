@@ -7,12 +7,7 @@ import { SpecialityRepository } from "../../repositories/specialities/Speciality
 
 class UpdateSpecialityService {
 
-    private ISpecialityRepository: ISpecialityRepository;
-
-    constructor() {
-        this.ISpecialityRepository = new SpecialityRepository()
-    }
-
+    constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
     async execute(id: string, { name }: specialityInput): Promise<void> {
 

@@ -1,4 +1,4 @@
-import { IDoctorsRepository } from "../../repositorys/doctors/IDoctorsRepository";
+import { IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
 
 

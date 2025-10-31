@@ -7,11 +7,7 @@ import { SpecialityRepository } from "../../repositories/specialities/Speciality
 
 class ListSpecialitiesService {
 
-    private ISpecialityRepository: ISpecialityRepository;
-
-    constructor() {
-        this.ISpecialityRepository = new SpecialityRepository()
-    }
+    constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
     async execute(): Promise<specialitySaved[] | null> {
 

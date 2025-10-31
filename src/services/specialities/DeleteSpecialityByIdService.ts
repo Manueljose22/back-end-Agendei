@@ -1,5 +1,5 @@
 import { ISpecialityRepository } from "../../repositories/specialities/ISpecialityRepository";
-import { SpecialityRepository } from "../../repositories/specialities/SpecialityRepository";
+
 
 
 
@@ -7,11 +7,7 @@ import { SpecialityRepository } from "../../repositories/specialities/Speciality
 
 class DeleteSpecialityByIdService {
 
-    private ISpecialityRepository: ISpecialityRepository;
-
-    constructor() {
-        this.ISpecialityRepository = new SpecialityRepository()
-    }
+    constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
     async execute(id: string): Promise<void> {
 

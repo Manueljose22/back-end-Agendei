@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { DeleteSpecialityByIdService } from '../../services/specialities/DeleteSpecialityByIdService';
+import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
 
 
@@ -11,7 +12,8 @@ class DeleteSpecialityByIdControllers {
         const { id } = request.params
 
         try {
-            const service = new DeleteSpecialityByIdService;
+            const specialityRepository = new SpecialityRepository()
+            const service = new DeleteSpecialityByIdService(specialityRepository);
             const result = await service.execute(id);
             return response.json(result)
 
