@@ -56,6 +56,7 @@ model Doctor {
   specialtyId       String
   hospitalId        String?
   pushToken         String?
+  status            String?  @default(value: "activo")
 
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @default(now()) @map("updated_at")
@@ -127,9 +128,10 @@ model Doctor_Service {
 model Availability {
   id        String   @id @default(uuid())
   doctorId  String
-  data      DateTime // dia específico (ex: 2025-08-25)
+  date      DateTime // dia específico (ex: 2025-08-25)
   hourStart DateTime // ex: 08:00
   hourEnd   DateTime // ex: 12:00
+  isBlocked   Boolean  @default(false)
   createdAt DateTime @default(now())
 
   doctor     Doctor                   @relation(fields: [doctorId], references: [id])
@@ -142,7 +144,7 @@ model Timetables_Appointment {
   id             String       @id @default(uuid())
   availabilityId String
   hour           DateTime
-  available      Boolean      @default(true)
+  isBooked       Boolean  @default(false)
   availability   Availability @relation(fields: [availabilityId], references: [id])
 
   @@map("timetables_appointments")
