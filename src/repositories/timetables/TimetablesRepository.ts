@@ -1,5 +1,5 @@
 import { prismaClient } from "../../config/prisma/prismaClient";
-import { IAvailabilityInput, ITimetablesRepository } from "./ITimetablesRepository";
+import { IAvailability, IAvailabilityInput, ITimetablesRepository, IUpdateAvailability } from "./ITimetablesRepository";
 
 
 
@@ -8,7 +8,7 @@ import { IAvailabilityInput, ITimetablesRepository } from "./ITimetablesReposito
 
 export class TimetablesRepository implements ITimetablesRepository {
 
-  // ✅ Criar disponibilidade de um médico
+  //Criar disponibilidade de um médico
   async createAvailability(data: IAvailabilityInput): Promise<void> {
     await prismaClient.availability.create({
       data: {
@@ -20,12 +20,13 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
-  // ✅ Gerar automaticamente os horários (intervalos de 30min)
+  //  Gerar automaticamente os horários (intervalos de 30min)
   async generateHours(availabilityId: string, hourStart: string, hourEnd: string): Promise<void> {
     const start = new Date(`1970-01-01T${hourStart}:00`);
     const end = new Date(`1970-01-01T${hourEnd}:00`);
 
     const hours: string[] = [];
+
     for (let time = new Date(start); time < end; time.setMinutes(time.getMinutes() + 30)) {
       hours.push(time.toTimeString().substring(0, 5)); // exemplo: "08:00"
     }
@@ -40,9 +41,10 @@ export class TimetablesRepository implements ITimetablesRepository {
     }
   }
 
-  // ✅ Buscar todas as disponibilidades de um médico
+
+  //Buscar todas as disponibilidades de um médico
   async getAvailabilityByDoctor(doctorId: string): Promise<IAvailability[]> {
-    return await prismaClient.availability.findMany({
+    const availability = await prismaClient.availability.findMany({
       where: { doctorId },
       include: {
         timetables: {
@@ -55,6 +57,8 @@ export class TimetablesRepository implements ITimetablesRepository {
       },
       orderBy: { date: "asc" },
     });
+
+    return availability;
   }
 
   // ✅ Buscar disponibilidades por data específica
@@ -82,7 +86,7 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
-  // ✅ Bloquear dia (ex: feriado ou ausência)
+  // Bloquear dia (ex: feriado ou ausência)
   async blockDay(id: string): Promise<void> {
     await prismaClient.availability.update({
       where: { id },
@@ -90,7 +94,7 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
-  // ✅ Desbloquear dia
+  // Desbloquear dia
   async unblockDay(id: string): Promise<void> {
     await prismaClient.availability.update({
       where: { id },
@@ -98,7 +102,7 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
-  // ✅ Deletar disponibilidade e horários associados
+  //Deletar disponibilidade e horários associados
   async deleteAvailability(id: string): Promise<void> {
     await prismaClient.timetables_Appointment.deleteMany({
       where: { availabilityId: id },
