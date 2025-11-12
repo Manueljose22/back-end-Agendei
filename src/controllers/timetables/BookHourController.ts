@@ -1,7 +1,8 @@
 
 import { Request, Response } from "express";
-import { TimetablesRepository } from "../../../repositories/timetables/TimetablesRepository";
-import { BookHourService } from "../../../services/timetables/BookHourService";
+import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
+import { BookHourService } from "../../services/timetables/BookHourService";
+
 
 class BookHourController {
   async handle(request: Request, response: Response): Promise<Response> {
@@ -13,10 +14,10 @@ class BookHourController {
     try {
       await bookHourService.execute(timetableId);
       return response.status(204).send();
-    } catch (error) {
+    } catch (error: any) {
       return response.status(400).json({ error: error.message });
     }
   }
 }
 
-export { BookHourController };
+export default new BookHourController ;

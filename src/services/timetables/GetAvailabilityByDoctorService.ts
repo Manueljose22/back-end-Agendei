@@ -1,6 +1,10 @@
 
 import { IAvailability, ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
+
+
+
+
 class GetAvailabilityByDoctorService {
   constructor(private timetablesRepository: ITimetablesRepository) {}
 

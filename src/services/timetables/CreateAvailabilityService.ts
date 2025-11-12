@@ -1,12 +1,14 @@
 
 import { IAvailabilityInput, ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
+
+
 class CreateAvailabilityService {
   constructor(private timetablesRepository: ITimetablesRepository) {}
 
   async execute(data: IAvailabilityInput): Promise<void> {
     // Validação dos dados de entrada
-    if (!data.doctor_id || !data.date || !data.hourStart || !data.hourEnd) {
+    if (!data.doctorId || !data.date || !data.hourStart || !data.hourEnd) {
       throw new Error("Todos os campos são obrigatórios.");
     }
 
@@ -24,7 +26,7 @@ class CreateAvailabilityService {
     await this.timetablesRepository.createAvailability(data);
 
     // Gerar os horários
-    const availability = await this.timetablesRepository.getAvailabilityByDate(data.doctor_id, data.date.toISOString());
+    const availability = await this.timetablesRepository.getAvailabilityByDate(data.doctorId, data.date.toISOString());
     if (availability.length > 0) {
       const newAvailability = availability[availability.length - 1];
       await this.timetablesRepository.generateHours(newAvailability.id, data.hourStart.toTimeString().substring(0, 5), data.hourEnd.toTimeString().substring(0, 5));

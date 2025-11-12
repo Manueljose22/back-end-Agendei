@@ -1,7 +1,7 @@
 
 
 export type IAvailabilityInput = {
-    doctor_id: string;
+    doctorId: string;
     date: Date;
     hourStart: Date;
     hourEnd: Date;
