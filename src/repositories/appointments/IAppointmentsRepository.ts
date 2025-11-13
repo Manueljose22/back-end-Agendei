@@ -6,7 +6,7 @@ export type appointmentsRequest = {
     patientId: string;
     serviceId: string;
     doctorId: string;
-    bookingDate: Date;
+    bookingDate: string;
     bookingHour: string;
 }
 

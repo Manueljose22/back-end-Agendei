@@ -26,10 +26,10 @@ class CreateAvailabilityService {
     await this.timetablesRepository.createAvailability(data);
 
     // Gerar os horários
-    const availability = await this.timetablesRepository.getAvailabilityByDate(data.doctorId, data.date.toISOString());
+    const availability = await this.timetablesRepository.getAvailabilityByDate(data.doctorId, data.date);
     if (availability.length > 0) {
       const newAvailability = availability[availability.length - 1];
-      await this.timetablesRepository.generateHours(newAvailability.id, data.hourStart.toTimeString().substring(0, 5), data.hourEnd.toTimeString().substring(0, 5));
+      await this.timetablesRepository.generateHours(newAvailability.id, data.hourStart.substring(0, 5), data.hourEnd.substring(0, 5));
     }
   }
 }

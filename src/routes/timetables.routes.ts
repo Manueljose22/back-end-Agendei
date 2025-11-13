@@ -15,7 +15,7 @@ const timetablesRoutes = Router();
 
 
 
-timetablesRoutes.post("/", ensuredAuthenticated,  CreateAvailabilityController.handle);
+timetablesRoutes.post("/timetables", ensuredAuthenticated,  CreateAvailabilityController.handle);
 timetablesRoutes.get("/:doctorId", ensuredAuthenticated,  GetAvailabilityByDoctorController.handle);
 timetablesRoutes.put("/:id", ensuredAuthenticated,  UpdateAvailabilityController.handle);
 timetablesRoutes.delete("/:id", ensuredAuthenticated,  DeleteAvailabilityController.handle);

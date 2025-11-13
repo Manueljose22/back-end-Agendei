@@ -10,24 +10,27 @@ export class TimetablesRepository implements ITimetablesRepository {
 
   //Criar disponibilidade de um médico
   async createAvailability(data: IAvailabilityInput): Promise<void> {
+  
+    console.log(data);
+    
     await prismaClient.availability.create({
       data: {
-        doctorId: data.doctor_id,
-        date: new Date(data.date),
-        hourStart: data.hourStart,
-        hourEnd: data.hourEnd,
+        doctorId: data.doctorId,
+        date: new Date(`${data.date}T00:00:00Z`),
+        hourStart: new Date(`1970-01-01T${data.hourStart}:00Z`),
+        hourEnd: new Date(`1970-01-01T${data.hourEnd}:00Z`),
       },
     });
   }
 
-  //  Gerar automaticamente os horários (intervalos de 30min)
+  //  Gerar automaticamente os horários (intervalos de 45min)
   async generateHours(availabilityId: string, hourStart: string, hourEnd: string): Promise<void> {
     const start = new Date(`1970-01-01T${hourStart}:00`);
     const end = new Date(`1970-01-01T${hourEnd}:00`);
 
     const hours: string[] = [];
 
-    for (let time = new Date(start); time < end; time.setMinutes(time.getMinutes() + 30)) {
+    for (let time = new Date(start); time < end; time.setMinutes(time.getMinutes() + 45)) {
       hours.push(time.toTimeString().substring(0, 5)); // exemplo: "08:00"
     }
 
@@ -35,7 +38,7 @@ export class TimetablesRepository implements ITimetablesRepository {
       await prismaClient.timetables_Appointment.create({
         data: {
           availabilityId,
-          hour,
+          hour: new Date(`1970-01-01T${hour}:00`),
         },
       });
     }
@@ -67,6 +70,8 @@ export class TimetablesRepository implements ITimetablesRepository {
       where: {
         doctorId,
         date: {
+          // gte: new Date(date),
+          // lt: new Date(date),
           gte: new Date(`${date}T00:00:00Z`),
           lt: new Date(`${date}T23:59:59Z`),
         },
@@ -113,6 +118,7 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
+
   // ✅ Marcar um horário como reservado
   async bookHour(timetableId: string): Promise<void> {
     await prismaClient.timetables_Appointment.update({
@@ -121,6 +127,7 @@ export class TimetablesRepository implements ITimetablesRepository {
     });
   }
 
+  
   // ✅ Liberar um horário (ex: cancelamento)
   async unbookHour(timetableId: string): Promise<void> {
     await prismaClient.timetables_Appointment.update({

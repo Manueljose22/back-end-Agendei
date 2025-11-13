@@ -128,9 +128,9 @@ model Doctor_Service {
 model Availability {
   id        String   @id @default(uuid())
   doctorId  String
-  date      DateTime // dia específico (ex: 2025-08-25)
-  hourStart DateTime // ex: 08:00
-  hourEnd   DateTime // ex: 12:00
+  date      DateTime 
+  hourStart DateTime 
+  hourEnd   DateTime 
   isBlocked   Boolean  @default(false)
   createdAt DateTime @default(now())
 

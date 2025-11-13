@@ -9,13 +9,15 @@ export class AppointmentsRepository implements IAppointmentsRepository {
 
     async save({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
 
+        console.log(serviceId);
+        
         await prismaClient.appointment.create({
             data: {
                 patientId,
                 doctorId,
                 serviceId,
                 bookingHour,
-                bookingDate: new Date(bookingDate)
+                bookingDate: new Date(`${bookingDate}T00:00:00Z`)
 
             }
         })
