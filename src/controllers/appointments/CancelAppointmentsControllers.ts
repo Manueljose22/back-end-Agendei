@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
 import { CancelAppointmentsServices } from '../../services/appointments/CancelAppointmentsServices';
+import { TimetablesRepository } from '../../repositories/timetables/TimetablesRepository';
 
 
 
@@ -13,7 +14,8 @@ class CancelAppointmentsControllers {
 
         try {
             const appointmentsRepository = new AppointmentsRepository();
-            const service = new CancelAppointmentsServices(appointmentsRepository);
+            const timetablesRepository = new TimetablesRepository();
+            const service = new CancelAppointmentsServices(appointmentsRepository, timetablesRepository);
 
             const result = await service.execute(id, userId);
 

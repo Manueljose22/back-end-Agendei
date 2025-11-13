@@ -8,11 +8,8 @@ import { IAvailability, IAvailabilityInput, ITimetablesRepository, IUpdateAvaila
 
 export class TimetablesRepository implements ITimetablesRepository {
 
-  //Criar disponibilidade de um médico
   async createAvailability(data: IAvailabilityInput): Promise<void> {
   
-    console.log(data);
-    
     await prismaClient.availability.create({
       data: {
         doctorId: data.doctorId,
@@ -64,14 +61,12 @@ export class TimetablesRepository implements ITimetablesRepository {
     return availability;
   }
 
-  // ✅ Buscar disponibilidades por data específica
+  // Buscar disponibilidades por data específica
   async getAvailabilityByDate(doctorId: string, date: string): Promise<IAvailability[]> {
     return await prismaClient.availability.findMany({
       where: {
         doctorId,
         date: {
-          // gte: new Date(date),
-          // lt: new Date(date),
           gte: new Date(`${date}T00:00:00Z`),
           lt: new Date(`${date}T23:59:59Z`),
         },

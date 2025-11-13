@@ -41,9 +41,6 @@ class AddAppointmentsServices {
             const timeHour = time.hour.toISOString().split("T")[1].substring(0, 5);
             const timeDate = availability.some((avail) => avail.date.toISOString().split("T")[0] === bookingDate)
           
-            console.log(timeDate);
-            
-            
             return (
                 !time.isBooked &&
                 timeDate &&

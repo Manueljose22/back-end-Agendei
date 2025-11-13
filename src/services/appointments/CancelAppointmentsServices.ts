@@ -1,4 +1,5 @@
 import { IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
+import { ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
 
 
@@ -6,11 +7,12 @@ import { IAppointmentsRepository } from "../../repositories/appointments/IAppoin
 
 class CancelAppointmentsServices {
 
-    constructor(private IAppointmentsRepository: IAppointmentsRepository) { }
+    constructor(private IAppointmentsRepository: IAppointmentsRepository, private ITimeTablesRepository: ITimetablesRepository) { }
 
     async execute(idAppoitment: string, userId: string): Promise<void | Error> {
         
         const appointment = await this.IAppointmentsRepository.findById(idAppoitment);
+        const booking = await this.ITimeTablesRepository.getAvailabilityByDate(appointment!.idDoctor, appointment?.booking_date.toISOString().split('T')[0]!);
 
         if (!appointment) {
             throw new Error('Agendamneto inválido.');
@@ -20,9 +22,13 @@ class CancelAppointmentsServices {
             throw new Error('Não será possivel concluir esta operação, por favor tente mais tarde!');
         }
 
-        // verificar se o agendamento que esta a elimeninar é mesmo do usuário logado.    
+        const isHourBooked = booking[0].timetables.find((time) => {
+            return time.hour.toISOString().split('T')[1].substring(0,5) === appointment.booking_hour
+        });
 
+    
         await this.IAppointmentsRepository.cancel(idAppoitment)
+        await this.ITimeTablesRepository.unbookHour(isHourBooked!.id);   
     }
 }
 
