@@ -4,6 +4,8 @@ export type hospitalInput = {
     address: string;
     phone: string;
     email: string;
+    nif: string;
+    password: string;
     
 }
 
@@ -11,6 +13,8 @@ export type hospitalSave = {
     id: string;
     name: string;
     address: string;
+    nif: string;
+    password: string;
     phone: string | null;
     email: string | null;
     images: {

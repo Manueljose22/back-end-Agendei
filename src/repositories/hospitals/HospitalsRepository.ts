@@ -1,4 +1,5 @@
 
+import { hash } from "bcrypt";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { hospitalInput, hospitalSave, IHospitalsRepository } from "./IHospitalsRepository";
 
@@ -10,12 +11,16 @@ export class HospitalsRepository implements IHospitalsRepository {
 
     async create(data: hospitalInput, images: any): Promise<void> {
 
+        const passwordHash = await hash(data.password, 12)
+
          await prismaClient.hospital.create({
             data: {
                 name: data.name,
                 address: data.address,
                 phone: data.phone,
                 email: data.email,
+                password: passwordHash,
+                nif: data.nif,
                 images: {
                     create: images
                 }
@@ -72,6 +77,7 @@ export class HospitalsRepository implements IHospitalsRepository {
                 address: data.address,
                 phone: data.phone,
                 email: data.email,
+                password: data.password,
                 images: {
                     updateMany: images
                 },

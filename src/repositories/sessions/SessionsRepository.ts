@@ -30,7 +30,19 @@ export class SessionRepository implements ISessionRepository {
             }
         })
 
-        return userPatient ?? userAdmin;
+        const userHospitails = await prismaClient.hospital.findFirst({
+            where: {
+                email
+            },
+             select:{
+                id: true,
+                name: true,
+                email: true,
+                password: true
+            }
+        })
+
+        return userPatient ?? userAdmin ?? userHospitails;
     }
     
 }
