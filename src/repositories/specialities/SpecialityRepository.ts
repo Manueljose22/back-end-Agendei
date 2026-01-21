@@ -5,6 +5,14 @@ import { specialityInput, ISpecialityRepository, specialitySaved } from "./ISpec
 
 
 export class SpecialityRepository implements ISpecialityRepository {
+    
+    async findByHospitails(id: string): Promise<specialitySaved[]> {
+       return await prismaClient.specialty.findMany({
+            where: {
+                hospitalId: id
+            }
+        })
+    }
 
     async create(data: specialityInput): Promise<specialitySaved> {
         return await prismaClient.specialty.create({
@@ -39,7 +47,7 @@ export class SpecialityRepository implements ISpecialityRepository {
     async update(id: string, { name }: specialityInput): Promise<void> {
         await prismaClient.specialty.update({
             where: {
-                id
+                id,
             }
             , data: {
                 name,

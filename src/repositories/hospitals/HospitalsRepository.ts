@@ -9,10 +9,10 @@ import { hospitalInput, hospitalSave, IHospitalsRepository } from "./IHospitalsR
 export class HospitalsRepository implements IHospitalsRepository {
     
 
-    async create(data: hospitalInput, images: any): Promise<void> {
+    async create(data: hospitalInput): Promise<void> {
 
         const passwordHash = await hash(data.password, 12)
-
+        
          await prismaClient.hospital.create({
             data: {
                 name: data.name,
@@ -21,9 +21,9 @@ export class HospitalsRepository implements IHospitalsRepository {
                 email: data.email,
                 password: passwordHash,
                 nif: data.nif,
-                images: {
-                    create: images
-                }
+                // images: {
+                //     create: images
+                // }
             }
         })
     }

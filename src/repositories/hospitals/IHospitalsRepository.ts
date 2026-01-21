@@ -26,7 +26,8 @@ export type hospitalSave = {
 
 
 export interface IHospitalsRepository {
-    create(data:hospitalInput, images: any): Promise<void>;
+    create(data:hospitalInput): Promise<void>;
+    // create(data:hospitalInput, images: any): Promise<void>;
     findById(id: string): Promise<hospitalSave | null>;
     findByName(name: string): Promise<hospitalSave | null>;
     findList(): Promise<hospitalSave[]>;

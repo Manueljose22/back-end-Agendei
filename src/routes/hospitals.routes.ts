@@ -14,7 +14,7 @@ import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalCo
 const router = Router();
 
 
-router.post('/hospitals/', ensuredAuthenticated, uploadImage.array('images', 5), AddHospitalControllers.handle);
+router.post('/hospitals/', AddHospitalControllers.handle);
 router.get('/hospitals/', ensuredAuthenticated, ListHospitalsControllers.handle);
 router.get('/hospitals/:id', ensuredAuthenticated, GetHospitalByIdControllers.handle);
 router.put('/hospitals/:id', ensuredAuthenticated, uploadImage.array("images", 5), UpdateHospitalControllers.handle);

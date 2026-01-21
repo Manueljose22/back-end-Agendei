@@ -7,10 +7,10 @@ class AddHospitalService {
 
     constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    async execute({ name, address, email, phone, password, nif }: hospitalInput, images: string[] | string): Promise<void | Error> {
+    async execute({ name, address, email, phone, password, nif }: hospitalInput): Promise<void | Error> {
 
         const hospital = await this.IHospitalsRepository.findByName(name);
-        let urls;
+        // let urls;
 
         if (hospital) {
             throw new Error("Hospital já existe!")
@@ -30,16 +30,16 @@ class AddHospitalService {
             throw new Error("Por favor, preencha o campo nif.");
         }
 
-        if (Array.isArray(images)) {
-            urls = images.map((url) => {
-                return {
-                    urlImagem: url
-                }
-            })
-        }
+        // if (Array.isArray(images)) {
+        //     urls = images.map((url) => {
+        //         return {
+        //             urlImagem: url
+        //         }
+        //     })
+        // }
 
 
-        await this.IHospitalsRepository.create({ name, address, email, phone, password, nif }, urls)
+        await this.IHospitalsRepository.create({ name, address, email, phone, password, nif })
     }
 }
 

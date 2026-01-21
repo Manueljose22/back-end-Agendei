@@ -3,20 +3,24 @@ generator client {
 }
 
 datasource db {
-  provider  = "mysql"
-  url       = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-
+enum RoleAdmin {
+  Admin
+  Owner
+}
 
 model Admin {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      String   @default(value: "admin")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  role      RoleAdmin @default(Owner)
+  hospital  Hospital?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
 
   @@map("Admins")
 }
@@ -56,7 +60,7 @@ model Doctor {
   specialtyId       String
   hospitalId        String?
   pushToken         String?
-  status            String?  @default(value: "activo")
+  status            String? @default(value: "activo")
 
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @default(now()) @map("updated_at")
@@ -90,12 +94,14 @@ model Appointment {
 }
 
 model Specialty {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
-
-  doctor Doctor[]
+  id         String   @id @default(uuid())
+  name       String
+  hospitalId String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  
+  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  doctor     Doctor[]
 
   @@map("Specialties")
 }
@@ -128,10 +134,10 @@ model Doctor_Service {
 model Availability {
   id        String   @id @default(uuid())
   doctorId  String
-  date      DateTime 
-  hourStart DateTime 
-  hourEnd   DateTime 
-  isBlocked   Boolean  @default(false)
+  date      DateTime
+  hourStart DateTime
+  hourEnd   DateTime
+  isBlocked Boolean  @default(false)
   createdAt DateTime @default(now())
 
   doctor     Doctor                   @relation(fields: [doctorId], references: [id])
@@ -144,7 +150,7 @@ model Timetables_Appointment {
   id             String       @id @default(uuid())
   availabilityId String
   hour           DateTime
-  isBooked       Boolean  @default(false)
+  isBooked       Boolean      @default(false)
   availability   Availability @relation(fields: [availabilityId], references: [id])
 
   @@map("timetables_appointments")
@@ -177,17 +183,19 @@ model ImagesHospitals {
 }
 
 model Hospital {
-  id        String            @id @default(uuid())
-  name      String
-  address   String
-  phone     String?
-  nif       String @unique
-  email     String @unique
-  password  String  
-  createdAt DateTime          @default(now()) @map("created_at")
-  updatedAt DateTime          @default(now()) @map("updated_at")
-  images    ImagesHospitals[]
-  doctors   Doctor[]
+  id          String            @id @default(uuid())
+  name        String
+  address     String
+  phone       String?
+  nif         String            @unique
+  email       String            @unique
+  password    String
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @default(now()) @map("updated_at")
+  images      ImagesHospitals[]
+  doctors     Doctor[]
+  admin       Admin             @relation(fields: [id], references: [id])
+  specialties Specialty[]
 
   @@map("Hospitals")
 }

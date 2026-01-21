@@ -6,7 +6,7 @@ class AddSpecialityService {
 
     constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
-    async execute({ name }: specialityInput): Promise<specialitySaved | Error> {
+    async execute({ name, hospitalId }: specialityInput): Promise<specialitySaved | Error> {
 
         const speciality = await this.ISpecialityRepository.findByName(name);
       
@@ -19,7 +19,7 @@ class AddSpecialityService {
         } 
 
 
-       const newSpeciality = await this.ISpecialityRepository.create({name})
+       const newSpeciality = await this.ISpecialityRepository.create({name, hospitalId});
        return newSpeciality
     }
 }

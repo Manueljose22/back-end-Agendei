@@ -10,7 +10,6 @@ class SessionsControllers {
     async handle(request: Request, response: Response) {
 
         const { email, password } = request.body as payloadRequest;
-
         try {
 
             const sessionRepository = new SessionRepository();

@@ -12,11 +12,13 @@ export type doctorRequest = {
   numberOfPatients: number | null
   rating: number | null
   specialtyId: string
+  status: string
   hospitalId: string | null
 }
 
 export type doctorSave = {
   id: string;
+  status: string; 
   name: string;
   photo: string | null;
   email: string
@@ -56,6 +58,8 @@ export type doctorServices = {
 export interface UpdateDoctor extends Partial<doctorRequest> {}  
 
 
+
+
 export interface IDoctorsRepository {
   save(data: doctorRequest): Promise<void>
   serviceToDoctor({serviceId, doctorId, price}: {serviceId: string, doctorId: string, price: number}): Promise<void>
@@ -63,6 +67,7 @@ export interface IDoctorsRepository {
   findById(id: string): Promise<doctorSave | null>
   findDoctorService(id: string): Promise<doctorServices[] | null>
   findAll(): Promise<doctorSave[] | null>
+  findAllByHospital(idHospital: string): Promise<doctorSave[] | null>
   findSearch(search: string): Promise<doctorSave[] | null>
   update(id: string, data: UpdateDoctor): Promise<void | null>
   delete(id: string): Promise<void>

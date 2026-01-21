@@ -116,45 +116,41 @@ export class DoctorsRepository implements IDoctorsRepository {
         })
     }
 
-    // async findAll(search: string): Promise<doctorSave[] | null> {
+    async findAllByHospital(idHospital: string): Promise<doctorSave[] | null> {
 
-    //     let doctors = await prismaClient.doctor.findMany({
-    //         where: {
-    //             OR: [
-    //                 { name: { contains: search, mode: "insensitive" } },
-    //                 { email: { contains: search, mode: "insensitive" } },
-    //                 { Specialty: { name: { contains: search, mode: "insensitive" } } }
-    //             ]
-    //         },
-    //         include: {
-    //             Specialty: {
-    //                 select: {
-    //                     id: true,
-    //                     name: true,
-    //                 }
-    //             },
-    //             Hospital: {
-    //                 select: {
-    //                     id: true,
-    //                     name: true,
-    //                     address: true,
-    //                     phone: true,
-    //                     email: true,
-    //                     images: {
-    //                         select: {
-    //                             id: true,
-    //                             urlImagem: true,
-    //                         }
-    //                     },
-    //                     createdAt: true
-    //                 }
-    //             }
-    //         }
+        let doctors = await prismaClient.doctor.findMany({
+            where: {
+                Hospital: { id: idHospital}
+            },
+            include: {
+                Specialty: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                Hospital: {
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        phone: true,
+                        email: true,
+                        images: {
+                            select: {
+                                id: true,
+                                urlImagem: true,
+                            }
+                        },
+                        createdAt: true
+                    }
+                }
+            }
 
-    //     });
+        })
 
-    //     return doctors
-    // }
+        return doctors
+    }
 
     async findAll(): Promise<doctorSave[] | null> {
         return await prismaClient.doctor.findMany({

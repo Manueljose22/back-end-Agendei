@@ -4,6 +4,7 @@
 
 export type specialityInput = {
     name: string
+    hospitalId: string;
 }
 
 export type specialitySaved = {
@@ -17,6 +18,7 @@ export type specialitySaved = {
 export interface ISpecialityRepository{
     create(data: specialityInput): Promise<specialitySaved>;
     findById(id: string): Promise<specialitySaved>;
+    findByHospitails(id: string): Promise<specialitySaved[]>;
     findByName(name: string): Promise<specialitySaved>;
     findAll(): Promise<specialitySaved[] | null>;
     update(id: string, data: specialityInput): Promise<void>;

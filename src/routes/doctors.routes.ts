@@ -8,6 +8,7 @@ import { ensuredAuthenticated } from "../middlewares/auth/ensuredAuthenticated";
 import GetDoctorServicesControllers from "../controllers/doctors/GetDoctorServicesControllers";
 import { uploadImage } from "../middlewares/upload/ImageUpload";
 import ServiceToDoctorController from "../controllers/doctors/ServiceToDoctorController";
+import GetDoctorsByHospitalsControllers from "../controllers/doctors/GetDoctorsByHospitalsControllers";
 
 const router = Router();
 
@@ -20,6 +21,9 @@ router.get('/doctors/:id', ensuredAuthenticated , GetDoctorsByIdControllers.hand
 router.get('/doctors/:id/services', ensuredAuthenticated , GetDoctorServicesControllers.handle);
 router.put('/doctors/:id', ensuredAuthenticated, UpdateDoctorsControllers.handle);
 router.delete('/doctors/:id', ensuredAuthenticated, DeleteDoctorsControllers.handle);
+
+// Hospitals Doctors Routes
+router.get('/doctors/hospitals', ensuredAuthenticated , GetDoctorsByHospitalsControllers.handle);
 
 
 

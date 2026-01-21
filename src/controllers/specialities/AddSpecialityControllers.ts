@@ -10,6 +10,9 @@ class AddSpecialityControllers {
     async handle(request: Request, response: Response) {
 
         const data = request.body;
+        const {userId} = request;
+        
+        data.hospitalId = userId;
 
         try {
             const specialityRepository = new SpecialityRepository()
