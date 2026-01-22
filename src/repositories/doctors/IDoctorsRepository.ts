@@ -12,16 +12,16 @@ export type doctorRequest = {
   numberOfPatients: number | null
   rating: number | null
   specialtyId: string
-  status: string;
+  status: string | null;
   hospitalId: string | null
 }
 
 export type doctorSave = {
   id: string;
-  status: string; 
   name: string;
   photo: string | null;
   email: string
+  status: string | null;
   password: string | null
   phone: string | null
   bio: string | null
