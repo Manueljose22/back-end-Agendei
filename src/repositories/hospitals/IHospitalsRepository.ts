@@ -1,3 +1,4 @@
+import { RoleHospitals } from "@prisma/client";
 
 export type hospitalInput = {
     name: string;
@@ -6,6 +7,7 @@ export type hospitalInput = {
     email: string;
     nif: string;
     password: string;
+    role: RoleHospitals
     
 }
 
@@ -14,9 +16,9 @@ export type hospitalSave = {
     name: string;
     address: string;
     nif: string;
-    password: string;
     phone: string | null;
     email: string | null;
+    role: RoleHospitals
     images: {
         urlImagem: string
     }[];

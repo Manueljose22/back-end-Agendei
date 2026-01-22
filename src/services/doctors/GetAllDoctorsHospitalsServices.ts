@@ -15,7 +15,7 @@ class GetAllDoctorsHospitalsServices {
         const doctor = await this.IDoctorsRepository.findAllByHospital(idHospital);
 
         if (!doctor) {
-            throw new Error('Não existe douctores!');
+            throw new Error('Não há douctores cadastrados!');
         }
 
         return doctor;

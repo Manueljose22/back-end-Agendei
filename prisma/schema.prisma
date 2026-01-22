@@ -7,22 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleAdmin {
-  Admin
-  Owner
+enum RoleHospitals {
+  admin
+  owner
+  doctor
 }
 
-model Admin {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  role      RoleAdmin @default(Owner)
-  hospital  Hospital?
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @map("updated_at")
+model Hospital {
+  id          String            @id @default(uuid())
+  name        String
+  address     String
+  phone       String?
+  nif         String            @unique
+  email       String            @unique
+  password    String
+  role        RoleHospitals     @default(admin)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @default(now()) @map("updated_at")
+  images      ImagesHospitals[]
+  doctors     Doctor[]
+  specialties Specialty[]
 
-  @@map("Admins")
+  @@map("Hospitals")
 }
 
 model Patient {
@@ -94,14 +100,16 @@ model Appointment {
 }
 
 model Specialty {
-  id         String   @id @default(uuid())
-  name       String
-  hospitalId String
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @map("updated_at")
-  
-  hospital   Hospital @relation(fields: [hospitalId], references: [id])
-  doctor     Doctor[]
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  color       String
+  hospitalId  String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+  doctor   Doctor[]
 
   @@map("Specialties")
 }
@@ -180,22 +188,4 @@ model ImagesHospitals {
   Hospital Hospital @relation(fields: [hospitalId], references: [id])
 
   @@map("Images_Hospitals")
-}
-
-model Hospital {
-  id          String            @id @default(uuid())
-  name        String
-  address     String
-  phone       String?
-  nif         String            @unique
-  email       String            @unique
-  password    String
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @default(now()) @map("updated_at")
-  images      ImagesHospitals[]
-  doctors     Doctor[]
-  admin       Admin             @relation(fields: [id], references: [id])
-  specialties Specialty[]
-
-  @@map("Hospitals")
 }

@@ -1,19 +1,19 @@
 import { Request, Response } from 'express';
-import { GetSpecialityByIdService } from '../../services/specialities/GetSpecialityByIdService';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
+import { GetSpecialtyByHospitalService } from '../../services/specialities/GetSpecialtyByHospitalService';
 
 
 
 
 
-class GetSpecialityByHospitailsControllers{
+class GetSpecialtyByHospitalControllers{
     async handle(request: Request, response: Response) {
 
         const { userId } = request
 
         try {
             const specialityRepository = new SpecialityRepository()
-            const service = new GetSpecialityByIdService(specialityRepository);
+            const service = new GetSpecialtyByHospitalService(specialityRepository);
             const result = await service.execute(userId);
             return response.json(result)
 
@@ -23,4 +23,4 @@ class GetSpecialityByHospitailsControllers{
     }
 }
 
-export default new GetSpecialityByHospitailsControllers;
+export default new GetSpecialtyByHospitalControllers;

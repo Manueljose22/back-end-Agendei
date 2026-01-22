@@ -5,7 +5,7 @@ import ListSpecialityControllers from "../controllers/specialities/ListSpecialit
 import GetSpecialityByIdControllers from "../controllers/specialities/GetSpecialityByIdControllers";
 import UpdateSpecialityControllers from "../controllers/specialities/UpdateSpecialityControllers";
 import DeleteSpecialityByIdControllers from "../controllers/specialities/DeleteSpecialityByIdControllers";
-import GetSpecialityByHospitailsControllers from "../controllers/specialities/GetSpecialityByHospitailsControllers";
+import GetSpecialtyByHospitalControllers from "../controllers/specialities/GetSpecialtyByHospitalControllers";
 
 
 
@@ -15,13 +15,12 @@ import GetSpecialityByHospitailsControllers from "../controllers/specialities/Ge
 const router = Router();
 
 
-router.post('/speciality', ensuredAuthenticated, AddSpecialityControllers.handle);
-router.get('/speciality/', ensuredAuthenticated, ListSpecialityControllers.handle);
-router.get('/speciality/:id', ensuredAuthenticated, GetSpecialityByIdControllers.handle);
-router.get('/speciality/hospitails', ensuredAuthenticated, GetSpecialityByHospitailsControllers.handle);
-router.put('/speciality/:id', ensuredAuthenticated, UpdateSpecialityControllers.handle);
-router.delete('/speciality/:id', ensuredAuthenticated, DeleteSpecialityByIdControllers.handle);
-
+router.get('/specialty/:id', ensuredAuthenticated, GetSpecialityByIdControllers.handle);
+router.post('/specialty', ensuredAuthenticated, AddSpecialityControllers.handle);
+router.get('/specialty/', ensuredAuthenticated, ListSpecialityControllers.handle);
+router.put('/specialty/:id', ensuredAuthenticated, UpdateSpecialityControllers.handle);
+router.delete('/specialty/:id', ensuredAuthenticated, DeleteSpecialityByIdControllers.handle);
+router.get('/hospital/specialty', ensuredAuthenticated, GetSpecialtyByHospitalControllers.handle);
 
 
 

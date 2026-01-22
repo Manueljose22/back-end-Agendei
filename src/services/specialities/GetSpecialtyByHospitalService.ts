@@ -5,20 +5,21 @@ import { ISpecialityRepository, specialitySaved } from "../../repositories/speci
 
 
 
-class GetSpecialityByHospitailsService {
+class GetSpecialtyByHospitalService {
 
    constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
     async execute(id: string): Promise<specialitySaved[] | null> {
 
         const speciality = await this.ISpecialityRepository.findByHospitails(id);
-
+        
+        
         if (!speciality) {
-            throw new Error("Especialidade não existe.");
+            throw new Error("Nenhum especialidade foi registrada.");
         }
 
         return speciality;
     }
 }
 
-export { GetSpecialityByHospitailsService };
+export { GetSpecialtyByHospitalService };

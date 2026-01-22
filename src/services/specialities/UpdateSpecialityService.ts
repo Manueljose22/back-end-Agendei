@@ -9,7 +9,7 @@ class UpdateSpecialityService {
 
     constructor(private ISpecialityRepository: ISpecialityRepository) { }
 
-    async execute(id: string, { name }: specialityInput): Promise<void> {
+    async execute(id: string, data: specialityInput): Promise<void> {
 
         const speciality = await this.ISpecialityRepository.findById(id);
 
@@ -19,12 +19,14 @@ class UpdateSpecialityService {
 
 
 
-        const newData: specialityInput = {
-            name: name ?? speciality.name,
+        const newData = {
+            name: data.name ?? speciality.name,
+            description: data.description ?? speciality.description,
+            color: data.color ??  speciality.color
         }
 
 
-        await this.ISpecialityRepository.update(id, { name })
+        await this.ISpecialityRepository.update(id, newData)
     }
 }
 

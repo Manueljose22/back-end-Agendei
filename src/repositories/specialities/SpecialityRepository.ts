@@ -44,13 +44,15 @@ export class SpecialityRepository implements ISpecialityRepository {
         });
     }
 
-    async update(id: string, { name }: specialityInput): Promise<void> {
+    async update(id: string, { name, color, description }: specialityInput): Promise<void> {
         await prismaClient.specialty.update({
             where: {
                 id,
             }
             , data: {
                 name,
+                color,
+                description,
                 updatedAt: new Date
             }
         })
