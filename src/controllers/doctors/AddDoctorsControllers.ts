@@ -8,10 +8,13 @@ import { uploadsFiles } from '../../middlewares/upload/uploadsFiles';
 
 
 class AddDoctorsControllers {
-    
+
     async handle(request: Request, response: Response) {
-        
+
         const data = request.body as doctorRequest;
+        const { userId } = request
+
+        data.hospitalId = userId;
         
         if (request.file) {
             data.photo = await uploadsFiles(request.file) as string;
@@ -24,7 +27,7 @@ class AddDoctorsControllers {
 
             const result = await service.execute(data);
 
-            return response.status(201).json({message: 'Douctor cadastrado com sucesso! '});
+            return response.status(201).json({ message: 'Douctor cadastrado com sucesso! ' });
 
         } catch (error: any) {
             return response.status(400).json({ message: error.message })

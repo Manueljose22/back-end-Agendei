@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { DoctorsRepository } from '../../repositories/doctors/DoctorsRepository';
 import { GetDoctorsByIdServices } from '../../services/doctors/GetDoctorsByIdServices';
+import { GetDoctorsByHospitalsServices } from '../../services/doctors/GetDoctorsByHospitalsServices';
 
 
 
@@ -14,7 +15,7 @@ class GetDoctorsByHospitalsControllers {
         try {
 
             const doctorsRepository = new DoctorsRepository();
-            const service = new GetDoctorsByIdServices(doctorsRepository);
+            const service = new GetDoctorsByHospitalsServices(doctorsRepository);
 
             const result = await service.execute(userId)
 

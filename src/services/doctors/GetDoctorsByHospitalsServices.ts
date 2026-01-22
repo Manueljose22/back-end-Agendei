@@ -6,7 +6,7 @@ import { doctorSave, IDoctorsRepository } from "../../repositories/doctors/IDoct
 
 
 
-class GetAllDoctorsHospitalsServices {
+class GetDoctorsByHospitalsServices {
 
     constructor(private IDoctorsRepository: IDoctorsRepository) { }
 
@@ -22,4 +22,4 @@ class GetAllDoctorsHospitalsServices {
     }
 }
 
-export { GetAllDoctorsHospitalsServices };
+export { GetDoctorsByHospitalsServices };

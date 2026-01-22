@@ -12,7 +12,7 @@ export type doctorRequest = {
   numberOfPatients: number | null
   rating: number | null
   specialtyId: string
-  status: string
+  status: string;
   hospitalId: string | null
 }
 

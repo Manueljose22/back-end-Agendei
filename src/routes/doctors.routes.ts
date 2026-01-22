@@ -23,7 +23,7 @@ router.put('/doctors/:id', ensuredAuthenticated, UpdateDoctorsControllers.handle
 router.delete('/doctors/:id', ensuredAuthenticated, DeleteDoctorsControllers.handle);
 
 // Hospitals Doctors Routes
-router.get('/doctors/hospitals', ensuredAuthenticated , GetDoctorsByHospitalsControllers.handle);
+router.get('/hospital/doctors', ensuredAuthenticated , GetDoctorsByHospitalsControllers.handle);
 
 
 
