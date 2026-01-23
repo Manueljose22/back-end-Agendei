@@ -228,26 +228,22 @@ export class DoctorsRepository implements IDoctorsRepository {
 
     }
 
-    async update(id: string, { name, specialtyId, photo }: doctorRequest): Promise<void> {
+    async update(id: string, data: doctorRequest): Promise<void> {
         await prismaClient.doctor.update({
             where: {
                 id
             },
-            data: {
-                name,
-                specialtyId,
-                photo,
-                updatedAt: new Date()
-            }
+            data: data
         })
 
     }
 
 
-    async delete(id: string): Promise<void> {
+    async delete(hospitalId: string, id: string): Promise<void> {
         await prismaClient.doctor.delete({
             where: {
-                id
+                id, 
+                AND: {hospitalId}
             }
         })
     }

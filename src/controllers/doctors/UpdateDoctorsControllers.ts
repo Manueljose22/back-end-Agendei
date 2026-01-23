@@ -12,13 +12,14 @@ class UpdateDoctorsControllers {
 
         const { id } = request.params;
         const data = request.body as doctorRequest;
+        const {userId} = request;
 
         try {
 
             const doctorsRepository = new DoctorsRepository();
             const service = new UpdateDoctorsServices(doctorsRepository);
 
-            const result = await service.execute(id, data);
+            const result = await service.execute(userId ,id, data);
 
             return response.json({message: 'Dados actualizados com sucesso.'});
 

@@ -8,13 +8,14 @@ import { DeleteDoctorsServices } from '../../services/doctors/DeleteDoctorsServi
 class DeleteDoctorsControllers {
     async handle(request: Request, response: Response) {
         const { id } = request.params;
+        const {userId} = request;
 
         try {
 
             const doctorsRepository = new DoctorsRepository();
             const service = new DeleteDoctorsServices(doctorsRepository);
 
-            const result = await service.execute(id);
+            const result = await service.execute(userId, id);
 
             return response.status(200).json({ message: 'Registro excluído com sucesso.' })
 

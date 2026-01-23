@@ -70,5 +70,5 @@ export interface IDoctorsRepository {
   findAllByHospital(idHospital: string): Promise<doctorSave[] | null>
   findSearch(search: string): Promise<doctorSave[] | null>
   update(id: string, data: UpdateDoctor): Promise<void | null>
-  delete(id: string): Promise<void>
+  delete(hospitalId: string, id: string): Promise<void>
 }
