@@ -5,6 +5,7 @@ import CreateServicesController from "../controllers/service/CreateServicesContr
 import GetByIdServicesController from "../controllers/service/GetByIdServicesController";
 import UpdateServicesController from "../controllers/service/UpdateServicesController";
 import DeleteServicesController from "../controllers/service/DeleteServicesController";
+import GetAllServicesHospitalController from "../controllers/service/GetAllServicesHospitalController";
 
 
 
@@ -18,6 +19,9 @@ router.post('/services', ensuredAuthenticated, CreateServicesController.handle);
 router.get('/services/:id', ensuredAuthenticated, GetByIdServicesController.handle);
 router.put('/services/:id', ensuredAuthenticated, UpdateServicesController.handle);
 router.delete('/services/:id', ensuredAuthenticated, DeleteServicesController.handle);
+
+// web
+router.get("/hospital/services", ensuredAuthenticated, GetAllServicesHospitalController.handle)
 
 
 

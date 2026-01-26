@@ -21,6 +21,9 @@ class UpdateServiceServices {
             id: service.id,
             title: data.title ?? service.title,
             description: data.title ?? service.title,
+            duraction: data.duraction ?? service.duraction,
+            status: data.status ?? service.status,
+            specialtyId: data.specialtyId ?? service.specialtyId
         }
 
         await this.iserviceRepository.update(id, updateData);

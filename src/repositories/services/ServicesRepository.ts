@@ -6,34 +6,58 @@ import { IServicesRepository, servicesRequest, servicesSaved} from "./IServicesR
 
 export class ServicesRepository implements IServicesRepository{
     
-    async save({title, description}: servicesRequest): Promise<void> {
+    
+    async save(data: servicesRequest): Promise<void> {
         
         await prismaClient.service.create({
-            data: {
-                title,
-                description,
-                createdAt: new Date()
-            }
+            data
         })
     }
     
     async findAll(): Promise<servicesSaved[] | null> {
-        return await prismaClient.service.findMany()
+        return await prismaClient.service.findMany({
+            include: {
+                specialty:{
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
     }
 
     // Web
-    // async findAllClinic(id: string): Promise<servicesSaved[] | null> {
-    //     return await prismaClient.service.findMany({
-    //         where:{
-    //             id,
-    //         }
-    //     })
-    // }
+   async findAllHospital(hospitalId: string): Promise<servicesSaved[] | null> {
+        return await prismaClient.service.findMany({
+            where:{
+                specialty:{
+                    hospitalId: hospitalId
+                }
+            },
+            include:{
+                specialty:{
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+    }
 
     async findById(id: string): Promise<servicesSaved | null> {
         return await prismaClient.service.findFirst({
             where:{
                 id
+            },
+            include: {
+                specialty:{
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
             }
         })
     }
@@ -42,6 +66,14 @@ export class ServicesRepository implements IServicesRepository{
         return await prismaClient.service.findFirst({
             where:{
                 title,
+            },
+            include: {
+                specialty:{
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
             }
         })
     }
@@ -51,10 +83,7 @@ export class ServicesRepository implements IServicesRepository{
             where: {
                 id: id
             },
-            data: {
-                title: data.title,
-                description: data.description
-            }
+            data: data
         })
     }
     
