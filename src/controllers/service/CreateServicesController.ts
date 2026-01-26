@@ -9,14 +9,14 @@ import { CreateServiceServices } from '../../services/services/CreateServiceServ
 class CreateServicesController {
     async handle(request: Request, response: Response) {
 
-        const {title, description} = request.body as servicesRequest;
+        const data = request.body as servicesRequest;
         
         try {
 
             const servicesRepository = new ServicesRepository();
             const service = new CreateServiceServices(servicesRepository);
 
-            const result = await service.execute({title, description});
+            const result = await service.execute(data);
 
             return response.status(201).json({message: "Serviço criado com sucesso!"});
 

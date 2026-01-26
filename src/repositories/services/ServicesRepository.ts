@@ -10,7 +10,14 @@ export class ServicesRepository implements IServicesRepository{
     async save(data: servicesRequest): Promise<void> {
         
         await prismaClient.service.create({
-            data
+            data: {
+                title: data.title,
+                price: Number(data.price),
+                duraction: data.duraction,
+                description: data.description,
+                specialtyId: data.specialtyId,
+                status: data.status
+            }
         })
     }
     

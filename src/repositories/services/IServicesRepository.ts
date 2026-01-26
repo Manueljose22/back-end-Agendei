@@ -1,12 +1,12 @@
 
-
-
 export type servicesRequest = {
     title: string;
     description: string | null;
     status: string;
     duraction: string | null;
     specialtyId: string | null
+    price: number;
+
 
 }
 
@@ -17,7 +17,8 @@ export type servicesSaved = {
     status: string;
     duraction: string | null;
     specialtyId: string | null;
-    specialty:{
+    price: number;
+    specialty: {
         name: string;
         id: string;
     } | null
