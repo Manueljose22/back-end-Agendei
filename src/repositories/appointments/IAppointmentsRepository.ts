@@ -1,7 +1,4 @@
 
-
-
-
 export type appointmentsRequest = {
     patientId: string;
     serviceId: string;
@@ -13,7 +10,7 @@ export type appointmentsRequest = {
 export type appointmentsSave = {
     id: string;
     service: string;
-    doctor: string;
+    doctorname: string;
     specialty: string;
     patientname: string;
     patientId: string

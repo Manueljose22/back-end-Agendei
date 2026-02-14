@@ -8,6 +8,8 @@ import DeletePatientsControllers from "../controllers/patients/DeletePatientsCon
 import ListPatientsController from "../controllers/patients/ListPatientsController";
 import UpdatePasswordPatientControllers from "../controllers/patients/UpdatePasswordPatientControllers";
 import ProfilePatientsControllers from "../controllers/patients/ProfilePatientsControllers";
+import SearchPatientsControllers from "../controllers/patients/SearchPatientsControllers";
+import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
 
 
@@ -19,11 +21,12 @@ const router = Router();
 
 
 router.get('/patients/profile', ensuredAuthenticated, ProfilePatientsControllers.handle);
-router.get('/patients', ensuredAuthenticated, ListPatientsController.handle);
+router.get('/patients', ensuredAuthenticated, ensureRateLimiter(1, 100), ListPatientsController.handle);
+router.get('/patients/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchPatientsControllers.handle);
 router.post('/patients/', uploadImage.single("photo"), AddPatientsControllers.handle);
-router.get('/patients/:id', ensuredAuthenticated, GetPatientsByIdControllers.handle);
+router.get('/patients/:id', ensuredAuthenticated, ensureRateLimiter(1, 100), GetPatientsByIdControllers.handle);
 router.put('/patients/:id', ensuredAuthenticated, uploadImage.single("photo"), UpdatePatientsControllers.handle);
-router.put('/patients/changePassword/:id', ensuredAuthenticated, UpdatePasswordPatientControllers.handle);
+router.put('/patients/changePassword/:id', ensuredAuthenticated, ensureRateLimiter(15, 5), UpdatePasswordPatientControllers.handle);
 router.delete('/patients/:id', ensuredAuthenticated, DeletePatientsControllers.handle);
 
 

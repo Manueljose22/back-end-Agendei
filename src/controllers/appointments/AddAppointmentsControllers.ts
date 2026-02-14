@@ -11,8 +11,8 @@ class AddAppointmentsControllers {
     async handle(request: Request, response: Response) {
 
         const { userId } = request;
-        const { serviceId, doctorId, bookingDate, bookingHour } = request.body;
-        
+        const { serviceId, doctorId, bookingDate, patientId, bookingHour } = request.body;
+        const patient = patientId ?? userId;
 
         try {
 
@@ -20,7 +20,7 @@ class AddAppointmentsControllers {
             const timetablesRepository = new TimetablesRepository();
             const service = new AddAppointmentsServices(appointmentsRepository, timetablesRepository);
 
-            const result = await service.execute({ patientId:userId, serviceId, doctorId, bookingDate, bookingHour })
+            const result = await service.execute({ patientId:patient, serviceId, doctorId, bookingDate, bookingHour })
 
             return response.status(200).json({message: 'Agendamento feito com sucesso.'});
 

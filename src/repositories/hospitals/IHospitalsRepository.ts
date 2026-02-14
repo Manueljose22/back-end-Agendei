@@ -33,6 +33,7 @@ export interface IHospitalsRepository {
     findById(id: string): Promise<hospitalSave | null>;
     findByName(name: string): Promise<hospitalSave | null>;
     findList(): Promise<hospitalSave[]>;
+    findSearch(search: string): Promise<hospitalSave[] | null>
     delete(id: string): Promise<void>;
     update(id: string, data: hospitalInput, images: any): Promise<void>
 }

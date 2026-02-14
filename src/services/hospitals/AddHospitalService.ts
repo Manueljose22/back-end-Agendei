@@ -7,7 +7,7 @@ class AddHospitalService {
 
     constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    async execute({ name, address, email, phone, password, nif }: hospitalInput): Promise<void | Error> {
+    async execute({ name, address, email, phone, password, nif, role }: hospitalInput): Promise<void | Error> {
 
         const hospital = await this.IHospitalsRepository.findByName(name);
         // let urls;
@@ -39,7 +39,7 @@ class AddHospitalService {
         // }
 
 
-        await this.IHospitalsRepository.create({ name, address, email, phone, password, nif })
+        await this.IHospitalsRepository.create({ name, address, email, phone, password, nif, role})
     }
 }
 

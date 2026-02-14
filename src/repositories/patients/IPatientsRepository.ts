@@ -2,8 +2,8 @@
 
 export type patientsRequest = {
   name: string;
-  email: string;
-  password: string;
+  email: string | null;
+  password: string | null;
   phone: string | null;
   photo: string | null;
   dateBirth: Date | null;
@@ -16,8 +16,8 @@ export type patientsRequest = {
 export type patientsSave = {
   id: string;
   name: string;
-  email: string;
-  password: string;
+  email: string | null;
+  password: string | null;
   phone: string | null;
   photo: string | null;
   dateBirth: Date | null;

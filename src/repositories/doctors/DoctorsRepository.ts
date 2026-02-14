@@ -199,6 +199,7 @@ export class DoctorsRepository implements IDoctorsRepository {
             : {}; // Se não houver search, não filtra nada
 
         const doctors = await prismaClient.doctor.findMany({
+            take: 10,
             where: filters,
             include: {
                 Specialty: {

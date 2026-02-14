@@ -44,6 +44,17 @@ export class SpecialityRepository implements ISpecialityRepository {
         });
     }
 
+    async findSearch(search: string): Promise<specialitySaved[] | null> {
+        return await prismaClient.specialty.findMany({
+            take: 10,
+            where: {
+                name: {
+                    contains: search,
+                }
+            }
+        })
+    }
+
     async update(id: string, { name, color, description }: specialityInput): Promise<void> {
         await prismaClient.specialty.update({
             where: {

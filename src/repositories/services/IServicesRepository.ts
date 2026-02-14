@@ -16,7 +16,7 @@ export type servicesSaved = {
     description: string | null;
     status: string;
     duraction: string | null;
-    specialtyId: string | null;
+    specialtyId: string | null
     price: number;
     specialty: {
         name: string;

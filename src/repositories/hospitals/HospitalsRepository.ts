@@ -67,6 +67,39 @@ export class HospitalsRepository implements IHospitalsRepository {
             }
         })
     }
+
+    async findSearch(search: string): Promise<hospitalSave[] | null> {
+        return await prismaClient.hospital.findMany({
+            take: 10,
+            where: {
+                OR: [
+                    {
+                        name: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        email: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        address: {
+                            contains: search,
+                        }
+                    }
+                ]
+            },
+            include: {
+                images: {
+                    select: {
+                        urlImagem: true
+                    }
+                }
+            }
+        })
+    }
+    
     async  update(id: string, data: hospitalInput, images: any): Promise<void> {
         await prismaClient.hospital.update({
             where:{

@@ -73,10 +73,20 @@ export class PatientsRepository implements IPatientsRepository {
 
     async findSearch(search: string): Promise<patientsSave[] | null> {
         return await prismaClient.patient.findMany({
+            take: 10,
             where: {
-                name: {
-                    contains: search
-                }
+                OR: [
+                    {
+                        name: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        email: {
+                            contains: search,
+                        }
+                    }
+                ]
             }
         })
     }

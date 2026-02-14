@@ -5,6 +5,7 @@ import AddAppointmentsControllers from "../controllers/appointments/AddAppointme
 import UpdateAppointmentsControllers from "../controllers/appointments/UpdateAppointmentsControllers";
 import ListAppointmentByPatientsControllers from "../controllers/appointments/ListAppointmentByPatientsControllers";
 import CancelAppointmentsControllers from "../controllers/appointments/CancelAppointmentsControllers";
+import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
 
 
@@ -13,13 +14,13 @@ import CancelAppointmentsControllers from "../controllers/appointments/CancelApp
 const router = Router();
 
 // web
-router.get('/appointments/', ensuredAuthenticated, ListAppointmentsControllers.handle);
+router.get('/appointments', ensuredAuthenticated,ensureRateLimiter(1, 100), ListAppointmentsControllers.handle);
 
 // router mobile
-router.get('/appointments/all', ensuredAuthenticated, ListAppointmentByPatientsControllers.handle);
+router.get('/appointments/all', ensuredAuthenticated,ensureRateLimiter(1, 100), ListAppointmentByPatientsControllers.handle);
 router.post('/appointments/', ensuredAuthenticated, AddAppointmentsControllers.handle);
 router.put('/appointments/:id', ensuredAuthenticated, UpdateAppointmentsControllers.handle);
-router.put('/appointments/cancel/:id', ensuredAuthenticated, CancelAppointmentsControllers.handle);
+router.put('/appointments/cancel/:id', ensuredAuthenticated, ensureRateLimiter(10, 10), CancelAppointmentsControllers.handle);
 
 
 

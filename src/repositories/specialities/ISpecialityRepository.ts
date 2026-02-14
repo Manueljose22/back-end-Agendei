@@ -26,6 +26,7 @@ export interface ISpecialityRepository{
     findByHospitails(id: string): Promise<specialitySaved[]>;
     findByName(name: string): Promise<specialitySaved>;
     findAll(): Promise<specialitySaved[] | null>;
+    findSearch(search: string): Promise<specialitySaved[] | null>
     update(id: string, data: Omit<specialityInput, "hospitalId">): Promise<void>;
     delete(id: string): Promise<void>;
 }

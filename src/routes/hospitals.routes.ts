@@ -6,6 +6,8 @@ import ListHospitalsControllers from "../controllers/hospitals/ListHospitalsCont
 import GetHospitalByIdControllers from "../controllers/hospitals/GetHospitalByIdControllers";
 import DeleteHospitalByIdControllers from "../controllers/hospitals/DeleteHospitalByIdControllers";
 import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalControllers";
+import SearchHospitalsControllers from "../controllers/hospitals/SearchHospitalsControllers";
+import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
 
 
@@ -15,8 +17,9 @@ const router = Router();
 
 
 router.post('/hospitals/', AddHospitalControllers.handle);
-router.get('/hospitals/', ensuredAuthenticated, ListHospitalsControllers.handle);
-router.get('/hospitals/:id', ensuredAuthenticated, GetHospitalByIdControllers.handle);
+router.get('/hospitals/', ensuredAuthenticated, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
+router.get('/hospitals/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
+router.get('/hospitals/:id', ensuredAuthenticated, ensureRateLimiter(1, 100), GetHospitalByIdControllers.handle);
 router.put('/hospitals/:id', ensuredAuthenticated, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
 router.delete('/hospitals/:id', ensuredAuthenticated, DeleteHospitalByIdControllers.handle);
 

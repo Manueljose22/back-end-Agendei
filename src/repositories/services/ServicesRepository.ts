@@ -86,11 +86,19 @@ export class ServicesRepository implements IServicesRepository{
     }
     
     async update(id: string, data: servicesRequest): Promise<void> {
+        
         await prismaClient.service.update({
             where: {
                 id: id
             },
-            data: data
+            data: {
+                title: data.title,
+                price: Number(data.price),
+                duraction: data.duraction,
+                description: data.description,
+                specialtyId: data.specialtyId,
+                status: data.status
+            }
         })
     }
     
