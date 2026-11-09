@@ -191,6 +191,18 @@ model history_Medical {
   @@map("history_medicals")
 }
 
+model AuthProfile {
+  authUserId String   @id @db.Uuid @map("auth_user_id")
+  role       String
+  profileId  String   @map("profile_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([role, profileId])
+  @@index([role])
+  @@map("auth_profiles")
+}
+
 model ImagesHospitals {
   id         String @id @default(uuid())
   urlImagem  String
