@@ -1,35 +1,36 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 
-
-
 type JWTPayload = {
     id: string;
     iat: number;
-    exp: number
-}
+    exp: number;
+};
 
+export const ensuredAuthenticated = (request: Request, response: Response, next: NextFunction) => {
+    const authHeader = request.headers.authorization;
+    const [scheme, token] = authHeader?.split(" ") ?? [];
 
-
-export const ensuredAuthenticated =  (request: Request, response: Response, next: NextFunction) => {
-
-    const authHeaders = request.headers.authorization;
-
-    if (!authHeaders) {
-        return response.status(401).json({ message: 'Acesso negado' });
+    if (scheme !== "Bearer" || !token) {
+        return response.status(401).json({ message: "Token de autenticação não fornecido." });
     }
 
-    const token = authHeaders?.split(' ')[1];
-    
+    const secret = process.env.JwtSecret;
+
+    if (!secret) {
+        return response.status(500).json({ message: "Serviço de autenticação não configurado." });
+    }
+
     try {
+        const payload = verify(token, secret) as JWTPayload;
 
-        const { id } = verify(token, process.env.JwtSecret!) as JWTPayload;
-        
-        request.userId = id;
-        
-        next()
+        if (!payload.id) {
+            return response.status(401).json({ message: "Token inválido." });
+        }
 
-    } catch (error: any) {
-        return response.status(400).json({ message: 'Token inválido!' });
+        request.userId = payload.id;
+        return next();
+    } catch {
+        return response.status(401).json({ message: "Token inválido ou expirado." });
     }
-}
+};
