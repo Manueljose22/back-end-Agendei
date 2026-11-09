@@ -8,7 +8,6 @@ export type hospitalInput = {
     nif: string;
     password: string;
     role: RoleHospitals
-    
 }
 
 export type hospitalSave = {
@@ -22,18 +21,21 @@ export type hospitalSave = {
     images: {
         urlImagem: string
     }[];
-    createdAt: Date; 
+    createdAt: Date;
     updatedAt: Date
 }
 
+export type hospitalUpdate = Partial<
+    Pick<hospitalSave, "name" | "address" | "phone" | "email">
+>;
 
 export interface IHospitalsRepository {
-    create(data:hospitalInput): Promise<void>;
+    create(data: hospitalInput): Promise<void>;
     // create(data:hospitalInput, images: any): Promise<void>;
     findById(id: string): Promise<hospitalSave | null>;
     findByName(name: string): Promise<hospitalSave | null>;
     findList(): Promise<hospitalSave[]>;
     findSearch(search: string): Promise<hospitalSave[] | null>
     delete(id: string): Promise<void>;
-    update(id: string, data: hospitalInput, images: any): Promise<void>
+    update(id: string, data: hospitalUpdate, images: any): Promise<void>
 }

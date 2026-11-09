@@ -1,71 +1,53 @@
-
 import { hash } from "bcrypt";
 import { prismaClient } from "../../config/prisma/prismaClient";
-import { hospitalInput, hospitalSave, IHospitalsRepository } from "./IHospitalsRepository";
-
-
-
+import { hospitalInput, hospitalSave, hospitalUpdate, IHospitalsRepository } from "./IHospitalsRepository";
 
 export class HospitalsRepository implements IHospitalsRepository {
-    
-
     async create(data: hospitalInput): Promise<void> {
+        const passwordHash = await hash(data.password, 12);
 
-        const passwordHash = await hash(data.password, 12)
-        
-         await prismaClient.hospital.create({
+        await prismaClient.hospital.create({
             data: {
                 name: data.name,
                 address: data.address,
                 phone: data.phone,
                 email: data.email,
                 password: passwordHash,
-                nif: data.nif,
-                // images: {
-                //     create: images
-                // }
+                nif: data.nif
             }
-        })
+        });
     }
 
     async findById(id: string): Promise<hospitalSave | null> {
         return await prismaClient.hospital.findFirst({
-            where:{
-                id
-            }, include:{
+            where: { id },
+            include: {
                 images: {
-                    select:{
-                        urlImagem: true
-                    }
+                    select: { urlImagem: true }
                 }
             }
-        })
+        });
     }
 
     async findByName(name: string): Promise<hospitalSave | null> {
         return await prismaClient.hospital.findFirst({
-            where:{
-                name
-            }, include:{
+            where: { name },
+            include: {
                 images: {
-                    select:{
-                        urlImagem: true
-                    }
+                    select: { urlImagem: true }
                 }
             }
-        })
+        });
     }
 
     async findList(): Promise<hospitalSave[]> {
         return await prismaClient.hospital.findMany({
-             include:{
+            include: {
                 images: {
-                    select:{
-                        urlImagem: true
-                    }
+                    select: { urlImagem: true }
                 }
             }
-        })
+        });
     }
 
     async findSearch(search: string): Promise<hospitalSave[] | null> {
@@ -73,59 +55,38 @@ export class HospitalsRepository implements IHospitalsRepository {
             take: 10,
             where: {
                 OR: [
-                    {
-                        name: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        email: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        address: {
-                            contains: search,
-                        }
-                    }
+                    { name: { contains: search } },
+                    { email: { contains: search } },
+                    { address: { contains: search } }
                 ]
             },
             include: {
                 images: {
-                    select: {
-                        urlImagem: true
-                    }
+                    select: { urlImagem: true }
                 }
             }
-        })
+        });
     }
-    
-    async  update(id: string, data: hospitalInput, images: any): Promise<void> {
+
+    async update(id: string, data: hospitalUpdate, images: any): Promise<void> {
         await prismaClient.hospital.update({
-            where:{
-                id
-            },
+            where: { id },
             data: {
                 name: data.name,
                 address: data.address,
                 phone: data.phone,
                 email: data.email,
-                password: data.password,
                 images: {
                     updateMany: images
                 },
                 updatedAt: new Date()
             }
-        })
+        });
     }
 
     async delete(id: string): Promise<void> {
-       await prismaClient.hospital.delete({
-                where:{
-                    id,
-                }
-            })
+        await prismaClient.hospital.delete({
+            where: { id }
+        });
     }
-    
-
 }
