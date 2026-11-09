@@ -17,7 +17,6 @@ export class LoginAuthService {
 
         const profile = await this.authRepository.findProfileByAuthUserId(data.user.id);
         if (!profile) {
-            await getSupabaseClient().auth.signOut();
             throw new Error("A conta ainda não está associada a um perfil Agendei. Contacta o administrador.");
         }
 
