@@ -18,7 +18,7 @@ const router = Router();
 
 router.get('/doctors', ensuredAuthenticated , ensureRateLimiter(1, 100), ListDoctorController.handle);
 router.get('/doctors/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchDoctorsControllers.handle);
-router.post('/doctors', ensuredAuthenticated, AddDoctorsControllers.handle, uploadImage.single('photo'));
+router.post('/doctors', ensuredAuthenticated, uploadImage.single('photo'), AddDoctorsControllers.handle);
 router.post('/doctors/service', ensuredAuthenticated, ServiceToDoctorController.handle);
 router.get('/doctors/:id', ensuredAuthenticated , ensureRateLimiter(1, 100), GetDoctorsByIdControllers.handle);
 router.get('/doctor/:id/service', ensuredAuthenticated , ensureRateLimiter(1, 100), GetDoctorServicesControllers.handle);
