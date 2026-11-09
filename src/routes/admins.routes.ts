@@ -5,19 +5,15 @@ import ProfileAdminControllers from "../controllers/admin/ProfileAdminController
 import UpdateAdminControllers from "../controllers/admin/UpdateAdminControllers";
 import ListAppointmentByIdControllers from "../controllers/appointments/ListAppointmentByIdControllers";
 import CreateAppointmentsControllers from "../controllers/appointments/CreateAppointmentsControllers";
-import { ensureSupabaseAuthenticated } from "../middlewares/auth/ensureSupabaseAuthenticated";
-import { requireRole } from "../middlewares/auth/requireRole";
+import { ensureAdminAuthenticated } from "../middlewares/auth/ensureAdminAuthenticated";
 
 const router = Router();
-const adminOnly = [ensureSupabaseAuthenticated, requireRole("admin")];
+const adminOnly = [ensureAdminAuthenticated];
 
-// Não existe registo público de administradores. O primeiro acesso é criado
-// exclusivamente pelo script seguro de bootstrap no servidor.
 router.get("/admin/profile", ...adminOnly, ProfileAdminControllers.handle);
 router.get("/admin/", ...adminOnly, ListAdminController.handle);
 router.get("/admin/:id", ...adminOnly, GetAdminByIdControllers.handle);
 router.put("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
-
 router.post("/admin/appointments/register", ...adminOnly, CreateAppointmentsControllers.handle);
 router.get("/admin/appointments/:id", ...adminOnly, ListAppointmentByIdControllers.handle);
 
