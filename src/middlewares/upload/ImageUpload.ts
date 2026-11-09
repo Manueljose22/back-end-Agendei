@@ -7,11 +7,12 @@ const allowedMimeTypes = new Set([
     "image/webp",
 ]);
 
-const uploadImage = multer({
+// Mantém o middleware Multer exportado para as rotas de pacientes e hospitais.
+export const uploadImage = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5 MB
-        files: 1,
+        fileSize: 5 * 1024 * 1024, // 5 MB por ficheiro
+        files: 5,
     },
     fileFilter: (_request, file, callback) => {
         if (!allowedMimeTypes.has(file.mimetype)) {
@@ -22,6 +23,7 @@ const uploadImage = multer({
     },
 });
 
+// Wrapper para devolver erros de upload como JSON no cadastro de médicos.
 export const uploadSingleImage = (
     request: Request,
     response: Response,
