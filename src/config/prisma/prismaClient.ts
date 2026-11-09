@@ -1,33 +1,15 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
 
+const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
-
-// export const prismaClient = new PrismaClient();
-
-
-const globalForPrisma = global as unknown as { prisma?: PrismaClient }
+const prismaLog = process.env.NODE_ENV === "development"
+  ? ["query", "error", "warn"] as const
+  : ["error"] as const;
 
 export const prismaClient =
   globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ["query", "error", "warn"],
-  })
+  new PrismaClient({ log: [...prismaLog] });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prismaClient
+  globalForPrisma.prisma = prismaClient;
 }
-
-
-// reset automático só em desenvolvimento
-export async function resetPrisma() {
-  try {
-    await prismaClient.$disconnect()
-    globalForPrisma.prisma = new PrismaClient({
-      log: ["query", "error", "warn"],
-    })
-    return globalForPrisma.prisma
-  } catch (error) {
-    console.error("Erro ao resetar Prisma:", error)
-  }
-}
-
