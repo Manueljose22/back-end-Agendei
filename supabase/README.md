@@ -40,6 +40,7 @@ O backend disponibiliza nesta fase:
 - `POST /auth/patients/register` — cria a identidade no Supabase Auth e o perfil de paciente no PostgreSQL.
 - `POST /auth/login` — inicia sessão através do Supabase e devolve a sessão/token e o perfil associado.
 - `POST /auth/password/reset` — solicita o envio do email de recuperação.
+- `GET /auth/me` — valida o access token Supabase e devolve o ID do perfil Agendei associado.
 
 Exemplo de registo:
 
