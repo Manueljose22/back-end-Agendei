@@ -1,5 +1,4 @@
 import { Router } from "express";
-import DeleteAdminControllers from "../controllers/admin/DeleteAdminControllers";
 import GetAdminByIdControllers from "../controllers/admin/GetAdminByIdControllers";
 import ListAdminController from "../controllers/admin/ListAdminController";
 import ProfileAdminControllers from "../controllers/admin/ProfileAdminControllers";
@@ -18,7 +17,6 @@ router.get("/admin/profile", ...adminOnly, ProfileAdminControllers.handle);
 router.get("/admin/", ...adminOnly, ListAdminController.handle);
 router.get("/admin/:id", ...adminOnly, GetAdminByIdControllers.handle);
 router.put("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
-router.delete("/admin/:id", ...adminOnly, DeleteAdminControllers.handle);
 
 router.post("/admin/appointments/register", ...adminOnly, CreateAppointmentsControllers.handle);
 router.get("/admin/appointments/:id", ...adminOnly, ListAppointmentByIdControllers.handle);
