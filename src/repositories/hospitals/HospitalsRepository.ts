@@ -75,7 +75,7 @@ export class HospitalsRepository implements IHospitalsRepository {
                 name: data.name,
                 address: data.address,
                 phone: data.phone,
-                email: data.email,
+                email: data.email ?? undefined,
                 images: {
                     updateMany: images
                 },
