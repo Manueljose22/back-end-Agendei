@@ -1,99 +1,38 @@
 import { prismaClient } from "../../config/prisma/prismaClient";
-import { IAdminRepository, adminRequest, adminSave } from "./IAdminRepository";
+import { IAdminRepository, adminSave, adminUpdate } from "./IAdminRepository";
 
-
-
-
+const safeAdminSelect = { id: true, name: true, email: true, createdAt: true, updatedAt: true } as const;
 
 export class AdminRepository implements IAdminRepository {
-    
-    
-    async save({ name, email, password }: adminRequest): Promise<adminSave> {
-       return await prismaClient.admin.create({
-            data: {
-                name,
-                email,
-                password
-            }
-        })
-
-    }
-
     async findByName(name: string): Promise<adminSave | null> {
-        
-        return await prismaClient.admin.findFirst({
-            where: {
-                name
-            }
-        })
+        return prismaClient.admin.findFirst({ where: { name }, select: safeAdminSelect });
     }
+
     async findByEmail(email: string): Promise<adminSave | null> {
-        
-        return await prismaClient.admin.findFirst({
-            where: {
-                email
-            }
-        })
+        return prismaClient.admin.findUnique({ where: { email }, select: safeAdminSelect });
     }
 
     async findById(id: string): Promise<adminSave | null> {
-        return await prismaClient.admin.findFirst({
-            where: {
-                id
-            }
-        })
+        return prismaClient.admin.findUnique({ where: { id }, select: safeAdminSelect });
     }
 
-    async findAll(search: string): Promise<adminSave[] | null> {
-        
-        let users;
-        if (search) {
-            users = await prismaClient.admin.findMany({
-                where:{
-                    name:{
-                        contains: search
-                    }
-                }
-            });
-        } else{
-            users = await prismaClient.admin.findMany();
-        }
-
-        return users
+    async findAll(search: string): Promise<adminSave[]> {
+        return prismaClient.admin.findMany({
+            where: search ? { name: { contains: search, mode: "insensitive" } } : undefined,
+            select: safeAdminSelect,
+            orderBy: { createdAt: "desc" },
+        });
     }
 
-    async findSearch(search: string): Promise<adminSave[] | null> {
-        return await prismaClient.admin.findMany({
-           where:{
-            name: {
-                contains: search
-            }
-           } 
-        })
+    async findSearch(search: string): Promise<adminSave[]> {
+        return this.findAll(search);
     }
 
-    async update(id: string, { name, email, password }: adminRequest): Promise<void> {
-        await prismaClient.admin.update({
-            where: {
-                id
-            },
-            data: {
-                name,
-                email,
-                password,
-                updatedAt: new Date()
-            }
-        })
-
+    async update(id: string, data: adminUpdate): Promise<void> {
+        await prismaClient.admin.update({ where: { id }, data: { ...data, updatedAt: new Date() } });
     }
-
 
     async delete(id: string): Promise<void> {
-        await prismaClient.admin.delete({
-            where: {
-                id
-            }
-        })
+        await prismaClient.admin.delete({ where: { id } });
     }
-
 }

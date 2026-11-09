@@ -6,7 +6,7 @@ import { ensureRateLimiter } from "../middlewares/rateLimiter";
 const router = Router();
 
 
-router.post("/session/login", ensureRateLimiter(15), SessionsControllers.handle);
+router.post("/session/login", ensureRateLimiter(10), SessionsControllers.handle);
 
 
 
