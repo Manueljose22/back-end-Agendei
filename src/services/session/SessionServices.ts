@@ -3,29 +3,22 @@ import { payloadRequest, payloadSave } from "../../repositories/sessions/ISessio
 import { SessionRepository } from "../../repositories/sessions/SessionsRepository";
 import { createUsersToken } from "../../middlewares/auth/create-users-token";
 
-
-
-
 class SessionServices {
+    constructor(private sessionRepository: SessionRepository) {}
 
-    constructor(private ISessionRepository: SessionRepository) { }
+    async execute({ email, password }: payloadRequest): Promise<{ user: payloadSave; token: string }> {
+        const user = await this.sessionRepository.findByEmail(email);
 
-    async execute({email, password}: payloadRequest): Promise<{user: payloadSave, token: string} | Error> {
-    
-        const user = await this.ISessionRepository.findByEmail(email)
-  
-        if (email != user?.email && !await compare(password, user!.password)) {
+        if (!user || !user.password || !(await compare(password, user.password))) {
             throw new Error("Credenciais inválidas!");
-        }  
+        }
 
         const token = await createUsersToken(user);
-        
-        user!.password = ''
 
         return {
-            user: user!,
-            token: token
-        }
+            user: { ...user, password: "" },
+            token,
+        };
     }
 }
 
