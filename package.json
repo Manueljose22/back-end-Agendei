@@ -39,6 +39,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.3.0",
-    "prisma": "^6.15.0"
+    "prisma": "^6.15.0",
+    "typescript": "^7.0.2"
   }
 }
