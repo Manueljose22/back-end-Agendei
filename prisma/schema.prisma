@@ -18,7 +18,7 @@ model Admin {
   name      String
   email     String   @unique
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at") @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("Admins")
 }
@@ -118,7 +118,7 @@ model Specialty {
   color       String
   hospitalId  String
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at") @map("updated_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
 
   hospital Hospital  @relation(fields: [hospitalId], references: [id])
   doctor   Doctor[]
@@ -136,7 +136,7 @@ model Service {
   specialtyId    String?
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at") @map("updated_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
   Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
@@ -193,7 +193,7 @@ model history_Medical {
   treatment String
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at") @map("updated_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
 
   Patient Patient @relation(fields: [patientId], references: [id])
   Doctor  Doctor  @relation(fields: [doctorId], references: [id])
@@ -206,7 +206,7 @@ model AuthProfile {
   role       String
   profileId  String   @map("profile_id")
   createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at") @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([role, profileId])
   @@index([role])
