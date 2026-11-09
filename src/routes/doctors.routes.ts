@@ -6,7 +6,7 @@ import UpdateDoctorsControllers from "../controllers/doctors/UpdateDoctorsContro
 import DeleteDoctorsControllers from "../controllers/doctors/DeleteDoctorsControllers";
 import { ensuredAuthenticated } from "../middlewares/auth/ensuredAuthenticated";
 import GetDoctorServicesControllers from "../controllers/doctors/GetDoctorServicesControllers";
-import { uploadImage } from "../middlewares/upload/ImageUpload";
+import { uploadSingleImage } from "../middlewares/upload/ImageUpload";
 import ServiceToDoctorController from "../controllers/doctors/ServiceToDoctorController";
 import GetDoctorsByHospitalsControllers from "../controllers/doctors/GetDoctorsByHospitalsControllers";
 import SearchDoctorsControllers from "../controllers/doctors/SearchDoctorsControllers";
@@ -18,7 +18,7 @@ const router = Router();
 
 router.get('/doctors', ensuredAuthenticated , ensureRateLimiter(1, 100), ListDoctorController.handle);
 router.get('/doctors/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchDoctorsControllers.handle);
-router.post('/doctors', ensuredAuthenticated, uploadImage.single('photo'), AddDoctorsControllers.handle);
+router.post('/doctors', ensuredAuthenticated, uploadSingleImage, AddDoctorsControllers.handle);
 router.post('/doctors/service', ensuredAuthenticated, ServiceToDoctorController.handle);
 router.get('/doctors/:id', ensuredAuthenticated , ensureRateLimiter(1, 100), GetDoctorsByIdControllers.handle);
 router.get('/doctor/:id/service', ensuredAuthenticated , ensureRateLimiter(1, 100), GetDoctorServicesControllers.handle);
