@@ -3,7 +3,7 @@
  * O primeiro administrador deve ser criado pelo script scripts/bootstrap-admin.ts.
  */
 class AddAdminServices {
-    async execute(): Promise<never> {
+    async execute(_data?: unknown): Promise<never> {
         throw new Error("A criação de administradores só pode ser feita pelo processo seguro de bootstrap.");
     }
 }
