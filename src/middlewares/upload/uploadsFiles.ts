@@ -9,9 +9,14 @@ const allowedMimeTypes: Record<string, string> = {
     "image/webp": "webp",
 };
 
-export const uploadsFiles = async (
+export type UploadedFile = {
+    url: string;
+    path: string;
+};
+
+export const uploadFilesWithPaths = async (
     files: Express.Multer.File[] | Express.Multer.File
-): Promise<string | string[]> => {
+): Promise<UploadedFile[]> => {
     const filesArray = Array.isArray(files) ? files : [files];
 
     if (filesArray.length === 0) {
@@ -34,15 +39,14 @@ export const uploadsFiles = async (
 
     const supabase = getSupabaseStorageClient();
     const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
-    const uploadedPaths: string[] = [];
-    const imageUrls: string[] = [];
+    const uploadedFiles: UploadedFile[] = [];
 
     try {
         for (const file of filesArray) {
             const extension = allowedMimeTypes[file.mimetype];
-            const filePath = `images/${randomUUID()}.${extension}`;
+            const path = `images/${randomUUID()}.${extension}`;
 
-            const { error } = await supabase.storage.from(bucket).upload(filePath, file.buffer, {
+            const { error } = await supabase.storage.from(bucket).upload(path, file.buffer, {
                 contentType: file.mimetype,
                 cacheControl: "3600",
                 upsert: false,
@@ -52,18 +56,63 @@ export const uploadsFiles = async (
                 throw new Error(`Falha ao enviar imagem para o Supabase Storage: ${error.message}`);
             }
 
-            uploadedPaths.push(filePath);
-
-            const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-            imageUrls.push(data.publicUrl);
+            const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+            uploadedFiles.push({ url: data.publicUrl, path });
         }
     } catch (error) {
-        if (uploadedPaths.length > 0) {
-            await supabase.storage.from(bucket).remove(uploadedPaths);
+        const paths = uploadedFiles.map(file => file.path);
+
+        if (paths.length > 0) {
+            await supabase.storage.from(bucket).remove(paths);
         }
 
         throw error;
     }
 
-    return imageUrls.length === 1 ? imageUrls[0] : imageUrls;
+    return uploadedFiles;
+};
+
+// Mantém a assinatura antiga para não quebrar os controllers que ainda esperam URLs.
+export const uploadsFiles = async (
+    files: Express.Multer.File[] | Express.Multer.File
+): Promise<string | string[]> => {
+    const uploadedFiles = await uploadFilesWithPaths(files);
+    const urls = uploadedFiles.map(file => file.url);
+
+    return urls.length === 1 ? urls[0] : urls;
+};
+
+export const removeStorageFiles = async (paths: string[]): Promise<void> => {
+    if (paths.length === 0) return;
+
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+    const { error } = await getSupabaseStorageClient().storage.from(bucket).remove(paths);
+
+    if (error) {
+        throw new Error(`Falha ao remover imagem do Supabase Storage: ${error.message}`);
+    }
+};
+
+export const getStoragePathFromPublicUrl = (publicUrl: string | null): string | null => {
+    if (!publicUrl) return null;
+
+    try {
+        const url = new URL(publicUrl);
+        const supabaseUrl = process.env.SUPABASE_URL;
+
+        if (!supabaseUrl || url.origin !== new URL(supabaseUrl).origin) {
+            return null;
+        }
+
+        const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+        const marker = `/storage/v1/object/public/${bucket}/`;
+
+        if (!url.pathname.startsWith(marker)) {
+            return null;
+        }
+
+        return decodeURIComponent(url.pathname.slice(marker.length)) || null;
+    } catch {
+        return null;
+    }
 };
