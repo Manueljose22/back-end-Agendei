@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -96,6 +96,8 @@ model Appointment {
   Doctor  Doctor  @relation(fields: [doctorId], references: [id])
   Service Service @relation(fields: [serviceId], references: [id])
 
+  @@index([patientId, bookingDate])
+  @@index([doctorId, bookingDate])
   @@map("Appointments")
 }
 
@@ -156,6 +158,8 @@ model Availability {
   doctor     Doctor                   @relation(fields: [doctorId], references: [id])
   timetables Timetables_Appointment[]
 
+  @@unique([doctorId, date])
+  @@index([doctorId, date])
   @@map("availabilities")
 }
 
@@ -166,6 +170,8 @@ model Timetables_Appointment {
   isBooked       Boolean      @default(false)
   availability   Availability @relation(fields: [availabilityId], references: [id])
 
+  @@unique([availabilityId, hour])
+  @@index([availabilityId])
   @@map("timetables_appointments")
 }
 
