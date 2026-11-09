@@ -1,14 +1,9 @@
-import { hospitalInput, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
-
-
-
+import { hospitalUpdate, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 class UpdateHospitalService {
-
     constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    async execute(id: string, { address, email, name, phone }: hospitalInput, images: string | string[]): Promise<void> {
-
+    async execute(id: string, { address, email, name, phone }: hospitalUpdate, images: string | string[]): Promise<void> {
         const hospital = await this.IHospitalsRepository.findById(id);
         let urls;
 
@@ -17,23 +12,21 @@ class UpdateHospitalService {
         }
 
         if (Array.isArray(images)) {
-            urls = images.map((url) => {
-                return {
-                    urlImagem: url
-                }
-            })
+            urls = images.map((url) => ({
+                urlImagem: url
+            }));
         }
 
-        const newData: hospitalInput = {
+        const newData: hospitalUpdate = {
             name: name ?? hospital.name,
             address: address ?? hospital.address,
             email: email ?? hospital.email,
-            phone: phone ??  hospital.phone
-        }
+            phone: phone ?? hospital.phone
+        };
 
-        const newUrl = urls ?? hospital.images
+        const newUrl = urls ?? hospital.images;
 
-        await this.IHospitalsRepository.update(id, newData, newUrl)
+        await this.IHospitalsRepository.update(id, newData, newUrl);
     }
 }
 
