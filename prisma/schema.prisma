@@ -13,6 +13,16 @@ enum RoleHospitals {
   doctor
 }
 
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("Admins")
+}
+
 model Hospital {
   id          String            @id @default(uuid())
   name        String
@@ -89,7 +99,7 @@ model Appointment {
   bookingDate DateTime @map("booking_date")
   bookingHour String   @map("booking_hour")
 
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt  DateTime @default(now()) @map("createdAt")
   upadatedAt DateTime @default(now())
 
   Patient Patient @relation(fields: [patientId], references: [id])
@@ -108,7 +118,7 @@ model Specialty {
   color       String
   hospitalId  String
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   hospital Hospital  @relation(fields: [hospitalId], references: [id])
   doctor   Doctor[]
@@ -126,7 +136,7 @@ model Service {
   specialtyId    String?
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @default(now()) @map("updated_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
   Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
@@ -183,7 +193,7 @@ model history_Medical {
   treatment String
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   Patient Patient @relation(fields: [patientId], references: [id])
   Doctor  Doctor  @relation(fields: [doctorId], references: [id])
