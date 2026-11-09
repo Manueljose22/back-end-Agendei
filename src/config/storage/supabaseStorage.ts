@@ -1,6 +1,12 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+
+
+type SupabaseClient = ReturnType<typeof createClient>;
+
 
 let storageClient: SupabaseClient | null = null;
+
+
 
 export const getSupabaseStorageClient = (): SupabaseClient => {
     if (storageClient) return storageClient;
@@ -9,7 +15,9 @@ export const getSupabaseStorageClient = (): SupabaseClient => {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
-        throw new Error("As variáveis SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórias para utilizar o Supabase Storage.");
+        throw new Error(
+            "As variáveis SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórias para utilizar o Supabase Storage."
+        );
     }
 
     storageClient = createClient(supabaseUrl, serviceRoleKey, {
