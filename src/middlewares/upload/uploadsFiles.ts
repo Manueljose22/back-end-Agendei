@@ -1,33 +1,37 @@
-import path from 'path';
-import { supabase } from '../../config/supabaseClient';
+import path from "path";
+import { randomUUID } from "crypto";
+import { getSupabaseStorageClient } from "../../config/storage/supabaseStorage";
 
-
-
-
-export const uploadsFiles = async (files: Express.Multer.File[] | Express.Multer.File): Promise<string | string[]> => {
-    
-    // garante que "files" sempre seja array internamente
+export const uploadsFiles = async (
+    files: Express.Multer.File[] | Express.Multer.File
+): Promise<string | string[]> => {
     const filesArray = Array.isArray(files) ? files : [files];
 
-    const imgUrls: string[] = [];
+    if (filesArray.length === 0) {
+        throw new Error("Nenhum ficheiro foi enviado.");
+    }
+
+    const supabase = getSupabaseStorageClient();
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+    const imageUrls: string[] = [];
 
     for (const file of filesArray) {
-        const fileName = `${Date.now()}${Math.floor(Math.random() * 1000)}${path.extname(file.originalname)}`;
-        const filePath = `images/${fileName}`;
+        const extension = path.extname(file.originalname).toLowerCase();
+        const filePath = `images/${randomUUID()}${extension}`;
 
-        const { error } = await supabase.storage.from("uploads").upload(filePath, file.buffer, {
+        const { error } = await supabase.storage.from(bucket).upload(filePath, file.buffer, {
             contentType: file.mimetype,
+            cacheControl: "3600",
+            upsert: false,
         });
 
         if (error) {
-            console.error("Erro ao fazer upload:", error.message);
-            continue;
+            throw new Error(`Falha ao enviar imagem para o Supabase Storage: ${error.message}`);
         }
 
-        const { publicUrl } = supabase.storage.from("uploads").getPublicUrl(filePath).data;
-        imgUrls.push(publicUrl);
+        const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+        imageUrls.push(data.publicUrl);
     }
 
-    // se for apenas uma imagem retorna string, senão array
-    return imgUrls.length === 1 ? imgUrls[0] : imgUrls;
+    return imageUrls.length === 1 ? imageUrls[0] : imageUrls;
 };
