@@ -1,9 +1,10 @@
 import { prismaClient } from "../../config/prisma/prismaClient";
+import { Prisma } from "@prisma/client";
 import { AuthProfileRecord, IAuthRepository } from "./IAuthRepository";
 
 export class AuthRepository implements IAuthRepository {
     async createPatientProfile(data: { authUserId: string; name: string; email: string; phone?: string | null }): Promise<AuthProfileRecord> {
-        return prismaClient.$transaction(async (transaction) => {
+        return prismaClient.$transaction(async (transaction: Prisma.TransactionClient) => {
             const patient = await transaction.patient.create({
                 data: {
                     id: data.authUserId,
