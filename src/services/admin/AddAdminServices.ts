@@ -1,41 +1,10 @@
-import { hash } from "bcrypt";
-import { createUsersToken } from "../../middlewares/auth/create-users-token";
-import { adminRequest, adminSave, IAdminRepository } from "../../repositories/admin/IAdminRepository";
-
-
-
-
-
+/**
+ * A criação de administradores não é permitida pela API pública.
+ * O primeiro administrador deve ser criado pelo script scripts/bootstrap-admin.ts.
+ */
 class AddAdminServices {
-
-    constructor(private IAdminRepository: IAdminRepository) { }
-
-    async execute({ name, email, password }: adminRequest): Promise<{user: adminSave, token: string} | Error> {
-
-        const user = await this.IAdminRepository.findByEmail(email);
-        
-        if (user) {
-            throw new Error('Já existe um registro com este nome!');
-        }
-
-        if (!name) {
-            throw new Error('Preencha o campo nome.');
-        } else if (!email) {
-            throw new Error('Preencha o campo email.');
-        } else if (!password) {
-            throw new Error('Crie uma senha, por favor.');
-        }
-
-        const passHash = await hash(password, 12);
-
-        const userCreated = await this.IAdminRepository.save({ name, email, password: passHash });
-        
-        const token = await createUsersToken(userCreated)
-
-        return {
-                user: {...userCreated, password: ''},
-                token: token
-        }
+    async execute(): Promise<never> {
+        throw new Error("A criação de administradores só pode ser feita pelo processo seguro de bootstrap.");
     }
 }
 
