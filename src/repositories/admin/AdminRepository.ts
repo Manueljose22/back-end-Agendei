@@ -26,16 +26,10 @@ export class AdminRepository implements IAdminRepository {
     }
 
     async update(id: string, data: adminUpdate): Promise<void> {
-        await prismaClient.admin.update({
-            where: { id },
-            data: { ...data, updatedAt: new Date() },
-        });
+        await prismaClient.admin.update({ where: { id }, data: { ...data, updatedAt: new Date() } });
     }
 
     async delete(id: string): Promise<void> {
-        await prismaClient.$transaction([
-            prismaClient.authProfile.deleteMany({ where: { role: "admin", profileId: id } }),
-            prismaClient.admin.delete({ where: { id } }),
-        ]);
+        await prismaClient.admin.delete({ where: { id } });
     }
 }
