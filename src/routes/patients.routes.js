@@ -1,0 +1,28 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.clientsRoutes = void 0;
+const express_1 = require("express");
+const ensuredAuthenticated_1 = require("../middlewares/auth/ensuredAuthenticated");
+const AddPatientsControllers_1 = __importDefault(require("../controllers/patients/AddPatientsControllers"));
+const ImageUpload_1 = require("../middlewares/upload/ImageUpload");
+const GetPatientsByIdControllers_1 = __importDefault(require("../controllers/patients/GetPatientsByIdControllers"));
+const UpdatePatientsControllers_1 = __importDefault(require("../controllers/patients/UpdatePatientsControllers"));
+const DeletePatientsControllers_1 = __importDefault(require("../controllers/patients/DeletePatientsControllers"));
+const ListPatientsController_1 = __importDefault(require("../controllers/patients/ListPatientsController"));
+const UpdatePasswordPatientControllers_1 = __importDefault(require("../controllers/patients/UpdatePasswordPatientControllers"));
+const ProfilePatientsControllers_1 = __importDefault(require("../controllers/patients/ProfilePatientsControllers"));
+const SearchPatientsControllers_1 = __importDefault(require("../controllers/patients/SearchPatientsControllers"));
+const rateLimiter_1 = require("../middlewares/rateLimiter");
+const router = (0, express_1.Router)();
+exports.clientsRoutes = router;
+router.get('/patients/profile', ensuredAuthenticated_1.ensuredAuthenticated, ProfilePatientsControllers_1.default.handle);
+router.get('/patients', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 100), ListPatientsController_1.default.handle);
+router.get('/patients/search', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 30), SearchPatientsControllers_1.default.handle);
+router.post('/patients/', ImageUpload_1.uploadImage.single("photo"), AddPatientsControllers_1.default.handle);
+router.get('/patients/:id', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 100), GetPatientsByIdControllers_1.default.handle);
+router.put('/patients/:id', ensuredAuthenticated_1.ensuredAuthenticated, ImageUpload_1.uploadImage.single("photo"), UpdatePatientsControllers_1.default.handle);
+router.put('/patients/changePassword/:id', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(15, 5), UpdatePasswordPatientControllers_1.default.handle);
+router.delete('/patients/:id', ensuredAuthenticated_1.ensuredAuthenticated, DeletePatientsControllers_1.default.handle);

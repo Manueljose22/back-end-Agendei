@@ -1,0 +1,24 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HospitalsRoutes = void 0;
+const express_1 = require("express");
+const ensuredAuthenticated_1 = require("../middlewares/auth/ensuredAuthenticated");
+const AddHospitalControllers_1 = __importDefault(require("../controllers/hospitals/AddHospitalControllers"));
+const ImageUpload_1 = require("../middlewares/upload/ImageUpload");
+const ListHospitalsControllers_1 = __importDefault(require("../controllers/hospitals/ListHospitalsControllers"));
+const GetHospitalByIdControllers_1 = __importDefault(require("../controllers/hospitals/GetHospitalByIdControllers"));
+const DeleteHospitalByIdControllers_1 = __importDefault(require("../controllers/hospitals/DeleteHospitalByIdControllers"));
+const UpdateHospitalControllers_1 = __importDefault(require("../controllers/hospitals/UpdateHospitalControllers"));
+const SearchHospitalsControllers_1 = __importDefault(require("../controllers/hospitals/SearchHospitalsControllers"));
+const rateLimiter_1 = require("../middlewares/rateLimiter");
+const router = (0, express_1.Router)();
+exports.HospitalsRoutes = router;
+router.post('/hospitals/', AddHospitalControllers_1.default.handle);
+router.get('/hospitals/', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 100), ListHospitalsControllers_1.default.handle);
+router.get('/hospitals/search', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 30), SearchHospitalsControllers_1.default.handle);
+router.get('/hospitals/:id', ensuredAuthenticated_1.ensuredAuthenticated, (0, rateLimiter_1.ensureRateLimiter)(1, 100), GetHospitalByIdControllers_1.default.handle);
+router.put('/hospitals/:id', ensuredAuthenticated_1.ensuredAuthenticated, ImageUpload_1.uploadImage.array("images", 5), UpdateHospitalControllers_1.default.handle);
+router.delete('/hospitals/:id', ensuredAuthenticated_1.ensuredAuthenticated, DeleteHospitalByIdControllers_1.default.handle);
