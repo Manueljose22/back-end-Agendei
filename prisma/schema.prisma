@@ -17,6 +17,7 @@ model Admin {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
+  passwordHash String @map("password_hash")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -199,18 +200,6 @@ model history_Medical {
   Doctor  Doctor  @relation(fields: [doctorId], references: [id])
 
   @@map("history_medicals")
-}
-
-model AuthProfile {
-  authUserId String   @id @db.Uuid @map("auth_user_id")
-  role       String
-  profileId  String   @map("profile_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([role, profileId])
-  @@index([role])
-  @@map("auth_profiles")
 }
 
 model ImagesHospitals {
