@@ -91,11 +91,21 @@ export class PatientsRepository implements IPatientsRepository {
         })
     }
 
-    async update(id: string, { name, email, password, address, dateBirth, gender, phone, photo }: patientsRequest): Promise<patientsSave> {
+    async update(id: string,{
+            name,
+            email,
+            password,
+            address,
+            dateBirth,
+            gender,
+            phone,
+            photo,
+            pushToken
+        }: patientsRequest
+    ): Promise<patientsSave> {
+
         return await prismaClient.patient.update({
-            where: {
-                id
-            },
+            where: { id },
             data: {
                 name,
                 email,
@@ -105,10 +115,10 @@ export class PatientsRepository implements IPatientsRepository {
                 gender,
                 phone,
                 photo,
+                pushToken,
                 updatedAt: new Date()
             }
-        })
-
+        });
     }
 
 
