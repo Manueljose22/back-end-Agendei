@@ -8,6 +8,7 @@ import { adminsRoutes } from "./admins.routes";
 import { HospitalsRoutes } from "./hospitals.routes";
 import { SpecialitiesRoutes } from "./specialities.routes";
 import { timetablesRoutes } from "./timetables.routes";
+import { authRoutes } from "./auth.routes";
 
 
 
@@ -22,6 +23,7 @@ routes.use(adminsRoutes);
 routes.use(HospitalsRoutes);
 routes.use(SpecialitiesRoutes);
 routes.use(timetablesRoutes);
+routes.use(authRoutes);
 
 
 

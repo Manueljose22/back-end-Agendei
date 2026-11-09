@@ -33,6 +33,30 @@ Para produção, configurar SMTP próprio. Não depender do serviço de email de
 - `SUPABASE_SERVICE_ROLE_KEY` é exclusivamente server-side: nunca colocar no Expo, frontend, Git ou mensagens.
 - `DATABASE_URL` é a ligação PostgreSQL usada pelo Prisma e deve ficar apenas em variáveis de ambiente.
 
-## Estado da implementação
+## Endpoints iniciais disponíveis
 
-A configuração do projecto, a tabela de mapeamento de identidades e o cliente Supabase do backend são a fundação inicial. Os endpoints de registo/login, confirmação, recuperação de palavra-passe, associação de perfis existentes e substituição gradual do JWT próprio ainda precisam de ser implementados e testados antes de considerar a migração concluída.
+O backend disponibiliza nesta fase:
+
+- `POST /auth/patients/register` — cria a identidade no Supabase Auth e o perfil de paciente no PostgreSQL.
+- `POST /auth/login` — inicia sessão através do Supabase e devolve a sessão/token e o perfil associado.
+- `POST /auth/password/reset` — solicita o envio do email de recuperação.
+- `GET /auth/me` — valida o access token Supabase e devolve o ID do perfil Agendei associado.
+
+Exemplo de registo:
+
+```json
+{
+  "name": "Nome do paciente",
+  "email": "paciente@example.com",
+  "password": "uma-palavra-passe-segura",
+  "phone": "+244900000000"
+}
+```
+
+O UUID do utilizador Supabase é usado como ID do registo Patient e como chave da relação em `auth_profiles`. A confirmação do endereço de email é controlada pelo Supabase Auth; o cliente Expo deve tratar o deep link de retorno e só considerar a conta confirmada depois da sessão/identidade ser validada.
+
+## Limites desta fase
+
+A integração ainda não substitui o JWT próprio nas rotas antigas. O middleware Supabase foi criado, mas não foi aplicado globalmente para evitar quebrar os clientes actuais antes de migrar todos os tipos de conta. O registo implementado nesta etapa é apenas para pacientes. Médicos, hospitais e administradores precisam de um fluxo de provisionamento próprio; a criação de administradores nunca deve ser pública.
+
+Antes de produção, testar registo com confirmação activada, confirmação por deep link, login antes/depois da confirmação, recuperação de palavra-passe, falha de criação de perfil e concorrência de registos. Não aplicar migrations no projecto remoto antes de rever o SQL e confirmar a ligação ao projecto correcto.
