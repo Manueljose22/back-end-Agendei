@@ -1,40 +1,28 @@
-import { hash } from "bcrypt";
-import { adminRequest, IAdminRepository } from "../../repositories/admin/IAdminRepository";
-
-
-
-
-
+import { adminUpdate, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 class UpdateAdminServices {
+    constructor(private readonly adminRepository: IAdminRepository) {}
 
-    constructor(private IAdminRepository: IAdminRepository) { }
-
-
-
-    async execute(id: string, {name, email, password}: adminRequest): Promise<void | Error> {
-
-        const admin = await this.IAdminRepository.findById(id);
-
+    async execute(id: string, data: adminUpdate): Promise<void> {
+        const admin = await this.adminRepository.findById(id);
         if (!admin) {
-            throw new Error('doctor inválido!');
+            throw new Error("Administrador não encontrado.");
         }
 
+        const update: adminUpdate = {};
+        if (data.name !== undefined) update.name = data.name;
+        if (data.email !== undefined) update.email = data.email;
 
-        if (password) {
-            password = await hash(password, 12)
+        if (Object.keys(update).length === 0) {
+            throw new Error("Indique pelo menos um campo para actualizar.");
         }
 
-
-
-        const data = {
-            name: name ?? admin?.name,
-            email: email?? admin?.email,
-            password: password ?? admin?.password
+        if (update.email && update.email !== admin.email) {
+            const existing = await this.adminRepository.findByEmail(update.email);
+            if (existing) throw new Error("Este email já está associado a outro administrador.");
         }
-        
 
-        await this.IAdminRepository.update(id, data)
+        await this.adminRepository.update(id, update);
     }
 }
 
