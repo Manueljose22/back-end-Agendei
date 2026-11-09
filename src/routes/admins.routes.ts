@@ -1,32 +1,26 @@
 import { Router } from "express";
-import AddAdminControllers from "../controllers/admin/AddAdminControllers";
 import DeleteAdminControllers from "../controllers/admin/DeleteAdminControllers";
-import { ensuredAuthenticated } from "../middlewares/auth/ensuredAuthenticated";
 import GetAdminByIdControllers from "../controllers/admin/GetAdminByIdControllers";
 import ListAdminController from "../controllers/admin/ListAdminController";
 import ProfileAdminControllers from "../controllers/admin/ProfileAdminControllers";
 import UpdateAdminControllers from "../controllers/admin/UpdateAdminControllers";
 import ListAppointmentByIdControllers from "../controllers/appointments/ListAppointmentByIdControllers";
 import CreateAppointmentsControllers from "../controllers/appointments/CreateAppointmentsControllers";
-
-
-
+import { ensureSupabaseAuthenticated } from "../middlewares/auth/ensureSupabaseAuthenticated";
+import { requireRole } from "../middlewares/auth/requireRole";
 
 const router = Router();
+const adminOnly = [ensureSupabaseAuthenticated, requireRole("admin")];
 
+// Não existe registo público de administradores. O primeiro acesso é criado
+// exclusivamente pelo script seguro de bootstrap no servidor.
+router.get("/admin/profile", ...adminOnly, ProfileAdminControllers.handle);
+router.get("/admin/", ...adminOnly, ListAdminController.handle);
+router.get("/admin/:id", ...adminOnly, GetAdminByIdControllers.handle);
+router.put("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
+router.delete("/admin/:id", ...adminOnly, DeleteAdminControllers.handle);
 
-// Usur admin
-router.get('/admin/profile', ensuredAuthenticated, ProfileAdminControllers.handle);
-router.get('/admin/', ensuredAuthenticated, ListAdminController.handle);
-router.post('/admin', AddAdminControllers.handle);
-router.get('/admin/:id', ensuredAuthenticated, GetAdminByIdControllers.handle);
-router.put('/admin/:id', ensuredAuthenticated, UpdateAdminControllers.handle);
-router.delete('/admin/:id', ensuredAuthenticated, DeleteAdminControllers.handle);
+router.post("/admin/appointments/register", ...adminOnly, CreateAppointmentsControllers.handle);
+router.get("/admin/appointments/:id", ...adminOnly, ListAppointmentByIdControllers.handle);
 
-// management appointm
-router.post('/admin/appointments/register', ensuredAuthenticated, CreateAppointmentsControllers.handle);
-router.get('/admin/appointments/:id', ensuredAuthenticated, ListAppointmentByIdControllers.handle);
-
-
-
-export { router as adminsRoutes }
+export { router as adminsRoutes };
