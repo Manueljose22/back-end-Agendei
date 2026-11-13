@@ -1,4 +1,5 @@
 import { hash } from "bcrypt";
+import { HospitalStatus } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { hospitalInput, hospitalSave, hospitalUpdate, IHospitalsRepository } from "./IHospitalsRepository";
 
@@ -10,6 +11,7 @@ const hospitalPublicSelect = {
     email: true,
     nif: true,
     role: true,
+    status: true,
     createdAt: true,
     updatedAt: true,
     images: {
@@ -51,23 +53,37 @@ export class HospitalsRepository implements IHospitalsRepository {
         });
     }
 
-    async findList(): Promise<hospitalSave[]> {
+    async findList(includeSuspended = false): Promise<hospitalSave[]> {
         return await prismaClient.hospital.findMany({
+            where: includeSuspended ? {} : { status: HospitalStatus.ACTIVE },
             select: hospitalPublicSelect
         });
     }
 
-    async findSearch(search: string, hospitalId?: string): Promise<hospitalSave[] | null> {
+    async findSearch(
+        search: string,
+        hospitalId?: string,
+        includeSuspended = false
+    ): Promise<hospitalSave[] | null> {
         return await prismaClient.hospital.findMany({
             take: 10,
             where: {
+                ...(includeSuspended ? {} : { status: HospitalStatus.ACTIVE }),
                 ...(hospitalId ? { id: hospitalId } : {}),
                 OR: [
-                    { name: { contains: search } },
-                    { email: { contains: search } },
-                    { address: { contains: search } }
+                    { name: { contains: search, mode: "insensitive" } },
+                    { email: { contains: search, mode: "insensitive" } },
+                    { address: { contains: search, mode: "insensitive" } }
                 ]
             },
+            select: hospitalPublicSelect
+        });
+    }
+
+    async updateStatus(id: string, status: HospitalStatus): Promise<hospitalSave> {
+        return await prismaClient.hospital.update({
+            where: { id },
+            data: { status, updatedAt: new Date() },
             select: hospitalPublicSelect
         });
     }
