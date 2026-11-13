@@ -1,4 +1,4 @@
-import { RoleHospitals } from "@prisma/client";
+import { HospitalStatus, RoleHospitals } from "@prisma/client";
 
 export type hospitalInput = {
     name: string;
@@ -17,10 +17,9 @@ export type hospitalSave = {
     nif: string;
     phone: string | null;
     email: string | null;
-    role: RoleHospitals
-    images: {
-        urlImagem: string
-    }[];
+    role: RoleHospitals;
+    status: HospitalStatus;
+    images: { urlImagem: string }[];
     createdAt: Date;
     updatedAt: Date
 }
@@ -33,8 +32,9 @@ export interface IHospitalsRepository {
     create(data: hospitalInput, images?: string[]): Promise<void>;
     findById(id: string): Promise<hospitalSave | null>;
     findByName(name: string): Promise<hospitalSave | null>;
-    findList(): Promise<hospitalSave[]>;
-    findSearch(search: string, hospitalId?: string): Promise<hospitalSave[] | null>;
+    findList(includeSuspended?: boolean): Promise<hospitalSave[]>;
+    findSearch(search: string, hospitalId?: string, includeSuspended?: boolean): Promise<hospitalSave[] | null>;
+    updateStatus(id: string, status: HospitalStatus): Promise<hospitalSave>;
     delete(id: string): Promise<string[]>;
     update(id: string, data: hospitalUpdate, images?: string[]): Promise<string[]>;
 }
