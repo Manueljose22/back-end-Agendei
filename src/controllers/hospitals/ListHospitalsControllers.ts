@@ -7,10 +7,7 @@ class ListHospitalsControllers {
         try {
             const hospitalsRepository = new HospitalsRepository();
             const service = new ListHospitalsService(hospitalsRepository);
-            const result = await service.execute(
-                request.userId,
-                request.isPlatformAdmin === true
-            );
+            const result = await service.execute(request.hospitalId);
 
             return response.json(result);
         } catch (error: unknown) {
