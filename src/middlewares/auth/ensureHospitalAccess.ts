@@ -3,8 +3,8 @@ import { prismaClient } from "../../config/prisma/prismaClient";
 import { ensuredAuthenticated } from "./ensuredAuthenticated";
 
 /**
- * Permite acesso ao administrador global ou ao próprio hospital autenticado.
- * Em rotas com :id, um hospital não pode consultar nem alterar outro registo.
+ * Permite consultar o directório de hospitais a perfis autenticados.
+ * Uma conta hospitalar fica limitada ao seu próprio registo.
  */
 export const ensureHospitalAccess = (
     request: Request,
@@ -30,26 +30,63 @@ export const ensureHospitalAccess = (
                 select: { id: true }
             });
 
-            if (!hospital) {
+            if (hospital) {
+                request.hospitalId = hospital.id;
+                request.isPlatformAdmin = false;
+
+                const requestedHospitalId = request.params.id;
+
+                if (requestedHospitalId && requestedHospitalId !== hospital.id) {
+                    return response.status(403).json({
+                        message: "Não tem permissão para aceder aos dados deste hospital."
+                    });
+                }
+
+                return next();
+            }
+
+            const [patient, doctor] = await Promise.all([
+                prismaClient.patient.findUnique({
+                    where: { id: request.userId },
+                    select: { id: true }
+                }),
+                prismaClient.doctor.findUnique({
+                    where: { id: request.userId },
+                    select: { id: true }
+                })
+            ]);
+
+            if (!patient && !doctor) {
                 return response.status(403).json({
-                    message: "Acesso restrito a contas de hospitais ou ao administrador da plataforma."
+                    message: "O perfil autenticado não tem permissão para consultar hospitais."
                 });
             }
 
-            request.hospitalId = hospital.id;
             request.isPlatformAdmin = false;
-
-            const requestedHospitalId = request.params.id;
-
-            if (requestedHospitalId && requestedHospitalId !== hospital.id) {
-                return response.status(403).json({
-                    message: "Não tem permissão para aceder aos dados deste hospital."
-                });
-            }
-
             return next();
         } catch (error) {
             return next(error);
         }
+    });
+};
+
+/**
+ * Escrita e gestão de hospitais: apenas administrador global ou o próprio hospital.
+ */
+export const ensureHospitalManagementAccess = (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    return ensureHospitalAccess(request, response, (error?: unknown) => {
+        if (error) return next(error);
+
+        if (request.isPlatformAdmin || request.hospitalId) {
+            return next();
+        }
+
+        return response.status(403).json({
+            message: "Apenas o administrador da plataforma ou o próprio hospital pode efectuar esta operação."
+        });
     });
 };
