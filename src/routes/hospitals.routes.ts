@@ -9,23 +9,13 @@ import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalCo
 import SearchHospitalsControllers from "../controllers/hospitals/SearchHospitalsControllers";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
-
-
-
-
 const router = Router();
 
-
-router.post('/hospitals/', AddHospitalControllers.handle);
+router.post('/hospitals/', uploadImage.array("images", 5), AddHospitalControllers.handle);
 router.get('/hospitals/', ensuredAuthenticated, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
 router.get('/hospitals/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
 router.get('/hospitals/:id', ensuredAuthenticated, ensureRateLimiter(1, 100), GetHospitalByIdControllers.handle);
 router.put('/hospitals/:id', ensuredAuthenticated, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
 router.delete('/hospitals/:id', ensuredAuthenticated, DeleteHospitalByIdControllers.handle);
 
-
-
-
-
-
-export { router as HospitalsRoutes }
+export { router as HospitalsRoutes };
