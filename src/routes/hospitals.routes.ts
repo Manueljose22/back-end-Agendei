@@ -7,24 +7,25 @@ import DeleteHospitalByIdControllers from "../controllers/hospitals/DeleteHospit
 import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalControllers";
 import SearchHospitalsControllers from "../controllers/hospitals/SearchHospitalsControllers";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
-import { ensureAdminAuthenticated } from "../middlewares/auth/ensureAdminAuthenticated";
-import { ensureHospitalAccess } from "../middlewares/auth/ensureHospitalAccess";
+import {
+    ensureHospitalAccess,
+    ensureHospitalManagementAccess
+} from "../middlewares/auth/ensureHospitalAccess";
 
 const router = Router();
 
 // O registo de hospitais permanece público.
 router.post('/hospitals/', uploadImage.array("images", 5), AddHospitalControllers.handle);
 
-// Um hospital autenticado recebe apenas o seu próprio registo.
-// O administrador global pode consultar a lista completa.
+// Pacientes e médicos podem consultar o directório; hospitais vêem apenas o próprio registo.
 router.get('/hospitals/', ensureHospitalAccess, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
+router.get('/hospitals/search', ensureHospitalAccess, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
 
-// A pesquisa global de hospitais fica reservada ao administrador da plataforma.
-router.get('/hospitals/search', ensureAdminAuthenticated, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
-
-// Acesso por ID, actualização e eliminação: administrador global ou proprietário do registo.
+// Acesso por ID: hospitais apenas ao próprio registo; pacientes, médicos e administrador podem consultar.
 router.get('/hospitals/:id', ensureHospitalAccess, ensureRateLimiter(1, 100), GetHospitalByIdControllers.handle);
-router.put('/hospitals/:id', ensureHospitalAccess, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
-router.delete('/hospitals/:id', ensureHospitalAccess, DeleteHospitalByIdControllers.handle);
+
+// Alterações e eliminação: administrador global ou o próprio hospital.
+router.put('/hospitals/:id', ensureHospitalManagementAccess, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
+router.delete('/hospitals/:id', ensureHospitalManagementAccess, DeleteHospitalByIdControllers.handle);
 
 export { router as HospitalsRoutes };
