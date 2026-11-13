@@ -3,18 +3,15 @@ import { hospitalUpdate, IHospitalsRepository } from "../../repositories/hospita
 class UpdateHospitalService {
     constructor(private IHospitalsRepository: IHospitalsRepository) {}
 
-    async execute(id: string, { address, email, name, phone }: hospitalUpdate, images: string | string[]): Promise<void> {
+    async execute(
+        id: string,
+        { address, email, name, phone }: hospitalUpdate,
+        images?: string[]
+    ): Promise<string[]> {
         const hospital = await this.IHospitalsRepository.findById(id);
-        let urls;
 
         if (!hospital) {
             throw new Error("Hospital não existe.");
-        }
-
-        if (Array.isArray(images)) {
-            urls = images.map((url) => ({
-                urlImagem: url
-            }));
         }
 
         const newData: hospitalUpdate = {
@@ -24,9 +21,7 @@ class UpdateHospitalService {
             phone: phone ?? hospital.phone
         };
 
-        const newUrl = urls ?? hospital.images;
-
-        await this.IHospitalsRepository.update(id, newData, newUrl);
+        return await this.IHospitalsRepository.update(id, newData, images);
     }
 }
 
