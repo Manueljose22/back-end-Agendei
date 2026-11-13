@@ -3,9 +3,9 @@ import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals
 class ListHospitalsService {
     constructor(private hospitalsRepository: IHospitalsRepository) {}
 
-    async execute(hospitalId?: string): Promise<hospitalSave[]> {
+    async execute(hospitalId?: string, isPlatformAdmin = false): Promise<hospitalSave[]> {
         if (!hospitalId) {
-            return await this.hospitalsRepository.findList();
+            return await this.hospitalsRepository.findList(isPlatformAdmin);
         }
 
         const hospital = await this.hospitalsRepository.findById(hospitalId);
