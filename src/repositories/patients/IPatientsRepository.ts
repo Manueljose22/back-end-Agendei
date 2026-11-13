@@ -1,5 +1,3 @@
-
-
 export type patientsRequest = {
   name: string;
   email: string | null;
@@ -11,7 +9,6 @@ export type patientsRequest = {
   gender: string | null;
   pushToken: string | null;
 }
-
 
 export type patientsSave = {
   id: string;
@@ -28,8 +25,6 @@ export type patientsSave = {
   updatedAt: Date;
 }
 
-
-
 export interface IPatientsRepository {
   save(data: patientsRequest): Promise<patientsSave>
   findByName(name: string): Promise<patientsSave | null>
@@ -37,7 +32,7 @@ export interface IPatientsRepository {
   findById(id: string): Promise<patientsSave | null>
   findAll(search: string): Promise<patientsSave[] | null>
   findSearch(search: string): Promise<patientsSave[] | null>
-  update(id: string, data: patientsRequest): Promise<patientsSave | null>
+  update(id: string, data: patientsRequest): Promise<patientsSave>
   delete(id: string): Promise<void>
   updatePassword(id: string, password: string): Promise<void>;
 }
