@@ -13,6 +13,11 @@ enum RoleHospitals {
   doctor
 }
 
+enum HospitalStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 model Admin {
   id        String   @id @default(uuid())
   name      String
@@ -33,6 +38,7 @@ model Hospital {
   email       String            @unique
   password    String
   role        RoleHospitals     @default(admin)
+  status      HospitalStatus    @default(ACTIVE)
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @default(now()) @map("updated_at")
   images      ImagesHospitals[]
@@ -137,7 +143,7 @@ model Service {
   specialtyId    String?
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime         @default(now()) @map("updated_at")
   Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
