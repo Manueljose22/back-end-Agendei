@@ -3,7 +3,7 @@ import { prismaClient } from "../../config/prisma/prismaClient";
 import { hospitalInput, hospitalSave, hospitalUpdate, IHospitalsRepository } from "./IHospitalsRepository";
 
 export class HospitalsRepository implements IHospitalsRepository {
-    async create(data: hospitalInput): Promise<void> {
+    async create(data: hospitalInput, images: string[] = []): Promise<void> {
         const passwordHash = await hash(data.password, 12);
 
         await prismaClient.hospital.create({
@@ -13,7 +13,11 @@ export class HospitalsRepository implements IHospitalsRepository {
                 phone: data.phone,
                 email: data.email,
                 password: passwordHash,
-                nif: data.nif
+                nif: data.nif,
+                role: data.role,
+                images: {
+                    create: images.map(urlImagem => ({ urlImagem }))
+                }
             }
         });
     }
@@ -68,19 +72,33 @@ export class HospitalsRepository implements IHospitalsRepository {
         });
     }
 
-    async update(id: string, data: hospitalUpdate, images: any): Promise<void> {
-        await prismaClient.hospital.update({
-            where: { id },
-            data: {
-                name: data.name,
-                address: data.address,
-                phone: data.phone,
-                email: data.email ?? undefined,
-                images: {
-                    updateMany: images
-                },
-                updatedAt: new Date()
-            }
+    async update(id: string, data: hospitalUpdate, images?: string[]): Promise<string[]> {
+        return await prismaClient.$transaction(async (transaction) => {
+            const previousImages = images
+                ? await transaction.imagesHospitals.findMany({
+                    where: { hospitalId: id },
+                    select: { urlImagem: true }
+                })
+                : [];
+
+            await transaction.hospital.update({
+                where: { id },
+                data: {
+                    name: data.name,
+                    address: data.address,
+                    phone: data.phone,
+                    email: data.email ?? undefined,
+                    ...(images ? {
+                        images: {
+                            deleteMany: {},
+                            create: images.map(urlImagem => ({ urlImagem }))
+                        }
+                    } : {}),
+                    updatedAt: new Date()
+                }
+            });
+
+            return previousImages.map(image => image.urlImagem);
         });
     }
 
