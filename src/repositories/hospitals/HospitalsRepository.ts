@@ -54,10 +54,11 @@ export class HospitalsRepository implements IHospitalsRepository {
         });
     }
 
-    async findSearch(search: string): Promise<hospitalSave[] | null> {
+    async findSearch(search: string, hospitalId?: string): Promise<hospitalSave[] | null> {
         return await prismaClient.hospital.findMany({
             take: 10,
             where: {
+                ...(hospitalId ? { id: hospitalId } : {}),
                 OR: [
                     { name: { contains: search } },
                     { email: { contains: search } },
