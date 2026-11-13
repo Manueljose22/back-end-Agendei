@@ -102,9 +102,22 @@ export class HospitalsRepository implements IHospitalsRepository {
         });
     }
 
-    async delete(id: string): Promise<void> {
-        await prismaClient.hospital.delete({
-            where: { id }
+    async delete(id: string): Promise<string[]> {
+        return await prismaClient.$transaction(async (transaction) => {
+            const images = await transaction.imagesHospitals.findMany({
+                where: { hospitalId: id },
+                select: { urlImagem: true }
+            });
+
+            await transaction.imagesHospitals.deleteMany({
+                where: { hospitalId: id }
+            });
+
+            await transaction.hospital.delete({
+                where: { id }
+            });
+
+            return images.map(image => image.urlImagem);
         });
     }
 }
