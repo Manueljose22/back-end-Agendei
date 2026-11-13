@@ -5,21 +5,26 @@ import ListHospitalsControllers from "../controllers/hospitals/ListHospitalsCont
 import GetHospitalByIdControllers from "../controllers/hospitals/GetHospitalByIdControllers";
 import DeleteHospitalByIdControllers from "../controllers/hospitals/DeleteHospitalByIdControllers";
 import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalControllers";
+import UpdateHospitalStatusController from "../controllers/hospitals/UpdateHospitalStatusController";
 import SearchHospitalsControllers from "../controllers/hospitals/SearchHospitalsControllers";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
 import {
     ensureHospitalAccess,
     ensureHospitalManagementAccess
 } from "../middlewares/auth/ensureHospitalAccess";
+import { ensureRole } from "../middlewares/auth/ensureRole";
 
 const router = Router();
 
 // O registo de hospitais permanece público.
 router.post('/hospitals/', uploadImage.array("images", 5), AddHospitalControllers.handle);
 
-// Pacientes e médicos podem consultar o directório; hospitais vêem apenas o próprio registo.
+// O administrador global pode consultar todos; os restantes perfis apenas hospitais activos.
 router.get('/hospitals/', ensureHospitalAccess, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
 router.get('/hospitals/search', ensureHospitalAccess, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
+
+// Alteração de estado reservada ao administrador global.
+router.patch('/hospitals/:id/status', ensureRole("platform_admin"), UpdateHospitalStatusController.handle);
 
 // Acesso por ID: hospitais apenas ao próprio registo; pacientes, médicos e administrador podem consultar.
 router.get('/hospitals/:id', ensureHospitalAccess, ensureRateLimiter(1, 100), GetHospitalByIdControllers.handle);
