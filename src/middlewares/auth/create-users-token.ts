@@ -1,11 +1,13 @@
 import { sign } from "jsonwebtoken";
+import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 
 type UserTokenPayload = {
     id: string;
     email: string | null;
+    role: AccountRole;
 };
 
-export const createUsersToken = async ({ id, email }: UserTokenPayload): Promise<string> => {
+export const createUsersToken = async ({ id, email, role }: UserTokenPayload): Promise<string> => {
     const secret = process.env.JwtSecret;
 
     if (!secret) {
@@ -13,7 +15,7 @@ export const createUsersToken = async ({ id, email }: UserTokenPayload): Promise
     }
 
     return sign(
-        { id, email },
+        { id, email, role },
         secret,
         { expiresIn: "1d" }
     );
