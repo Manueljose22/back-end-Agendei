@@ -1,21 +1,20 @@
 import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
-
-
-
 class ListHospitalsService {
+    constructor(private hospitalsRepository: IHospitalsRepository) {}
 
-    constructor(private IHospitalsRepository: IHospitalsRepository) {}
-
-    async execute(): Promise<hospitalSave[] | null> {
-
-        const listHospitals = await this.IHospitalsRepository.findList();
-
-        if (!listHospitals) {
-            throw new Error("Não há hospitais registrados.");
+    async execute(hospitalId: string, isPlatformAdmin: boolean): Promise<hospitalSave[]> {
+        if (isPlatformAdmin) {
+            return await this.hospitalsRepository.findList();
         }
 
-        return listHospitals;
+        const hospital = await this.hospitalsRepository.findById(hospitalId);
+
+        if (!hospital) {
+            throw new Error("Hospital não existe.");
+        }
+
+        return [hospital];
     }
 }
 
