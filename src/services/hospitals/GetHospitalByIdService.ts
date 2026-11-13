@@ -1,19 +1,14 @@
+import { HospitalStatus } from "@prisma/client";
 import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
-
-
-
 class GetHospitalByIdService {
+    constructor(private hospitalsRepository: IHospitalsRepository) {}
 
-    constructor(private IHospitalsRepository: IHospitalsRepository) {}
+    async execute(id: string, canViewSuspended = false): Promise<hospitalSave | null> {
+        const hospital = await this.hospitalsRepository.findById(id);
 
-
-    async execute(id: string): Promise<hospitalSave | null> {
-
-        const hospital = await this.IHospitalsRepository.findById(id);
-
-        if (!hospital) {
-            throw new Error("Hospital não existe.");
+        if (!hospital || (!canViewSuspended && hospital.status === HospitalStatus.SUSPENDED)) {
+            throw new Error("Hospital não existe ou não está disponível.");
         }
 
         return hospital;
