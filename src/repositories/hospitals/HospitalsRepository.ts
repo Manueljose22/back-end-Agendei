@@ -2,6 +2,21 @@ import { hash } from "bcrypt";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { hospitalInput, hospitalSave, hospitalUpdate, IHospitalsRepository } from "./IHospitalsRepository";
 
+const hospitalPublicSelect = {
+    id: true,
+    name: true,
+    address: true,
+    phone: true,
+    email: true,
+    nif: true,
+    role: true,
+    createdAt: true,
+    updatedAt: true,
+    images: {
+        select: { urlImagem: true }
+    }
+} as const;
+
 export class HospitalsRepository implements IHospitalsRepository {
     async create(data: hospitalInput, images: string[] = []): Promise<void> {
         const passwordHash = await hash(data.password, 12);
@@ -25,32 +40,20 @@ export class HospitalsRepository implements IHospitalsRepository {
     async findById(id: string): Promise<hospitalSave | null> {
         return await prismaClient.hospital.findFirst({
             where: { id },
-            include: {
-                images: {
-                    select: { urlImagem: true }
-                }
-            }
+            select: hospitalPublicSelect
         });
     }
 
     async findByName(name: string): Promise<hospitalSave | null> {
         return await prismaClient.hospital.findFirst({
             where: { name },
-            include: {
-                images: {
-                    select: { urlImagem: true }
-                }
-            }
+            select: hospitalPublicSelect
         });
     }
 
     async findList(): Promise<hospitalSave[]> {
         return await prismaClient.hospital.findMany({
-            include: {
-                images: {
-                    select: { urlImagem: true }
-                }
-            }
+            select: hospitalPublicSelect
         });
     }
 
@@ -65,11 +68,7 @@ export class HospitalsRepository implements IHospitalsRepository {
                     { address: { contains: search } }
                 ]
             },
-            include: {
-                images: {
-                    select: { urlImagem: true }
-                }
-            }
+            select: hospitalPublicSelect
         });
     }
 
