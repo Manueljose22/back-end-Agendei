@@ -30,12 +30,11 @@ export type hospitalUpdate = Partial<
 >;
 
 export interface IHospitalsRepository {
-    create(data: hospitalInput): Promise<void>;
-    // create(data:hospitalInput, images: any): Promise<void>;
+    create(data: hospitalInput, images?: string[]): Promise<void>;
     findById(id: string): Promise<hospitalSave | null>;
     findByName(name: string): Promise<hospitalSave | null>;
     findList(): Promise<hospitalSave[]>;
-    findSearch(search: string): Promise<hospitalSave[] | null>
+    findSearch(search: string): Promise<hospitalSave[] | null>;
     delete(id: string): Promise<void>;
-    update(id: string, data: hospitalUpdate, images: any): Promise<void>
+    update(id: string, data: hospitalUpdate, images?: string[]): Promise<string[]>;
 }
