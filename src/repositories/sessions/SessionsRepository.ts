@@ -25,15 +25,33 @@ export class SessionRepository implements ISessionRepository {
         const matches: payloadSave[] = [];
 
         if (patient?.password && patient.email) {
-            matches.push({ ...patient, password: patient.password, role: "patient" });
+            matches.push({
+                id: patient.id,
+                name: patient.name,
+                email: patient.email,
+                password: patient.password,
+                role: "patient"
+            });
         }
         if (hospital?.password && hospital.email) {
-            matches.push({ ...hospital, password: hospital.password, role: "hospital" });
+            matches.push({
+                id: hospital.id,
+                name: hospital.name,
+                email: hospital.email,
+                password: hospital.password,
+                role: "hospital"
+            });
         }
         if (doctor?.password && doctor.email) {
-            matches.push({ ...doctor, password: doctor.password, role: "doctor" });
+            matches.push({
+                id: doctor.id,
+                name: doctor.name,
+                email: doctor.email,
+                password: doctor.password,
+                role: "doctor"
+            });
         }
-        if (admin?.passwordHash) {
+        if (admin?.passwordHash && admin.email) {
             matches.push({
                 id: admin.id,
                 name: admin.name,
