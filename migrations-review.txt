@@ -1,0 +1,418 @@
+
+========== 20251029142013_agendei_db ==========
+-- CreateTable
+CREATE TABLE `Admins` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `role` VARCHAR(191) NOT NULL DEFAULT 'admin',
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Admins_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Patients` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `photo` VARCHAR(191) NULL,
+    `phone` VARCHAR(191) NULL,
+    `dateBirth` DATETIME(3) NULL,
+    `address` VARCHAR(191) NULL,
+    `gender` VARCHAR(191) NULL,
+    `pushToken` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Patients_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Doctors` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `photo` VARCHAR(191) NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NULL,
+    `phone` VARCHAR(191) NULL,
+    `bio` VARCHAR(191) NULL,
+    `address` VARCHAR(191) NULL,
+    `yaersOfExperience` INTEGER NULL,
+    `numberOfPatients` INTEGER NULL,
+    `rating` DOUBLE NULL,
+    `specialtyId` VARCHAR(191) NOT NULL,
+    `hospitalId` VARCHAR(191) NULL,
+    `pushToken` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Doctors_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Appointments` (
+    `id` VARCHAR(191) NOT NULL,
+    `patientId` VARCHAR(191) NOT NULL,
+    `doctorId` VARCHAR(191) NOT NULL,
+    `serviceId` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'Pendente',
+    `booking_date` DATETIME(3) NOT NULL,
+    `booking_hour` VARCHAR(191) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `upadatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Specialties` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Services` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Doctors_Services` (
+    `doctorId` VARCHAR(191) NOT NULL,
+    `serviceId` VARCHAR(191) NOT NULL,
+    `price` DOUBLE NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`doctorId`, `serviceId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `availabilities` (
+    `id` VARCHAR(191) NOT NULL,
+    `doctorId` VARCHAR(191) NOT NULL,
+    `data` DATETIME(3) NOT NULL,
+    `hourStart` DATETIME(3) NOT NULL,
+    `hourEnd` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetables_appointments` (
+    `id` VARCHAR(191) NOT NULL,
+    `availabilityId` VARCHAR(191) NOT NULL,
+    `hour` DATETIME(3) NOT NULL,
+    `available` BOOLEAN NOT NULL DEFAULT true,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `history_medicals` (
+    `id` VARCHAR(191) NOT NULL,
+    `patientId` VARCHAR(191) NOT NULL,
+    `doctorId` VARCHAR(191) NOT NULL,
+    `diagnosis` VARCHAR(191) NOT NULL,
+    `treatment` VARCHAR(191) NOT NULL,
+    `notes` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Images_Hospitals` (
+    `id` VARCHAR(191) NOT NULL,
+    `urlImagem` VARCHAR(191) NOT NULL,
+    `hospitalId` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Hospitals` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NULL,
+    `email` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Doctors` ADD CONSTRAINT `Doctors_specialtyId_fkey` FOREIGN KEY (`specialtyId`) REFERENCES `Specialties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Doctors` ADD CONSTRAINT `Doctors_hospitalId_fkey` FOREIGN KEY (`hospitalId`) REFERENCES `Hospitals`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Appointments` ADD CONSTRAINT `Appointments_patientId_fkey` FOREIGN KEY (`patientId`) REFERENCES `Patients`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Appointments` ADD CONSTRAINT `Appointments_doctorId_fkey` FOREIGN KEY (`doctorId`) REFERENCES `Doctors`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Appointments` ADD CONSTRAINT `Appointments_serviceId_fkey` FOREIGN KEY (`serviceId`) REFERENCES `Services`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Doctors_Services` ADD CONSTRAINT `Doctors_Services_doctorId_fkey` FOREIGN KEY (`doctorId`) REFERENCES `Doctors`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Doctors_Services` ADD CONSTRAINT `Doctors_Services_serviceId_fkey` FOREIGN KEY (`serviceId`) REFERENCES `Services`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `availabilities` ADD CONSTRAINT `availabilities_doctorId_fkey` FOREIGN KEY (`doctorId`) REFERENCES `Doctors`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `timetables_appointments` ADD CONSTRAINT `timetables_appointments_availabilityId_fkey` FOREIGN KEY (`availabilityId`) REFERENCES `availabilities`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `history_medicals` ADD CONSTRAINT `history_medicals_patientId_fkey` FOREIGN KEY (`patientId`) REFERENCES `Patients`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `history_medicals` ADD CONSTRAINT `history_medicals_doctorId_fkey` FOREIGN KEY (`doctorId`) REFERENCES `Doctors`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Images_Hospitals` ADD CONSTRAINT `Images_Hospitals_hospitalId_fkey` FOREIGN KEY (`hospitalId`) REFERENCES `Hospitals`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+========== 20251029153436_update_doctor ==========
+-- AlterTable
+ALTER TABLE `doctors` MODIFY `bio` TEXT NULL;
+
+========== 20251031120815_update_doctor ==========
+-- AlterTable
+ALTER TABLE `doctors` ADD COLUMN `status` VARCHAR(191) NULL DEFAULT 'active';
+
+========== 20251031123943_update_time ==========
+/*
+  Warnings:
+
+  - You are about to drop the column `available` on the `timetables_appointments` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE `availabilities` ADD COLUMN `isBlocked` BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE `doctors` MODIFY `status` VARCHAR(191) NULL DEFAULT 'activo';
+
+-- AlterTable
+ALTER TABLE `timetables_appointments` DROP COLUMN `available`,
+    ADD COLUMN `isBooked` BOOLEAN NOT NULL DEFAULT false;
+
+========== 20251031124252_ ==========
+/*
+  Warnings:
+
+  - You are about to drop the column `data` on the `availabilities` table. All the data in the column will be lost.
+  - Added the required column `date` to the `availabilities` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `availabilities` DROP COLUMN `data`,
+    ADD COLUMN `date` DATETIME(3) NOT NULL;
+
+========== 20251120111704_update_hospitails ==========
+/*
+  Warnings:
+
+  - A unique constraint covering the columns `[email]` on the table `Hospitals` will be added. If there are existing duplicate values, this will fail.
+  - Added the required column `password` to the `Hospitals` table without a default value. This is not possible if the table is not empty.
+  - Made the column `email` on table `hospitals` required. This step will fail if there are existing NULL values in that column.
+
+*/
+-- AlterTable
+ALTER TABLE `hospitals` ADD COLUMN `password` VARCHAR(191) NOT NULL,
+    MODIFY `email` VARCHAR(191) NOT NULL;
+
+-- CreateIndex
+CREATE UNIQUE INDEX `Hospitals_email_key` ON `Hospitals`(`email`);
+
+========== 20251120111929_update_hospitails ==========
+/*
+  Warnings:
+
+  - A unique constraint covering the columns `[nif]` on the table `Hospitals` will be added. If there are existing duplicate values, this will fail.
+  - Added the required column `nif` to the `Hospitals` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `hospitals` ADD COLUMN `nif` VARCHAR(191) NOT NULL;
+
+-- CreateIndex
+CREATE UNIQUE INDEX `Hospitals_nif_key` ON `Hospitals`(`nif`);
+
+========== 20260121132409_create_update_hospitails ==========
+/*
+  Warnings:
+
+  - You are about to alter the column `role` on the `admins` table. The data in that column could be lost. The data in that column will be cast from `VarChar(191)` to `Enum(EnumId(0))`.
+  - You are about to drop the column `password` on the `hospitals` table. All the data in the column will be lost.
+  - Added the required column `hospitalId` to the `Specialties` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `admins` MODIFY `role` ENUM('Admin', 'Owner') NOT NULL DEFAULT 'Owner';
+
+-- AlterTable
+ALTER TABLE `hospitals` DROP COLUMN `password`;
+
+-- AlterTable
+ALTER TABLE `specialties` ADD COLUMN `hospitalId` VARCHAR(191) NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE `Specialties` ADD CONSTRAINT `Specialties_hospitalId_fkey` FOREIGN KEY (`hospitalId`) REFERENCES `Hospitals`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Hospitals` ADD CONSTRAINT `Hospitals_id_fkey` FOREIGN KEY (`id`) REFERENCES `Admins`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+========== 20260121134748_create_update_hospitails ==========
+/*
+  Warnings:
+
+  - You are about to drop the `admins` table. If the table is not empty, all the data it contains will be lost.
+  - Added the required column `password` to the `Hospitals` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- DropForeignKey
+ALTER TABLE `hospitals` DROP FOREIGN KEY `Hospitals_id_fkey`;
+
+-- AlterTable
+ALTER TABLE `hospitals` ADD COLUMN `password` VARCHAR(191) NOT NULL,
+    ADD COLUMN `role` ENUM('admin', 'owner', 'doctor') NOT NULL DEFAULT 'admin';
+
+-- DropTable
+DROP TABLE `admins`;
+
+========== 20260121142730_update_especilidade ==========
+/*
+  Warnings:
+
+  - Added the required column `color` to the `Specialties` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `description` to the `Specialties` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `specialties` ADD COLUMN `color` VARCHAR(191) NOT NULL,
+    ADD COLUMN `description` VARCHAR(191) NOT NULL;
+
+========== 20260123213110_update_services ==========
+-- AlterTable
+ALTER TABLE `services` ADD COLUMN `duraction` VARCHAR(191) NULL,
+    ADD COLUMN `specialtyId` VARCHAR(191) NULL,
+    ADD COLUMN `status` VARCHAR(191) NOT NULL DEFAULT 'activo';
+
+-- AddForeignKey
+ALTER TABLE `Services` ADD CONSTRAINT `Services_specialtyId_fkey` FOREIGN KEY (`specialtyId`) REFERENCES `Specialties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+========== 20260126120434_update_services ==========
+/*
+  Warnings:
+
+  - Added the required column `price` to the `Services` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `services` ADD COLUMN `price` DOUBLE NOT NULL;
+
+========== 20260206134812_update_patiente ==========
+-- AlterTable
+ALTER TABLE `patients` MODIFY `email` VARCHAR(191) NULL,
+    MODIFY `password` VARCHAR(191) NULL;
+
+========== 20261109000100_init_postgresql ==========
+-- Initial PostgreSQL schema for Agendei.
+CREATE TYPE "RoleHospitals" AS ENUM ('admin', 'owner', 'doctor');
+CREATE TABLE "Hospitals" ("id" TEXT NOT NULL,"name" TEXT NOT NULL,"address" TEXT NOT NULL,"phone" TEXT,"nif" TEXT NOT NULL,"email" TEXT NOT NULL,"password" TEXT NOT NULL,"role" "RoleHospitals" NOT NULL DEFAULT 'admin',"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Hospitals_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "Hospitals_nif_key" ON "Hospitals"("nif");
+CREATE UNIQUE INDEX "Hospitals_email_key" ON "Hospitals"("email");
+CREATE TABLE "Patients" ("id" TEXT NOT NULL,"name" TEXT NOT NULL,"email" TEXT,"password" TEXT,"photo" TEXT,"phone" TEXT,"dateBirth" TIMESTAMP(3),"address" TEXT,"gender" TEXT,"pushToken" TEXT,"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Patients_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "Patients_email_key" ON "Patients"("email");
+CREATE TABLE "Specialties" ("id" TEXT NOT NULL,"name" TEXT NOT NULL,"description" TEXT NOT NULL,"color" TEXT NOT NULL,"hospitalId" TEXT NOT NULL,"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Specialties_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Doctors" ("id" TEXT NOT NULL,"name" TEXT NOT NULL,"photo" TEXT,"email" TEXT NOT NULL,"password" TEXT,"phone" TEXT,"bio" TEXT,"address" TEXT,"yaersOfExperience" INTEGER,"numberOfPatients" INTEGER,"rating" DOUBLE PRECISION,"specialtyId" TEXT NOT NULL,"hospitalId" TEXT,"pushToken" TEXT,"status" TEXT DEFAULT 'activo',"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Doctors_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "Doctors_email_key" ON "Doctors"("email");
+CREATE INDEX "Doctors_specialtyId_idx" ON "Doctors"("specialtyId");
+CREATE INDEX "Doctors_hospitalId_idx" ON "Doctors"("hospitalId");
+CREATE TABLE "Services" ("id" TEXT NOT NULL,"title" TEXT NOT NULL,"description" TEXT,"status" TEXT NOT NULL DEFAULT 'activo',"duraction" TEXT,"specialtyId" TEXT,"price" DOUBLE PRECISION NOT NULL,"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Services_pkey" PRIMARY KEY ("id"));
+CREATE INDEX "Services_specialtyId_idx" ON "Services"("specialtyId");
+CREATE TABLE "Doctors_Services" ("doctorId" TEXT NOT NULL,"serviceId" TEXT NOT NULL,"price" DOUBLE PRECISION NOT NULL,"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Doctors_Services_pkey" PRIMARY KEY ("doctorId","serviceId"));
+CREATE TABLE "Appointments" ("id" TEXT NOT NULL,"patientId" TEXT NOT NULL,"doctorId" TEXT NOT NULL,"serviceId" TEXT NOT NULL,"status" TEXT NOT NULL DEFAULT 'Pendente',"booking_date" TIMESTAMP(3) NOT NULL,"booking_hour" TEXT NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"upadatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Appointments_pkey" PRIMARY KEY ("id"));
+CREATE INDEX "Appointments_patientId_booking_date_idx" ON "Appointments"("patientId","booking_date");
+CREATE INDEX "Appointments_doctorId_booking_date_idx" ON "Appointments"("doctorId","booking_date");
+CREATE TABLE "availabilities" ("id" TEXT NOT NULL,"doctorId" TEXT NOT NULL,"date" TIMESTAMP(3) NOT NULL,"hourStart" TIMESTAMP(3) NOT NULL,"hourEnd" TIMESTAMP(3) NOT NULL,"isBlocked" BOOLEAN NOT NULL DEFAULT false,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "availabilities_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "availabilities_doctorId_date_key" ON "availabilities"("doctorId","date");
+CREATE INDEX "availabilities_doctorId_date_idx" ON "availabilities"("doctorId","date");
+CREATE TABLE "timetables_appointments" ("id" TEXT NOT NULL,"availabilityId" TEXT NOT NULL,"hour" TIMESTAMP(3) NOT NULL,"isBooked" BOOLEAN NOT NULL DEFAULT false,CONSTRAINT "timetables_appointments_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "timetables_appointments_availabilityId_hour_key" ON "timetables_appointments"("availabilityId","hour");
+CREATE INDEX "timetables_appointments_availabilityId_idx" ON "timetables_appointments"("availabilityId");
+CREATE TABLE "history_medicals" ("id" TEXT NOT NULL,"patientId" TEXT NOT NULL,"doctorId" TEXT NOT NULL,"diagnosis" TEXT NOT NULL,"treatment" TEXT NOT NULL,"notes" TEXT,"created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "history_medicals_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Images_Hospitals" ("id" TEXT NOT NULL,"urlImagem" TEXT NOT NULL,"hospitalId" TEXT NOT NULL,CONSTRAINT "Images_Hospitals_pkey" PRIMARY KEY ("id"));
+ALTER TABLE "Specialties" ADD CONSTRAINT "Specialties_hospitalId_fkey" FOREIGN KEY ("hospitalId") REFERENCES "Hospitals"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Doctors" ADD CONSTRAINT "Doctors_specialtyId_fkey" FOREIGN KEY ("specialtyId") REFERENCES "Specialties"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Doctors" ADD CONSTRAINT "Doctors_hospitalId_fkey" FOREIGN KEY ("hospitalId") REFERENCES "Hospitals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Services" ADD CONSTRAINT "Services_specialtyId_fkey" FOREIGN KEY ("specialtyId") REFERENCES "Specialties"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Doctors_Services" ADD CONSTRAINT "Doctors_Services_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "Doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Doctors_Services" ADD CONSTRAINT "Doctors_Services_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Appointments" ADD CONSTRAINT "Appointments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "Patients"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Appointments" ADD CONSTRAINT "Appointments_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "Doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Appointments" ADD CONSTRAINT "Appointments_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "availabilities" ADD CONSTRAINT "availabilities_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "Doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "timetables_appointments" ADD CONSTRAINT "timetables_appointments_availabilityId_fkey" FOREIGN KEY ("availabilityId") REFERENCES "availabilities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "history_medicals" ADD CONSTRAINT "history_medicals_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "Patients"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "history_medicals" ADD CONSTRAINT "history_medicals_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "Doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Images_Hospitals" ADD CONSTRAINT "Images_Hospitals_hospitalId_fkey" FOREIGN KEY ("hospitalId") REFERENCES "Hospitals"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+========== 20261109000200_create_auth_profiles ==========
+-- Mapeia identidades do Supabase Auth para perfis internos do Agendei.
+-- Esta tabela é gerida pelo Prisma; não duplicar esta migration em supabase/migrations.
+
+CREATE TABLE "auth_profiles" (
+    "auth_user_id" UUID NOT NULL,
+    "role" TEXT NOT NULL,
+    "profile_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "auth_profiles_pkey" PRIMARY KEY ("auth_user_id"),
+    CONSTRAINT "auth_profiles_role_profile_unique" UNIQUE ("role", "profile_id"),
+    CONSTRAINT "auth_profiles_role_check" CHECK ("role" IN ('patient', 'doctor', 'hospital', 'admin'))
+);
+
+CREATE INDEX "auth_profiles_role_idx" ON "auth_profiles"("role");
+
+ALTER TABLE "auth_profiles"
+ADD CONSTRAINT "auth_profiles_auth_user_id_fkey"
+FOREIGN KEY ("auth_user_id") REFERENCES auth.users("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+========== 20261109000300_create_admins ==========
+-- O administrador mantém apenas dados de perfil; credenciais pertencem ao Supabase Auth.
+CREATE TABLE "Admins" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Admins_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX "Admins_email_key" ON "Admins"("email");
