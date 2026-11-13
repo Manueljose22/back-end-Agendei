@@ -3,8 +3,8 @@ import { hospitalSave, IHospitalsRepository } from "../../repositories/hospitals
 class ListHospitalsService {
     constructor(private hospitalsRepository: IHospitalsRepository) {}
 
-    async execute(hospitalId: string, isPlatformAdmin: boolean): Promise<hospitalSave[]> {
-        if (isPlatformAdmin) {
+    async execute(hospitalId?: string): Promise<hospitalSave[]> {
+        if (!hospitalId) {
             return await this.hospitalsRepository.findList();
         }
 
