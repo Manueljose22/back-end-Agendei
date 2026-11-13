@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { ensuredAuthenticated } from "./ensuredAuthenticated";
-import { ensureRole } from "./ensureRole";
 
 /**
  * Diretório: pacientes, médicos e administrador global podem consultar todos.
@@ -37,11 +36,24 @@ export const ensureHospitalAccess = (
     });
 };
 
-/** Apenas o administrador global ou a própria conta hospitalar pode gerir o registo. */
+/** Apenas administrador global ou o próprio hospital; hospital não pode alterar outro ID. */
 export const ensureHospitalManagementAccess = (
     request: Request,
     response: Response,
     next: NextFunction
 ) => {
-    return ensureRole("platform_admin", "hospital")(request, response, next);
+    return ensuredAuthenticated(request, response, (error?: unknown) => {
+        if (error) return next(error);
+
+        if (request.userRole === "platform_admin") return next();
+
+        if (request.userRole === "hospital" && request.params.id === request.userId) {
+            request.hospitalId = request.userId;
+            return next();
+        }
+
+        return response.status(403).json({
+            message: "Apenas o administrador global ou o próprio hospital pode efectuar esta operação."
+        });
+    });
 };
