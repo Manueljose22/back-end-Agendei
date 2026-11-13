@@ -13,7 +13,11 @@ class SearchHospitalsControllers {
 
             const hospitalsRepository = new HospitalsRepository();
             const searchHospitalsServices = new SearchHospitalsServices(hospitalsRepository);
-            const hospitals = await searchHospitalsServices.execute(q, request.hospitalId);
+            const hospitals = await searchHospitalsServices.execute(
+                q,
+                request.hospitalId,
+                request.isPlatformAdmin
+            );
 
             return response.status(200).json(hospitals);
         } catch (error: unknown) {
@@ -25,5 +29,4 @@ class SearchHospitalsControllers {
         }
     }
 }
-
-export default new SearchHospitalsControllers;
+export default new SearchHospitalsControllers();
