@@ -1,30 +1,49 @@
 import { Request, Response } from 'express';
-import { uploadsFiles } from '../../middlewares/upload/uploadsFiles';
+import {
+    removeStorageFiles,
+    uploadFilesWithPaths
+} from '../../middlewares/upload/uploadsFiles';
 import { AddHospitalService } from '../../services/hospitals/AddHospitalService';
 import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
-
-
-
 class AddHospitalControllers {
     async handle(request: Request, response: Response) {
-        
         const data = request.body;
-        // const images = request.files as Express.Multer.File[]
-        
+        const images = request.files as Express.Multer.File[] | undefined;
+        let uploadedPaths: string[] = [];
+
         try {
+            const uploadedFiles = images?.length
+                ? await uploadFilesWithPaths(images)
+                : [];
 
-            // const urls = await uploadsFiles(images)
+            uploadedPaths = uploadedFiles.map(file => file.path);
+
+            const imageUrls = uploadedFiles.map(file => file.url);
             const hospitalsRepository = new HospitalsRepository();
-            const service = new AddHospitalService(hospitalsRepository)
-            const result = await service.execute(data)
+            const service = new AddHospitalService(hospitalsRepository);
 
-            return response.json({message: "Hospital cadastrado com sucesso."})
+            await service.execute(data, imageUrls);
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+            return response.status(201).json({
+                message: "Hospital cadastrado com sucesso."
+            });
+        } catch (error: unknown) {
+            if (uploadedPaths.length > 0) {
+                try {
+                    await removeStorageFiles(uploadedPaths);
+                } catch (cleanupError) {
+                    console.error("Falha ao limpar imagens após erro no cadastro do hospital:", cleanupError);
+                }
+            }
+
+            const message = error instanceof Error
+                ? error.message
+                : "Não foi possível cadastrar o hospital.";
+
+            return response.status(400).json({ message });
         }
     }
 }
 
-export default new AddHospitalControllers;
+export default new AddHospitalControllers();
