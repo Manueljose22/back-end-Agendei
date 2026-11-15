@@ -19,12 +19,12 @@ enum HospitalStatus {
 }
 
 model Admin {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  passwordHash String @map("password_hash")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("Admins")
 }
@@ -51,7 +51,7 @@ model Hospital {
 model Patient {
   id        String    @id @default(uuid())
   name      String
-  email     String?    @unique
+  email     String?   @unique
   password  String?
   photo     String?
   phone     String?
@@ -125,7 +125,7 @@ model Specialty {
   color       String
   hospitalId  String
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
 
   hospital Hospital  @relation(fields: [hospitalId], references: [id])
   doctor   Doctor[]
@@ -143,7 +143,7 @@ model Service {
   specialtyId    String?
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt DateTime         @default(now()) @map("updated_at")
+  updatedAt      DateTime         @default(now()) @map("updated_at")
   Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
