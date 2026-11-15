@@ -8,17 +8,12 @@ class AddDoctorsControllers {
     async handle(request: Request, response: Response) {
         try {
             const data = request.body as doctorRequest;
-            const { userId } = request;
+            data.hospitalId = request.userId;
+            data.password = data.password ?? null;
 
-            data.hospitalId = userId;
+            if (request.file) data.photo = await uploadsFiles(request.file) as string;
 
-            if (request.file) {
-                data.photo = await uploadsFiles(request.file) as string;
-            }
-
-            const doctorRepository = new DoctorsRepository();
-            const service = new AddDoctorsServices(doctorRepository);
-
+            const service = new AddDoctorsServices(new DoctorsRepository());
             await service.execute(data);
 
             return response.status(201).json({ message: "Médico cadastrado com sucesso." });
