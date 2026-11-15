@@ -1,30 +1,24 @@
 import { doctorRequest, IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
-
-
-
-
 class AddDoctorsServices {
+    constructor(private doctorsRepository: IDoctorsRepository) {}
 
-    constructor(private IDoctorsRepository: IDoctorsRepository) { }
+    async execute(data: doctorRequest): Promise<void> {
+        if (!data.name?.trim()) throw new Error("Preencha o campo nome!");
+        if (!data.specialtyId) throw new Error("Preencha o campo especialidade!");
+        if (!data.hospitalId) throw new Error("Hospital não identificado.");
 
-    async execute(data: doctorRequest): Promise<void | Error> {
+        const duplicate = await this.doctorsRepository.findByName(data.name.trim(), data.hospitalId);
+        if (duplicate) throw new Error("Já existe um médico com este nome neste hospital.");
 
-        const doctor = await this.IDoctorsRepository.findByName(data.name);
-        
-        
-        if (doctor) {
-            throw new Error('Já existe um registro com este nome!');
-        }
+        const specialtyBelongs = await this.doctorsRepository.specialtyBelongsToHospital(
+            data.specialtyId,
+            data.hospitalId
+        );
+        if (!specialtyBelongs) throw new Error("A especialidade seleccionada não pertence a este hospital.");
 
-        if (!data.name) {
-            throw new Error('Preencha o campo nome!');
-        } else if (!data.specialtyId) {
-            throw new Error('Preencha o campo especialidade!');
-        }
-
-
-        await this.IDoctorsRepository.save(data);
+        data.name = data.name.trim();
+        await this.doctorsRepository.save(data);
     }
 }
 
