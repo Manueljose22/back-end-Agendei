@@ -1,26 +1,18 @@
 import { IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
-
-
-
-
 class DeleteDoctorsServices {
+    constructor(private doctorsRepository: IDoctorsRepository) {}
 
-    constructor(private IDoctorsRepository: IDoctorsRepository) { }
+    async execute(actorHospitalId: string, id: string, isPlatformAdmin = false): Promise<void> {
+        const doctor = await this.doctorsRepository.findById(id, undefined, true);
+        if (!doctor) throw new Error("Médico não encontrado.");
 
-    async execute(hospitalId: string, id: string): Promise<void> {
-
-        const doctor = await this.IDoctorsRepository.findById(id);
-
-        if (doctor?.Hospital?.id !== hospitalId) {
-            throw new Error('Não é possível concluír esta operação, por favor tente mais tarde.');
+        if (!doctor.hospitalId) throw new Error("Este médico não está associado a um hospital.");
+        if (!isPlatformAdmin && doctor.hospitalId !== actorHospitalId) {
+            throw new Error("Não tem permissão para eliminar este médico.");
         }
 
-        if (!doctor) {
-            throw new Error('Não existe este douctor!');
-        }
-
-        await this.IDoctorsRepository.delete(hospitalId, id)
+        await this.doctorsRepository.delete(doctor.hospitalId, id);
     }
 }
 
