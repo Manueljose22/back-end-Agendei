@@ -1,5 +1,5 @@
 -- Add an operational status to hospitals.
-CREATE TYPE "HospitalStatus" AS ENUM ('ACTIVE', 'SUSPENDED');
+CREATE TYPE "public"."HospitalStatus" AS ENUM ('ACTIVE', 'SUSPENDED');
 
-ALTER TABLE "Hospitals"
-ADD COLUMN "status" "HospitalStatus" NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE "public"."Hospitals"
+ADD COLUMN "status" "public"."HospitalStatus" NOT NULL DEFAULT 'ACTIVE';
