@@ -1,44 +1,39 @@
 import { IDoctorsRepository, UpdateDoctor } from "../../repositories/doctors/IDoctorsRepository";
 
-
-
-
-
-
 class UpdateDoctorsServices {
+    constructor(private doctorsRepository: IDoctorsRepository) {}
 
-    constructor(private IDoctorsRepository: IDoctorsRepository) { }
+    async execute(actorHospitalId: string, id: string, data: UpdateDoctor, isPlatformAdmin = false): Promise<void> {
+        const doctor = await this.doctorsRepository.findById(id, undefined, true);
+        if (!doctor) throw new Error("Médico não encontrado.");
 
+        const doctorHospitalId = doctor.hospitalId;
+        if (!doctorHospitalId) throw new Error("Este médico não está associado a um hospital.");
 
-    async execute(hospitalId: string, id: string, data: UpdateDoctor): Promise<void | Error> {
-
-        const doctor = await this.IDoctorsRepository.findById(id);
-
-        if (doctor?.Hospital?.id !== hospitalId) {
-            throw new Error('Não é possível concluír esta operação, por favor tente mais tarde.');
+        if (!isPlatformAdmin && doctorHospitalId !== actorHospitalId) {
+            throw new Error("Não tem permissão para alterar este médico.");
         }
 
-        if (!doctor) {
-            throw new Error('doctor inválido!');
+        if (data.specialtyId) {
+            const belongs = await this.doctorsRepository.specialtyBelongsToHospital(data.specialtyId, doctorHospitalId);
+            if (!belongs) throw new Error("A especialidade seleccionada não pertence ao hospital do médico.");
         }
 
-        const newData = {
-            name: data.name ?? doctor.name,
-            // photo: data.photo ?? doctor.photo,
-            email: data.email ?? doctor.email,
-            phone: data.phone ?? doctor.phone,
-            bio: data.bio ?? doctor.bio,
-            address: data.address ?? doctor.address,
-            yaersOfExperience: data.yaersOfExperience ?? doctor.yaersOfExperience,
-            numberOfPatients: data.numberOfPatients ?? doctor.numberOfPatients,
-            rating: data.rating ?? doctor.rating,
-            specialtyId: data.specialtyId ?? doctor.Specialty?.id,
-            status: data.status ?? doctor.status,
-            hospitalId: data.hospitalId ?? doctor.Hospital?.id
-        }
+        const safeData: UpdateDoctor = {
+            name: data.name,
+            photo: data.photo,
+            email: data.email,
+            phone: data.phone,
+            bio: data.bio,
+            address: data.address,
+            yaersOfExperience: data.yaersOfExperience,
+            numberOfPatients: data.numberOfPatients,
+            rating: data.rating,
+            specialtyId: data.specialtyId,
+            status: data.status
+        };
 
-
-        await this.IDoctorsRepository.update(id, newData)
+        await this.doctorsRepository.update(id, safeData, isPlatformAdmin ? undefined : actorHospitalId);
     }
 }
 
