@@ -31,7 +31,7 @@ router.patch('/hospitals/:id/status', ensureRole("platform_admin"), UpdateHospit
 router.get('/hospitals/:id', ensureHospitalAccess, ensureRateLimiter(1, 100), GetHospitalByIdControllers.handle);
 
 // Alterações e eliminação: administrador global ou o próprio hospital.
-router.put('/hospitals/:id', ensureHospitalManagementAccess, ensureActiveHospital, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
+router.patch('/hospitals/:id', ensureHospitalManagementAccess, ensureActiveHospital, uploadImage.array("images", 5), UpdateHospitalControllers.handle);
 router.delete('/hospitals/:id', ensureHospitalManagementAccess, ensureActiveHospital, DeleteHospitalByIdControllers.handle);
 
 export { router as HospitalsRoutes };

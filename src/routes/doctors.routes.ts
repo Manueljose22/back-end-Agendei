@@ -31,7 +31,7 @@ router.get("/doctors/:id", ensureRole(...directoryRoles), ensureRateLimiter(1, 1
 router.get("/doctor/:id/service", ensureRole(...directoryRoles), ensureRateLimiter(1, 100), GetDoctorServicesControllers.handle);
 
 // Apenas o hospital proprietário ou o administrador global podem alterar/remover médicos.
-router.put("/doctors/:id", ensureRole("hospital", "platform_admin"), ensureActiveHospital, UpdateDoctorsControllers.handle);
+router.patch("/doctors/:id", ensureRole("hospital", "platform_admin"), ensureActiveHospital, UpdateDoctorsControllers.handle);
 router.delete("/doctors/:id", ensureRole("hospital", "platform_admin"), ensureActiveHospital, DeleteDoctorsControllers.handle);
 
 // Endpoint específico do hospital autenticado.

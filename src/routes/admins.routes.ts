@@ -13,7 +13,7 @@ const adminOnly = [ensureAdminAuthenticated];
 router.get("/admin/profile", ...adminOnly, ProfileAdminControllers.handle);
 router.get("/admin/", ...adminOnly, ListAdminController.handle);
 router.get("/admin/:id", ...adminOnly, GetAdminByIdControllers.handle);
-router.put("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
+router.patch("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
 router.post("/admin/appointments/register", ...adminOnly, CreateAppointmentsControllers.handle);
 router.get("/admin/appointments/:id", ...adminOnly, ListAppointmentByIdControllers.handle);
 

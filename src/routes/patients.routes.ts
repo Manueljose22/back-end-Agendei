@@ -25,8 +25,8 @@ router.get('/patients', ensuredAuthenticated, ensureRateLimiter(1, 100), ListPat
 router.get('/patients/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchPatientsControllers.handle);
 router.post('/patients/', uploadImage.single("photo"), AddPatientsControllers.handle);
 router.get('/patients/:id', ensuredAuthenticated, ensureRateLimiter(1, 100), GetPatientsByIdControllers.handle);
-router.put('/patients/:id', ensuredAuthenticated, uploadImage.single("photo"), UpdatePatientsControllers.handle);
-router.put('/patients/changePassword/:id', ensuredAuthenticated, ensureRateLimiter(15, 5), UpdatePasswordPatientControllers.handle);
+router.patch('/patients/:id', ensuredAuthenticated, uploadImage.single("photo"), UpdatePatientsControllers.handle);
+router.patch('/patients/changePassword/:id', ensuredAuthenticated, ensureRateLimiter(15, 5), UpdatePasswordPatientControllers.handle);
 router.delete('/patients/:id', ensuredAuthenticated, DeletePatientsControllers.handle);
 
 

@@ -22,7 +22,7 @@ router.get('/specialty/:id', ensuredAuthenticated, ensureRateLimiter(1, 30), Get
 router.post('/specialty', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 100), AddSpecialityControllers.handle);
 router.get('/specialty/', ensuredAuthenticated, ensureRateLimiter(1, 100), ListSpecialityControllers.handle);
 router.get('/specialty/search', ensuredAuthenticated, ensureRateLimiter(1, 30), SearchSpecialitiesControllers.handle);
-router.put('/specialty/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), UpdateSpecialityControllers.handle);
+router.patch('/specialty/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), UpdateSpecialityControllers.handle);
 router.delete('/specialty/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), DeleteSpecialityByIdControllers.handle);
 router.get('/hospital/specialty', ensuredAuthenticated, GetSpecialtyByHospitalControllers.handle);
 

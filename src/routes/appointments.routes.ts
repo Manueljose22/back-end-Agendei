@@ -19,8 +19,8 @@ router.get('/appointments', ensuredAuthenticated,ensureRateLimiter(1, 100), List
 // router mobile
 router.get('/appointments/all', ensuredAuthenticated,ensureRateLimiter(1, 100), ListAppointmentByPatientsControllers.handle);
 router.post('/appointments/', ensuredAuthenticated, AddAppointmentsControllers.handle);
-router.put('/appointments/:id', ensuredAuthenticated, UpdateAppointmentsControllers.handle);
-router.put('/appointments/cancel/:id', ensuredAuthenticated, ensureRateLimiter(10, 10), CancelAppointmentsControllers.handle);
+router.patch('/appointments/:id', ensuredAuthenticated, UpdateAppointmentsControllers.handle);
+router.patch('/appointments/cancel/:id', ensuredAuthenticated, ensureRateLimiter(10, 10), CancelAppointmentsControllers.handle);
 
 
 

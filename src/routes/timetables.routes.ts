@@ -18,7 +18,7 @@ const timetablesRoutes = Router();
 
 timetablesRoutes.post("/timetables", ensuredAuthenticated, ensureActiveHospital, CreateAvailabilityController.handle);
 timetablesRoutes.get("/:doctorId", ensuredAuthenticated,  GetAvailabilityByDoctorController.handle);
-timetablesRoutes.put("/:id", ensuredAuthenticated, ensureActiveHospital, UpdateAvailabilityController.handle);
+timetablesRoutes.patch("/:id", ensuredAuthenticated, ensureActiveHospital, UpdateAvailabilityController.handle);
 timetablesRoutes.delete("/:id", ensuredAuthenticated, ensureActiveHospital, DeleteAvailabilityController.handle);
 timetablesRoutes.patch("/block/:id", ensuredAuthenticated, ensureActiveHospital, BlockDayController.handle);
 timetablesRoutes.patch("/unblock/:id", ensuredAuthenticated, ensureActiveHospital, UnblockDayController.handle);

@@ -19,7 +19,7 @@ const router = Router();
 router.get('/services/', ensuredAuthenticated, ensureRateLimiter(1, 100), GetAllServicesController.handle);
 router.post('/services', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 100), CreateServicesController.handle);
 router.get('/services/:id', ensuredAuthenticated, ensureRateLimiter(1, 30), GetByIdServicesController.handle);
-router.put('/services/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), UpdateServicesController.handle);
+router.patch('/services/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), UpdateServicesController.handle);
 router.delete('/services/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), DeleteServicesController.handle);
 
 // web
