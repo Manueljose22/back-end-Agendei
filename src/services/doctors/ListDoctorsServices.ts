@@ -1,20 +1,10 @@
 import { doctorSave, IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
-
-
-
-
-
-
 class ListDoctorsServices {
+    constructor(private doctorsRepository: IDoctorsRepository) {}
 
-    constructor(private IDoctorsRepository: IDoctorsRepository) { }
-
-    async execute(): Promise<doctorSave[] | null> {
-        
-        const doctor = await this.IDoctorsRepository.findAll();
-        
-        return doctor;
+    async execute(hospitalId?: string, includeSuspended = false): Promise<doctorSave[]> {
+        return this.doctorsRepository.findAll(hospitalId, includeSuspended);
     }
 }
 
