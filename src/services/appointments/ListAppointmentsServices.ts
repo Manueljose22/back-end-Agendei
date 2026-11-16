@@ -1,17 +1,10 @@
-import { appointmentsSave, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
-
-
-
+import { AppointmentAccess, appointmentsSave, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
 class ListAppointmentsServices {
+    constructor(private appointmentsRepository: IAppointmentsRepository) {}
 
-    constructor(private IAppointmentsRepository: IAppointmentsRepository) { }
-
-    async execute(search: string): Promise<appointmentsSave[] | null> {
-        
-        const  appointments = await this.IAppointmentsRepository.findAll(search);
-        
-        return appointments
+    async execute(search: string, access: AppointmentAccess): Promise<appointmentsSave[] | null> {
+        return this.appointmentsRepository.findAll(search, access);
     }
 }
 
