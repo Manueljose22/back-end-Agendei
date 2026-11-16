@@ -18,12 +18,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
     async createWithBookedHour(data: appointmentsRequest, timetableId: string): Promise<void> {
         await prismaClient.$transaction(async (transaction) => {
             const doctorService = await transaction.doctor_Service.findUnique({
-                where: {
-                    doctorId_serviceId: {
-                        doctorId: data.doctorId,
-                        serviceId: data.serviceId
-                    }
-                }
+                where: { doctorId_serviceId: { doctorId: data.doctorId, serviceId: data.serviceId } }
             });
 
             if (!doctorService) {
@@ -66,11 +61,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             where: { id },
             include: {
                 Service: {
-                    select: {
-                        id: true,
-                        title: true,
-                        Doctor_Service: { select: { price: true } }
-                    }
+                    select: { id: true, title: true, Doctor_Service: { select: { price: true } } }
                 },
                 Doctor: {
                     select: {
@@ -111,11 +102,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             where: { patientId },
             include: {
                 Service: {
-                    select: {
-                        id: true,
-                        title: true,
-                        Doctor_Service: { select: { price: true } }
-                    }
+                    select: { id: true, title: true, Doctor_Service: { select: { price: true } } }
                 },
                 Doctor: {
                     select: {
@@ -166,11 +153,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             where: { AND: [scopeWhere, searchWhere] },
             include: {
                 Service: {
-                    select: {
-                        id: true,
-                        title: true,
-                        Doctor_Service: { select: { price: true } }
-                    }
+                    select: { id: true, title: true, Doctor_Service: { select: { price: true } } }
                 },
                 Doctor: {
                     select: {
@@ -220,10 +203,89 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         });
     }
 
+    async updateWithBookedHour(
+        id: string,
+        data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">,
+        oldTimetableId: string,
+        newTimetableId: string
+    ): Promise<void> {
+        await prismaClient.$transaction(async (transaction) => {
+            const doctorService = await transaction.doctor_Service.findUnique({
+                where: { doctorId_serviceId: { doctorId: (await transaction.appointment.findUniqueOrThrow({ where: { id } })).doctorId, serviceId: data.serviceId } }
+            });
+
+            if (!doctorService) {
+                throw new Error("O serviço seleccionado não está associado a este médico.");
+            }
+
+            if (oldTimetableId !== newTimetableId) {
+                const released = await transaction.timetables_Appointment.updateMany({
+                    where: { id: oldTimetableId, isBooked: true },
+                    data: { isBooked: false }
+                });
+
+                if (released.count !== 1) {
+                    throw new Error("Não foi possível libertar o horário actual da consulta.");
+                }
+
+                const reserved = await transaction.timetables_Appointment.updateMany({
+                    where: {
+                        id: newTimetableId,
+                        isBooked: false,
+                        availability: {
+                            is: {
+                                doctorId: (await transaction.appointment.findUniqueOrThrow({ where: { id } })).doctorId,
+                                date: new Date(`${data.bookingDate}T00:00:00Z`),
+                                isBlocked: false
+                            }
+                        }
+                    },
+                    data: { isBooked: true }
+                });
+
+                if (reserved.count !== 1) {
+                    throw new Error("O novo horário já não está disponível.");
+                }
+            }
+
+            await transaction.appointment.update({
+                where: { id },
+                data: {
+                    serviceId: data.serviceId,
+                    bookingDate: new Date(`${data.bookingDate}T00:00:00Z`),
+                    bookingHour: data.bookingHour,
+                    upadatedAt: new Date()
+                }
+            });
+        });
+    }
+
     async cancel(id: string): Promise<void> {
         await prismaClient.appointment.update({
             where: { id },
             data: { status: "Cancelado" }
+        });
+    }
+
+    async cancelWithReleasedHour(id: string, timetableId: string): Promise<void> {
+        await prismaClient.$transaction(async (transaction) => {
+            const cancelled = await transaction.appointment.updateMany({
+                where: { id, status: { not: "Cancelado" } },
+                data: { status: "Cancelado" }
+            });
+
+            if (cancelled.count !== 1) {
+                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+            }
+
+            const released = await transaction.timetables_Appointment.updateMany({
+                where: { id: timetableId, isBooked: true },
+                data: { isBooked: false }
+            });
+
+            if (released.count !== 1) {
+                throw new Error("Não foi possível libertar o horário desta consulta.");
+            }
         });
     }
 }
