@@ -1,13 +1,12 @@
-
 import { prismaClient } from "../../config/prisma/prismaClient";
 import {
     IPatientsRepository,
     patientsRequest,
+    patientsProfileUpdate,
     patientsSave
 } from "./IPatientsRepository";
 
 export class PatientsRepository implements IPatientsRepository {
-
     async updatePassword(id: string, password: string): Promise<void> {
         await prismaClient.patient.update({
             where: { id },
@@ -16,97 +15,49 @@ export class PatientsRepository implements IPatientsRepository {
     }
 
     async save(data: patientsRequest): Promise<patientsSave> {
-        return await prismaClient.patient.create({
-            data
-        });
+        return prismaClient.patient.create({ data });
     }
 
     async findByName(name: string): Promise<patientsSave | null> {
-        return await prismaClient.patient.findFirst({
-            where: { name }
-        });
+        return prismaClient.patient.findFirst({ where: { name } });
     }
 
     async findByEmail(email: string): Promise<patientsSave | null> {
-        return await prismaClient.patient.findFirst({
-            where: { email }
-        });
+        return prismaClient.patient.findFirst({ where: { email } });
     }
 
     async findById(id: string): Promise<patientsSave | null> {
-        return await prismaClient.patient.findFirst({
-            where: { id }
+        return prismaClient.patient.findUnique({ where: { id } });
+    }
+
+    async findAll(search: string): Promise<patientsSave[]> {
+        return prismaClient.patient.findMany({
+            where: search ? { name: { contains: search, mode: "insensitive" } } : undefined,
+            orderBy: { createdAt: "desc" }
         });
     }
 
-    async findAll(search: string): Promise<patientsSave[] | null> {
-        if (search) {
-            return await prismaClient.patient.findMany({
-                where: {
-                    name: {
-                        contains: search
-                    }
-                }
-            });
-        }
-
-        return await prismaClient.patient.findMany();
-    }
-
-    async findSearch(search: string): Promise<patientsSave[] | null> {
-        return await prismaClient.patient.findMany({
+    async findSearch(search: string): Promise<patientsSave[]> {
+        return prismaClient.patient.findMany({
             take: 10,
             where: {
                 OR: [
-                    {
-                        name: {
-                            contains: search
-                        }
-                    },
-                    {
-                        email: {
-                            contains: search
-                        }
-                    }
+                    { name: { contains: search, mode: "insensitive" } },
+                    { email: { contains: search, mode: "insensitive" } }
                 ]
-            }
+            },
+            orderBy: { createdAt: "desc" }
         });
     }
 
-    async update(
-        id: string,
-        {
-            name,
-            email,
-            password,
-            address,
-            dateBirth,
-            gender,
-            phone,
-            photo,
-            pushToken
-        }: patientsRequest
-    ): Promise<patientsSave> {
-        return await prismaClient.patient.update({
+    async update(id: string, data: patientsProfileUpdate): Promise<patientsSave> {
+        return prismaClient.patient.update({
             where: { id },
-            data: {
-                name,
-                email,
-                password,
-                address,
-                dateBirth,
-                gender,
-                phone,
-                photo,
-                pushToken,
-                updatedAt: new Date()
-            }
+            data: { ...data, updatedAt: new Date() }
         });
     }
 
     async delete(id: string): Promise<void> {
-        await prismaClient.patient.delete({
-            where: { id }
-        });
+        await prismaClient.patient.delete({ where: { id } });
     }
 }
