@@ -1,31 +1,34 @@
 import { compare, hash } from "bcrypt";
 import { IPatientsRepository } from "../../repositories/patients/IPatientsRepository";
 
-
-
-
-
 class UpdatePasswordPatientServices {
+    constructor(private patientsRepository: IPatientsRepository) {}
 
-    constructor(private IPatientRepository: IPatientsRepository) { }
-
-    async execute(id: string, userId: string, data: { password: string, newPassword: string }): Promise<Error | void> {
-
-        const patient = await this.IPatientRepository.findById(id);
-        const isMatch = await compare(data.password, patient?.password!);
-       
-        
-        if (!patient) {
-            throw new Error("Usuário não existe");
-        } else if(id !== userId){
-            throw new Error("Erro no servidor, por favor tente mais tarde.");
-        } else if (!isMatch) {
-            throw new Error("Senha actual incorreta");
+    async execute(
+        id: string,
+        userId: string,
+        data: { password: string; newPassword: string }
+    ): Promise<void> {
+        if (id !== userId) {
+            throw new Error("Não tem permissão para alterar esta senha.");
         }
 
-        const passHash = await hash(data.newPassword, 12)
+        if (!data?.password || !data?.newPassword || data.newPassword.length < 8) {
+            throw new Error("Informe a senha actual e uma nova senha com pelo menos 8 caracteres.");
+        }
 
-        await this.IPatientRepository.updatePassword(id, passHash)
+        const patient = await this.patientsRepository.findById(id);
+        if (!patient || !patient.password) {
+            throw new Error("Paciente não encontrado ou sem senha definida.");
+        }
+
+        const isMatch = await compare(data.password, patient.password);
+        if (!isMatch) {
+            throw new Error("Senha actual incorrecta.");
+        }
+
+        const passwordHash = await hash(data.newPassword, 12);
+        await this.patientsRepository.updatePassword(id, passwordHash);
     }
 }
 

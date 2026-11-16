@@ -1,6 +1,5 @@
-
 import { Request, Response } from "express";
-import { patientsRequest } from "../../repositories/patients/IPatientsRepository";
+import { patientsProfileUpdate } from "../../repositories/patients/IPatientsRepository";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { UpdatePatientsServices } from "../../services/patients/UpdatePatientsServices";
 import {
@@ -14,8 +13,12 @@ class UpdatePatientsControllers {
         const { id } = request.params;
         let uploadedPath: string | null = null;
 
+        if (request.userRole === "patient" && request.userId !== id) {
+            return response.status(404).json({ message: "Paciente não encontrado." });
+        }
+
         try {
-            const data = request.body as patientsRequest;
+            const data = request.body as patientsProfileUpdate;
 
             if (request.file) {
                 const [uploadedFile] = await uploadFilesWithPaths(request.file);
@@ -23,24 +26,22 @@ class UpdatePatientsControllers {
                 uploadedPath = uploadedFile.path;
             }
 
-            const patientsRepository = new PatientsRepository();
-            const service = new UpdatePatientsServices(patientsRepository);
-
-            const result = await service.execute(id, data);
+            const repository = new PatientsRepository();
+            const service = new UpdatePatientsServices(repository);
+            const result = await service.execute(
+                id,
+                request.userId,
+                request.userRole === "platform_admin",
+                data
+            );
 
             if (uploadedPath) {
-                const previousPath = getStoragePathFromPublicUrl(
-                    result.previousPhoto
-                );
-
+                const previousPath = getStoragePathFromPublicUrl(result.previousPhoto);
                 if (previousPath && previousPath !== uploadedPath) {
                     try {
                         await removeStorageFiles([previousPath]);
                     } catch (cleanupError) {
-                        console.error(
-                            "Falha ao remover a fotografia anterior do paciente:",
-                            cleanupError
-                        );
+                        console.error("Falha ao remover a fotografia anterior do paciente:", cleanupError);
                     }
                 }
             }
@@ -53,18 +54,13 @@ class UpdatePatientsControllers {
                 try {
                     await removeStorageFiles([uploadedPath]);
                 } catch (cleanupError) {
-                    console.error(
-                        "Falha ao limpar nova imagem após erro na actualização do paciente:",
-                        cleanupError
-                    );
+                    console.error("Falha ao limpar nova imagem após erro na actualização do paciente:", cleanupError);
                 }
             }
 
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível actualizar os dados do paciente.";
-
-            return response.status(400).json({ message });
+            const message = error instanceof Error ? error.message : "Não foi possível actualizar os dados do paciente.";
+            const status = message.includes("permissão") ? 403 : 400;
+            return response.status(status).json({ message });
         }
     }
 }

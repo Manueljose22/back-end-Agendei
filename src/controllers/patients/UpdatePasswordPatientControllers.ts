@@ -1,28 +1,23 @@
-import { Request, Response } from 'express';
-import { PatientsRepository } from '../../repositories/patients/PatientsRepository';
-import { UpdatePasswordPatientServices } from '../../services/patients/UpdatePasswordPatientServices';
-
-
-
+import { Request, Response } from "express";
+import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
+import { UpdatePasswordPatientServices } from "../../services/patients/UpdatePasswordPatientServices";
 
 class UpdatePasswordPatientControllers {
     async handle(request: Request, response: Response) {
-        const { userId } = request;
         const { id } = request.params;
-        const data = request.body;
 
         try {
-            const patientsRepository = new PatientsRepository();
-            const service = new UpdatePasswordPatientServices(patientsRepository);
+            const repository = new PatientsRepository();
+            const service = new UpdatePasswordPatientServices(repository);
+            await service.execute(id, request.userId, request.body);
 
-            const result = await service.execute(id, userId, data);
-
-            return response.json({ message: "Senha actualizada com sucesso." });
-
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+            return response.status(200).json({ message: "Senha actualizada com sucesso." });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Não foi possível actualizar a senha.";
+            const status = message.includes("permissão") ? 403 : 400;
+            return response.status(status).json({ message });
         }
     }
 }
 
-export default new UpdatePasswordPatientControllers;
+export default new UpdatePasswordPatientControllers();
