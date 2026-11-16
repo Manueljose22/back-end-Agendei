@@ -1,22 +1,20 @@
 import { IPatientsRepository } from "../../repositories/patients/IPatientsRepository";
 
-
-
-
-
 class DeletePatientsServices {
+    constructor(private patientsRepository: IPatientsRepository) {}
 
-    constructor(private IPatientsRepository: IPatientsRepository) { }
+    async execute(id: string, actorId: string, isPlatformAdmin: boolean): Promise<void> {
+        const patient = await this.patientsRepository.findById(id);
 
-    async execute(id: string): Promise<void> {
-
-        const user = await this.IPatientsRepository.findById(id);
-
-        if (!user) {
-            throw new Error('Não existe este usuário.');
+        if (!patient) {
+            throw new Error("Paciente não encontrado.");
         }
 
-        await this.IPatientsRepository.delete(id)
+        if (!isPlatformAdmin && patient.id !== actorId) {
+            throw new Error("Não tem permissão para eliminar este registo.");
+        }
+
+        await this.patientsRepository.delete(id);
     }
 }
 
