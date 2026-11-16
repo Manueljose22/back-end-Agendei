@@ -10,15 +10,14 @@ import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
 const router = Router();
 
-// Consultas institucionais: administrador, hospital e médico.
 router.get(
   "/appointments",
   ensureRole("platform_admin", "hospital", "doctor"),
+  ensureActiveHospital,
   ensureRateLimiter(1, 100),
   ListAppointmentsControllers.handle
 );
 
-// O paciente consulta exclusivamente as próprias marcações.
 router.get(
   "/appointments/all",
   ensureRole("patient"),
@@ -26,23 +25,23 @@ router.get(
   ListAppointmentByPatientsControllers.handle
 );
 
-// Apenas pacientes podem criar marcações em seu próprio nome.
 router.post(
   "/appointments/",
   ensureRole("patient"),
   AddAppointmentsControllers.handle
 );
 
-// A autorização sobre a consulta concreta é validada no serviço.
 router.patch(
   "/appointments/:id",
   ensureRole("platform_admin", "hospital", "doctor", "patient"),
+  ensureActiveHospital,
   UpdateAppointmentsControllers.handle
 );
 
 router.patch(
   "/appointments/cancel/:id",
   ensureRole("platform_admin", "hospital", "doctor", "patient"),
+  ensureActiveHospital,
   ensureRateLimiter(10, 10),
   CancelAppointmentsControllers.handle
 );
