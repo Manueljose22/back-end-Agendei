@@ -1,22 +1,32 @@
+import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
-
-
-
-
 class UpdateAppointmentsServices {
+    constructor(private appointmentsRepository: IAppointmentsRepository) {}
 
-    constructor(private IAppointmentsRepository: IAppointmentsRepository) { }
-
-    async execute(id: string, { bookingDate, bookingHour, serviceId }: Pick<appointmentsRequest, 'bookingDate' | 'bookingHour' | 'serviceId'>): Promise<void | Error> {
-
-        const appointment = await this.IAppointmentsRepository.findById(id);
+    async execute(
+        id: string,
+        data: Pick<appointmentsRequest, "bookingDate" | "bookingHour" | "serviceId">,
+        userId: string,
+        role: AccountRole
+    ): Promise<void> {
+        const appointment = await this.appointmentsRepository.findById(id);
 
         if (!appointment) {
-            throw new Error('Serviço inválido.');
+            throw new Error("Consulta não encontrada.");
         }
 
-        await this.IAppointmentsRepository.update(id, { bookingDate, bookingHour, serviceId });
+        const canManage =
+            role === "platform_admin" ||
+            (role === "patient" && appointment.patientId === userId) ||
+            (role === "doctor" && appointment.idDoctor === userId) ||
+            (role === "hospital" && appointment.hospitalId === userId);
+
+        if (!canManage) {
+            throw new Error("Não tem permissão para alterar esta consulta.");
+        }
+
+        await this.appointmentsRepository.update(id, data);
     }
 }
 
