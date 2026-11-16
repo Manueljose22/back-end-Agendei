@@ -1,31 +1,24 @@
-import { Request, Response } from 'express';
-import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
-import { CancelAppointmentsServices } from '../../services/appointments/CancelAppointmentsServices';
-import { TimetablesRepository } from '../../repositories/timetables/TimetablesRepository';
-
-
-
+import { Request, Response } from "express";
+import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
+import { CancelAppointmentsServices } from "../../services/appointments/CancelAppointmentsServices";
+import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
 
 class CancelAppointmentsControllers {
     async handle(request: Request, response: Response) {
-
-        const { userId } = request;
-        const { id } = request.params
+        const { id } = request.params;
 
         try {
             const appointmentsRepository = new AppointmentsRepository();
             const timetablesRepository = new TimetablesRepository();
             const service = new CancelAppointmentsServices(appointmentsRepository, timetablesRepository);
 
-            const result = await service.execute(id, userId);
+            await service.execute(id, request.userId, request.userRole);
 
-            return response.status(200).json({message: 'Agendamento cancelado com sucesso.'});
-
-
+            return response.status(200).json({ message: "Consulta cancelada com sucesso." });
         } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+            return response.status(400).json({ message: error.message });
         }
     }
 }
 
-export default new CancelAppointmentsControllers;
+export default new CancelAppointmentsControllers();
