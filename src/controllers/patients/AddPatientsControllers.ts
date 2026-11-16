@@ -1,11 +1,9 @@
-
 import { Request, Response } from "express";
 import { AddPatientsServices } from "../../services/patients/AddPatientsServices";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { patientsRequest } from "../../repositories/patients/IPatientsRepository";
-import { uploadFilesWithPaths,removeStorageFiles} from "../../middlewares/upload/uploadsFiles";
-
-
+import { uploadFilesWithPaths, removeStorageFiles } from "../../middlewares/upload/uploadsFiles";
+import { toPatientPublic } from "../../services/patients/patientResponse";
 
 class AddPatientsControllers {
     async handle(request: Request, response: Response) {
@@ -20,28 +18,24 @@ class AddPatientsControllers {
                 uploadedPath = uploadedFile.path;
             }
 
-            const patientsRepository = new PatientsRepository();
-            const service = new AddPatientsServices(patientsRepository);
-
+            const repository = new PatientsRepository();
+            const service = new AddPatientsServices(repository);
             const result = await service.execute(data);
 
-            return response.status(201).json(result);
+            return response.status(201).json({
+                user: toPatientPublic(result.user),
+                token: result.token
+            });
         } catch (error: unknown) {
             if (uploadedPath) {
                 try {
                     await removeStorageFiles([uploadedPath]);
                 } catch (cleanupError) {
-                    console.error(
-                        "Falha ao limpar imagem após erro no cadastro do paciente:",
-                        cleanupError
-                    );
+                    console.error("Falha ao limpar imagem após erro no cadastro do paciente:", cleanupError);
                 }
             }
 
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível cadastrar o paciente.";
-
+            const message = error instanceof Error ? error.message : "Não foi possível cadastrar o paciente.";
             return response.status(400).json({ message });
         }
     }
