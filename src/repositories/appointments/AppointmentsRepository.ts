@@ -210,8 +210,14 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         newTimetableId: string
     ): Promise<void> {
         await prismaClient.$transaction(async (transaction) => {
+            const appointment = await transaction.appointment.findUniqueOrThrow({
+                where: { id },
+                select: { doctorId: true }
+            });
+            const doctorId = appointment.doctorId;
+
             const doctorService = await transaction.doctor_Service.findUnique({
-                where: { doctorId_serviceId: { doctorId: (await transaction.appointment.findUniqueOrThrow({ where: { id } })).doctorId, serviceId: data.serviceId } }
+                where: { doctorId_serviceId: { doctorId, serviceId: data.serviceId } }
             });
 
             if (!doctorService) {
@@ -234,7 +240,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                         isBooked: false,
                         availability: {
                             is: {
-                                doctorId: (await transaction.appointment.findUniqueOrThrow({ where: { id } })).doctorId,
+                                doctorId,
                                 date: new Date(`${data.bookingDate}T00:00:00Z`),
                                 isBlocked: false
                             }
