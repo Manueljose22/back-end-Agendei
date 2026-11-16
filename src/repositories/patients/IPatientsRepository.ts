@@ -11,7 +11,7 @@ export type patientsRequest = {
 };
 
 export type patientsProfileUpdate = {
-  name?: string | null;
+  name?: string;
   email?: string | null;
   phone?: string | null;
   photo?: string | null;
