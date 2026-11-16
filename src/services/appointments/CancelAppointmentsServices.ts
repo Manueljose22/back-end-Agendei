@@ -37,14 +37,16 @@ class CancelAppointmentsServices {
 
         const timetable = availability
             .flatMap((item) => item.timetables)
-            .find((item) => item.hour.toISOString().split("T")[1].substring(0, 5) === appointment.booking_hour);
+            .find((item) =>
+                item.hour.toISOString().split("T")[1].substring(0, 5) === appointment.booking_hour
+            );
 
         if (!timetable) {
             throw new Error("Não foi possível localizar o horário reservado para esta consulta.");
         }
 
-        await this.appointmentsRepository.cancel(id);
-        await this.timetablesRepository.unbookHour(timetable.id);
+        // O cancelamento e a libertação do horário são confirmados em conjunto.
+        await this.appointmentsRepository.cancelWithReleasedHour(id, timetable.id);
     }
 }
 
