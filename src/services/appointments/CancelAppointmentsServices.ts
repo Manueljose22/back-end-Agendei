@@ -1,34 +1,50 @@
+import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 import { ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
-
-
-
-
 class CancelAppointmentsServices {
+    constructor(
+        private appointmentsRepository: IAppointmentsRepository,
+        private timetablesRepository: ITimetablesRepository
+    ) {}
 
-    constructor(private IAppointmentsRepository: IAppointmentsRepository, private ITimeTablesRepository: ITimetablesRepository) { }
-
-    async execute(idAppoitment: string, userId: string): Promise<void | Error> {
-        
-        const appointment = await this.IAppointmentsRepository.findById(idAppoitment);
-        const booking = await this.ITimeTablesRepository.getAvailabilityByDate(appointment!.idDoctor, appointment?.booking_date.toISOString().split('T')[0]!);
+    async execute(id: string, userId: string, role: AccountRole): Promise<void> {
+        const appointment = await this.appointmentsRepository.findById(id);
 
         if (!appointment) {
-            throw new Error('Agendamneto inválido.');
+            throw new Error("Consulta não encontrada.");
         }
 
-        if (appointment.patientId !== userId) {
-            throw new Error('Não será possivel concluir esta operação, por favor tente mais tarde!');
+        const canManage =
+            role === "platform_admin" ||
+            (role === "patient" && appointment.patientId === userId) ||
+            (role === "doctor" && appointment.idDoctor === userId) ||
+            (role === "hospital" && appointment.hospitalId === userId);
+
+        if (!canManage) {
+            throw new Error("Não tem permissão para cancelar esta consulta.");
         }
 
-        const isHourBooked = booking[0].timetables.find((time) => {
-            return time.hour.toISOString().split('T')[1].substring(0,5) === appointment.booking_hour
-        });
+        if (appointment.status.toLowerCase() === "cancelado") {
+            throw new Error("Esta consulta já se encontra cancelada.");
+        }
 
-    
-        await this.IAppointmentsRepository.cancel(idAppoitment)
-        await this.ITimeTablesRepository.unbookHour(isHourBooked!.id);   
+        const date = appointment.booking_date.toISOString().split("T")[0];
+        const availability = await this.timetablesRepository.getAvailabilityByDate(
+            appointment.idDoctor,
+            date
+        );
+
+        const timetable = availability
+            .flatMap((item) => item.timetables)
+            .find((item) => item.hour.toISOString().split("T")[1].substring(0, 5) === appointment.booking_hour);
+
+        if (!timetable) {
+            throw new Error("Não foi possível localizar o horário reservado para esta consulta.");
+        }
+
+        await this.appointmentsRepository.cancel(id);
+        await this.timetablesRepository.unbookHour(timetable.id);
     }
 }
 
