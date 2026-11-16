@@ -1,46 +1,43 @@
-import { hash } from "bcrypt";
-import { IPatientsRepository, patientsRequest } from "../../repositories/patients/IPatientsRepository";
+import {
+    IPatientsRepository,
+    patientsProfileUpdate
+} from "../../repositories/patients/IPatientsRepository";
 
 class UpdatePatientsServices {
-    constructor(private IPatientsRepository: IPatientsRepository) { }
+    constructor(private patientsRepository: IPatientsRepository) {}
 
     async execute(
         id: string,
-        {
-            name,
-            email,
-            password,
-            address,
-            dateBirth,
-            gender,
-            phone,
-            photo,
-            pushToken
-        }: patientsRequest
+        actorId: string,
+        isPlatformAdmin: boolean,
+        data: patientsProfileUpdate
     ): Promise<{ previousPhoto: string | null }> {
-        const patient = await this.IPatientsRepository.findById(id);
+        const patient = await this.patientsRepository.findById(id);
 
         if (!patient) {
-            throw new Error("Usuário inválido!");
+            throw new Error("Paciente não encontrado.");
         }
 
-        if (password) {
-            password = await hash(password, 12);
+        if (!isPlatformAdmin && patient.id !== actorId) {
+            throw new Error("Não tem permissão para alterar este perfil.");
         }
 
-        const data = {
-            name: name ?? patient.name,
-            email: email ?? patient.email,
-            password: password ?? patient.password,
-            phone: phone ?? patient.phone,
-            dateBirth: dateBirth ?? patient.dateBirth,
-            address: address ?? patient.address,
-            gender: gender ?? patient.gender,
-            photo: photo ?? patient.photo,
-            pushToken: pushToken ?? patient.pushToken
-        };
+        if (data.email && data.email !== patient.email) {
+            const existingPatient = await this.patientsRepository.findByEmail(data.email);
+            if (existingPatient && existingPatient.id !== id) {
+                throw new Error("Já existe um paciente registado com este email.");
+            }
+        }
 
-        await this.IPatientsRepository.update(id, data);
+        await this.patientsRepository.update(id, {
+            name: data.name ?? patient.name,
+            email: data.email ?? patient.email,
+            phone: data.phone ?? patient.phone,
+            dateBirth: data.dateBirth ?? patient.dateBirth,
+            address: data.address ?? patient.address,
+            gender: data.gender ?? patient.gender,
+            photo: data.photo ?? patient.photo
+        });
 
         return { previousPhoto: patient.photo };
     }
