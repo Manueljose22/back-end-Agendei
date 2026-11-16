@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository } from "./IAppointmentsRepository";
 
@@ -11,6 +12,52 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 bookingHour,
                 bookingDate: new Date(`${bookingDate}T00:00:00Z`)
             }
+        });
+    }
+
+    async createWithBookedHour(data: appointmentsRequest, timetableId: string): Promise<void> {
+        await prismaClient.$transaction(async (transaction) => {
+            const doctorService = await transaction.doctor_Service.findUnique({
+                where: {
+                    doctorId_serviceId: {
+                        doctorId: data.doctorId,
+                        serviceId: data.serviceId
+                    }
+                }
+            });
+
+            if (!doctorService) {
+                throw new Error("O serviço seleccionado não está associado a este médico.");
+            }
+
+            const reservation = await transaction.timetables_Appointment.updateMany({
+                where: {
+                    id: timetableId,
+                    isBooked: false,
+                    availability: {
+                        is: {
+                            doctorId: data.doctorId,
+                            date: new Date(`${data.bookingDate}T00:00:00Z`),
+                            isBlocked: false
+                        }
+                    }
+                },
+                data: { isBooked: true }
+            });
+
+            if (reservation.count !== 1) {
+                throw new Error("Este horário acabou de ser reservado. Escolha outro horário.");
+            }
+
+            await transaction.appointment.create({
+                data: {
+                    patientId: data.patientId,
+                    doctorId: data.doctorId,
+                    serviceId: data.serviceId,
+                    bookingHour: data.bookingHour,
+                    bookingDate: new Date(`${data.bookingDate}T00:00:00Z`)
+                }
+            });
         });
     }
 
@@ -104,15 +151,15 @@ export class AppointmentsRepository implements IAppointmentsRepository {
     }
 
     async findAll(search: string, access: AppointmentAccess): Promise<appointmentsSave[]> {
-        const scopeWhere =
+        const scopeWhere: Prisma.AppointmentWhereInput =
             access.role === "hospital"
-                ? { Doctor: { hospitalId: access.userId } }
+                ? { Doctor: { is: { hospitalId: access.userId } } }
                 : access.role === "doctor"
                     ? { doctorId: access.userId }
                     : {};
 
-        const searchWhere = search
-            ? { Doctor: { id: { contains: search } } }
+        const searchWhere: Prisma.AppointmentWhereInput = search
+            ? { Doctor: { is: { id: { contains: search } } } }
             : {};
 
         const appointments = await prismaClient.appointment.findMany({
