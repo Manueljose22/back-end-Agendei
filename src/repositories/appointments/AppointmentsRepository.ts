@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
-import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository, ScheduledAppointmentRequest } from "./IAppointmentsRepository";
+import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository } from "./IAppointmentsRepository";
 
 export class AppointmentsRepository implements IAppointmentsRepository {
     async save({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
@@ -57,12 +57,10 @@ export class AppointmentsRepository implements IAppointmentsRepository {
     }
 
 
-    async createWithSchedule(data: ScheduledAppointmentRequest): Promise<void> {
+    async createWithSchedule(data: appointmentsRequest): Promise<void> {
         const [year, month, day] = data.bookingDate.split("-").map(Number);
         const [startHour, startMinute] = data.bookingHour.split(":").map(Number);
-        const [endHour, endMinute] = data.bookingEnd.split(":").map(Number);
         const startValue = startHour * 60 + startMinute;
-        const endValue = endHour * 60 + endMinute;
         const date = new Date(Date.UTC(year, month - 1, day));
         const toUtc = (minutes: number) => new Date(Date.UTC(year, month - 1, day, Math.floor(minutes / 60) - 1, minutes % 60));
         const startUtc = toUtc(startValue);
@@ -97,9 +95,9 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 where: { doctorId_serviceId: { doctorId: data.doctorId, serviceId: data.serviceId } }
             });
             if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
-            if (doctorService.durationMinutes !== data.durationMinutes) {
-                throw new Error("A duração do serviço foi alterada. Actualize os dados e tente novamente.");
-            }
+            const durationMinutes = doctorService.durationMinutes;
+            const endValue = startValue + durationMinutes;
+            if (endValue > 24 * 60) throw new Error("A consulta não pode ultrapassar o fim do dia.");
 
             const availability = await tx.availability.findFirst({
                 where: {
@@ -161,8 +159,8 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     serviceId: data.serviceId,
                     bookingDate: date,
                     bookingHour: data.bookingHour,
-                    bookingEnd: data.bookingEnd,
-                    durationMinutes: data.durationMinutes
+                    bookingEnd: `${String(Math.floor(endValue / 60)).padStart(2, "0")}:${String(endValue % 60).padStart(2, "0")}`,
+                    durationMinutes
                 }
             });
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
