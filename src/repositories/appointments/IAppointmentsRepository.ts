@@ -39,12 +39,10 @@ export interface IAppointmentsRepository {
     findById(id: string): Promise<appointmentsSave | null>;
     findAll(search: string, access: AppointmentAccess): Promise<appointmentsSave[] | null>;
     update(id: string, data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">): Promise<void | null>;
-    updateWithBookedHour(
+    updateWithSchedule(
         id: string,
-        data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">,
-        oldTimetableId: string,
-        newTimetableId: string
+        data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">
     ): Promise<void>;
     cancel(id: string): Promise<void>;
-    cancelWithReleasedHour(id: string, timetableId: string): Promise<void>;
+
 }
