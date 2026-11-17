@@ -313,95 +313,155 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         });
     }
 
-    async updateWithBookedHour(
+    async updateWithSchedule(
         id: string,
-        data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">,
-        oldTimetableId: string,
-        newTimetableId: string
+        data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">
     ): Promise<void> {
-        await prismaClient.$transaction(async (transaction) => {
-            const appointment = await transaction.appointment.findUniqueOrThrow({
+        const [year, month, day] = data.bookingDate.split("-").map(Number);
+        const [startHour, startMinute] = data.bookingHour.split(":").map(Number);
+        const startValue = startHour * 60 + startMinute;
+        const date = new Date(Date.UTC(year, month - 1, day));
+        const toUtc = (minutes: number) =>
+            new Date(Date.UTC(year, month - 1, day, Math.floor(minutes / 60) - 1, minutes % 60));
+
+        await prismaClient.$transaction(async (tx) => {
+            const current = await tx.appointment.findUnique({
                 where: { id },
-                select: { doctorId: true }
+                select: { doctorId: true, status: true, bookingDate: true }
             });
-            const doctorId = appointment.doctorId;
+            if (!current) throw new Error("Consulta não encontrada.");
+            if (current.status === "Cancelado") throw new Error("Não é possível alterar uma consulta cancelada.");
 
-            const doctorService = await transaction.doctor_Service.findUnique({
-                where: { doctorId_serviceId: { doctorId, serviceId: data.serviceId } }
-            });
-
-            if (!doctorService) {
-                throw new Error("O serviço seleccionado não está associado a este médico.");
+            // Bloqueia as duas datas por ordem determinística para evitar deadlocks em remarcações.
+            const oldDate = current.bookingDate.toISOString().slice(0, 10);
+            const lockKeys = [...new Set([oldDate, data.bookingDate])]
+                .sort()
+                .map(value => `appointment:${current.doctorId}:${value}`);
+            for (const lockKey of lockKeys) {
+                await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
             }
 
-            if (oldTimetableId !== newTimetableId) {
-                const released = await transaction.timetables_Appointment.updateMany({
-                    where: { id: oldTimetableId, isBooked: true },
-                    data: { isBooked: false }
-                });
+            const doctor = await tx.doctor.findUnique({
+                where: { id: current.doctorId },
+                select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
+            });
+            if (!doctor || doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE") {
+                throw new Error("Médico ou hospital indisponível para agendamentos.");
+            }
+            const schedule = doctor.DoctorSchedule;
+            if (!schedule || !schedule.isActive) {
+                throw new Error("O médico ainda não configurou a agenda semanal.");
+            }
 
-                if (released.count !== 1) {
-                    throw new Error("Não foi possível libertar o horário actual da consulta.");
-                }
+            const todayParts = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "Africa/Luanda", year: "numeric", month: "2-digit", day: "2-digit"
+            }).formatToParts(new Date());
+            const part = (type: string) => todayParts.find(item => item.type === type)?.value ?? "";
+            const today = new Date(`${part("year")}-${part("month")}-${part("day")}T00:00:00.000Z`);
+            const latestDate = new Date(today.getTime() + schedule.bookingWindowDays * 86400000);
+            if (date < today || date > latestDate) {
+                throw new Error("A data está fora do período permitido para agendamentos.");
+            }
 
-                const reserved = await transaction.timetables_Appointment.updateMany({
-                    where: {
-                        id: newTimetableId,
-                        isBooked: false,
-                        availability: {
-                            is: {
-                                doctorId,
-                                date: new Date(`${data.bookingDate}T00:00:00Z`),
-                                isBlocked: false
-                            }
-                        }
-                    },
-                    data: { isBooked: true }
-                });
+            const doctorService = await tx.doctor_Service.findUnique({
+                where: { doctorId_serviceId: { doctorId: current.doctorId, serviceId: data.serviceId } }
+            });
+            if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
 
-                if (reserved.count !== 1) {
-                    throw new Error("O novo horário já não está disponível.");
+            const durationMinutes = doctorService.durationMinutes;
+            const endValue = startValue + durationMinutes;
+            if (endValue > 24 * 60) throw new Error("A consulta não pode ultrapassar o fim do dia.");
+            const startUtc = toUtc(startValue);
+            const endUtc = toUtc(endValue);
+
+            const availability = await tx.availability.findFirst({
+                where: {
+                    doctorId: current.doctorId,
+                    date,
+                    isBlocked: false,
+                    hourStart: { lte: startUtc },
+                    hourEnd: { gte: endUtc },
+                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }]
+                },
+                select: { id: true }
+            });
+            if (!availability) {
+                throw new Error("O novo horário não cabe num período disponível da agenda.");
+            }
+
+            const exceptions = await tx.scheduleException.findMany({
+                where: { scheduleId: schedule.id, date },
+                select: { type: true, startMinute: true, endMinute: true }
+            });
+            if (exceptions.some(item => item.type === "BLOCK_DAY")) {
+                throw new Error("O médico não está disponível nesta data.");
+            }
+            if (exceptions.some(item =>
+                item.type === "BLOCK_PERIOD" &&
+                item.startMinute !== null && item.endMinute !== null &&
+                startValue < item.endMinute && endValue > item.startMinute
+            )) {
+                throw new Error("O horário seleccionado coincide com um período bloqueado.");
+            }
+
+            const existing = await tx.appointment.findMany({
+                where: {
+                    doctorId: current.doctorId,
+                    bookingDate: date,
+                    status: { not: "Cancelado" },
+                    id: { not: id }
+                },
+                select: { bookingHour: true, bookingEnd: true, durationMinutes: true, serviceId: true }
+            });
+            const legacyServiceIds = [...new Set(
+                existing.filter(item => !item.bookingEnd && !item.durationMinutes).map(item => item.serviceId)
+            )];
+            const legacyDurations = legacyServiceIds.length
+                ? await tx.doctor_Service.findMany({
+                    where: { doctorId: current.doctorId, serviceId: { in: legacyServiceIds } },
+                    select: { serviceId: true, durationMinutes: true }
+                })
+                : [];
+            const durationByService = new Map(legacyDurations.map(item => [item.serviceId, item.durationMinutes]));
+
+            for (const item of existing) {
+                const [h, m] = item.bookingHour.split(":").map(Number);
+                const existingStart = h * 60 + m;
+                const existingDuration = item.durationMinutes ?? durationByService.get(item.serviceId) ?? 45;
+                const existingEnd = item.bookingEnd
+                    ? (() => {
+                        const [eh, em] = item.bookingEnd!.split(":").map(Number);
+                        return eh * 60 + em;
+                    })()
+                    : existingStart + existingDuration;
+
+                if (startValue < existingEnd && endValue > existingStart) {
+                    throw new Error("Este horário entra em conflito com outra consulta já marcada.");
                 }
             }
 
-            await transaction.appointment.update({
+            await tx.appointment.update({
                 where: { id },
                 data: {
                     serviceId: data.serviceId,
-                    bookingDate: new Date(`${data.bookingDate}T00:00:00Z`),
+                    bookingDate: date,
                     bookingHour: data.bookingHour,
+                    bookingEnd: `${String(Math.floor(endValue / 60)).padStart(2, "0")}:${String(endValue % 60).padStart(2, "0")}`,
+                    durationMinutes,
                     upadatedAt: new Date()
                 }
             });
-        });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }
 
     async cancel(id: string): Promise<void> {
-        await prismaClient.appointment.update({
-            where: { id },
-            data: { status: "Cancelado" }
+        const result = await prismaClient.appointment.updateMany({
+            where: { id, status: { not: "Cancelado" } },
+            data: { status: "Cancelado", upadatedAt: new Date() }
         });
+        if (result.count !== 1) {
+            throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+        }
     }
-
-    async cancelWithReleasedHour(id: string, timetableId: string): Promise<void> {
-        await prismaClient.$transaction(async (transaction) => {
-            const cancelled = await transaction.appointment.updateMany({
-                where: { id, status: { not: "Cancelado" } },
-                data: { status: "Cancelado" }
-            });
-
-            if (cancelled.count !== 1) {
-                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
-            }
-
-            const released = await transaction.timetables_Appointment.updateMany({
-                where: { id: timetableId, isBooked: true },
-                data: { isBooked: false }
-            });
-
-            if (released.count !== 1) {
-                throw new Error("Não foi possível libertar o horário desta consulta.");
-            }
-        });
-    }
+}
 }
