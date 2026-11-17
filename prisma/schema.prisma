@@ -227,7 +227,7 @@ model ScheduleException {
 model Availability {
   id        String   @id @default(uuid())
   doctorId  String
-  date      DateTime @db.Date
+  date      DateTime
   hourStart DateTime
   hourEnd   DateTime
   isBlocked Boolean  @default(false)
