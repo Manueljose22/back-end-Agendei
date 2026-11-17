@@ -110,7 +110,7 @@ export class DoctorAvailabilityService {
         }
 
         const availabilities = await prismaClient.availability.findMany({
-            where: { doctorId, date: { gte: start, lte: end },
+            where: { doctorId, isBlocked: false, date: { gte: start, lte: end },
                 OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }] },
             orderBy: [{ date: "asc" }, { hourStart: "asc" }]
         });
