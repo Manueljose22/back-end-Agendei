@@ -24,7 +24,7 @@ router.get("/doctors/search", ensureRole(...directoryRoles), ensureRateLimiter(1
 
 // Cadastro e associação de serviços são operações exclusivas do hospital proprietário.
 router.post("/doctors", ensureRole("hospital"), ensureActiveHospital, uploadSingleImage, AddDoctorsControllers.handle);
-router.post("/doctors/service", ensureRole("hospital"), ensureActiveHospital, ServiceToDoctorController.handle);
+router.post("/doctors/service", ensureRole("hospital", "platform_admin"), ensureActiveHospital, ServiceToDoctorController.handle);
 
 // Consultas individuais respeitam o perfil e a propriedade do registo.
 router.get("/doctors/:id", ensureRole(...directoryRoles), ensureRateLimiter(1, 100), GetDoctorsByIdControllers.handle);
