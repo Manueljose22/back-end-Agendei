@@ -70,13 +70,17 @@ export class DoctorAvailabilityService {
             throw new Error("O intervalo deve ser válido e não pode ultrapassar 365 dias.");
         }
 
-        const exceptionByDate = new Map(schedule.exceptions.map(item => [item.date.toISOString().slice(0, 10), item]));
+        const exceptionByDate = new Map<string, typeof schedule.exceptions>();
+        for (const item of schedule.exceptions) {
+            const key = item.date.toISOString().slice(0, 10);
+            exceptionByDate.set(key, [...(exceptionByDate.get(key) ?? []), item]);
+        }
         const rows: Array<{ doctorId: string; date: Date; hourStart: Date; hourEnd: Date; scheduleRuleId: string | null }> = [];
 
         for (let cursor = new Date(start); cursor <= end; cursor = new Date(cursor.getTime() + 86400000)) {
             const dateKey = cursor.toISOString().slice(0, 10);
-            const exception = exceptionByDate.get(dateKey);
-            if (exception?.type === "BLOCK_DAY") continue;
+            const dayExceptions = exceptionByDate.get(dateKey) ?? [];
+            if (dayExceptions.some(item => item.type === "BLOCK_DAY")) continue;
 
             for (const rule of schedule.rules) {
                 if (rule.weekday !== isoWeekday(cursor)) continue;
@@ -90,7 +94,8 @@ export class DoctorAvailabilityService {
                 });
             }
 
-            if (exception?.type === "EXTRA_PERIOD" && exception.startMinute !== null && exception.endMinute !== null) {
+            for (const exception of dayExceptions) {
+                if (exception.type !== "EXTRA_PERIOD" || exception.startMinute === null || exception.endMinute === null) continue;
                 rows.push({
                     doctorId, date: new Date(cursor),
                     hourStart: localDateAtMinute(cursor, exception.startMinute),
@@ -135,7 +140,9 @@ export class DoctorAvailabilityService {
 
         if (input.type === "EXTRA_PERIOD") {
             const overlap = await prismaClient.availability.findFirst({
-                where: { doctorId, date, hourStart: { lt: localDateAtMinute(date, endMinute!) },
+                where: { doctorId, date,
+                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }],
+                    hourStart: { lt: localDateAtMinute(date, endMinute!) },
                     hourEnd: { gt: localDateAtMinute(date, startMinute!) } }
             });
             if (overlap) throw new Error("O período extraordinário sobrepõe-se a uma disponibilidade existente.");
