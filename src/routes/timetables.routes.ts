@@ -8,7 +8,7 @@ import BlockDayController from "../controllers/timetables/BlockDayController";
 import UnblockDayController from "../controllers/timetables/UnblockDayController";
 import BookHourController from "../controllers/timetables/BookHourController";
 import UnbookHourController from "../controllers/timetables/UnbookHourController";
-import { ensuredAuthenticated } from "../middlewares/auth/ensuredAuthenticated";
+import { ensureRole } from "../middlewares/auth/ensureRole";
 import { ensureActiveHospital } from "../middlewares/auth/ensureActiveHospital";
 
 
@@ -16,9 +16,9 @@ const timetablesRoutes = Router();
 
 
 
-timetablesRoutes.post("/timetables", ensuredAuthenticated, ensureActiveHospital, CreateAvailabilityController.handle);
-timetablesRoutes.get("/:doctorId", ensuredAuthenticated,  GetAvailabilityByDoctorController.handle);
-timetablesRoutes.patch("/:id", ensuredAuthenticated, ensureActiveHospital, UpdateAvailabilityController.handle);
+timetablesRoutes.post("/timetables", ensureRole("platform_admin"), CreateAvailabilityController.handle);
+timetablesRoutes.get("/:doctorId", ensureRole("platform_admin", "hospital", "doctor", "patient"), GetAvailabilityByDoctorController.handle);
+timetablesRoutes.patch("/:id", ensureRole("platform_admin"), UpdateAvailabilityController.handle);
 timetablesRoutes.delete("/:id", ensuredAuthenticated, ensureActiveHospital, DeleteAvailabilityController.handle);
 timetablesRoutes.patch("/block/:id", ensuredAuthenticated, ensureActiveHospital, BlockDayController.handle);
 timetablesRoutes.patch("/unblock/:id", ensuredAuthenticated, ensureActiveHospital, UnblockDayController.handle);
