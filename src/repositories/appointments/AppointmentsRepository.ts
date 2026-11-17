@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
-import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository } from "./IAppointmentsRepository";
+import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository, ScheduledAppointmentRequest } from "./IAppointmentsRepository";
 
 export class AppointmentsRepository implements IAppointmentsRepository {
     async save({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
@@ -54,6 +54,118 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 }
             });
         });
+    }
+
+
+    async createWithSchedule(data: ScheduledAppointmentRequest): Promise<void> {
+        const [year, month, day] = data.bookingDate.split("-").map(Number);
+        const [startHour, startMinute] = data.bookingHour.split(":").map(Number);
+        const [endHour, endMinute] = data.bookingEnd.split(":").map(Number);
+        const startValue = startHour * 60 + startMinute;
+        const endValue = endHour * 60 + endMinute;
+        const date = new Date(Date.UTC(year, month - 1, day));
+        const toUtc = (minutes: number) => new Date(Date.UTC(year, month - 1, day, Math.floor(minutes / 60) - 1, minutes % 60));
+        const startUtc = toUtc(startValue);
+        const endUtc = toUtc(endValue);
+        const lockKey = `appointment:${data.doctorId}:${data.bookingDate}`;
+
+        await prismaClient.$transaction(async (tx) => {
+            // Serializa reservas do mesmo médico no mesmo dia para evitar dupla marcação concorrente.
+            await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+
+            const doctor = await tx.doctor.findUnique({
+                where: { id: data.doctorId },
+                select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
+            });
+            if (!doctor || doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE") {
+                throw new Error("Médico ou hospital indisponível para agendamentos.");
+            }
+            const schedule = doctor.DoctorSchedule;
+            if (!schedule || !schedule.isActive) throw new Error("O médico ainda não configurou a agenda semanal.");
+
+            const todayParts = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "Africa/Luanda", year: "numeric", month: "2-digit", day: "2-digit"
+            }).formatToParts(new Date());
+            const part = (type: string) => todayParts.find(item => item.type === type)?.value ?? "";
+            const today = new Date(`${part("year")}-${part("month")}-${part("day")}T00:00:00.000Z`);
+            const latestDate = new Date(today.getTime() + schedule.bookingWindowDays * 86400000);
+            if (date < today || date > latestDate) {
+                throw new Error("A data está fora do período permitido para agendamentos.");
+            }
+
+            const doctorService = await tx.doctor_Service.findUnique({
+                where: { doctorId_serviceId: { doctorId: data.doctorId, serviceId: data.serviceId } }
+            });
+            if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
+            if (doctorService.durationMinutes !== data.durationMinutes) {
+                throw new Error("A duração do serviço foi alterada. Actualize os dados e tente novamente.");
+            }
+
+            const availability = await tx.availability.findFirst({
+                where: {
+                    doctorId: data.doctorId,
+                    date,
+                    isBlocked: false,
+                    hourStart: { lte: startUtc },
+                    hourEnd: { gte: endUtc },
+                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }]
+                },
+                select: { id: true }
+            });
+            if (!availability) throw new Error("O horário seleccionado não cabe num período disponível da agenda.");
+
+            const exceptions = await tx.scheduleException.findMany({
+                where: { scheduleId: schedule.id, date },
+                select: { type: true, startMinute: true, endMinute: true }
+            });
+            if (exceptions.some(item => item.type === "BLOCK_DAY")) {
+                throw new Error("O médico não está disponível nesta data.");
+            }
+            if (exceptions.some(item =>
+                item.type === "BLOCK_PERIOD" &&
+                item.startMinute !== null && item.endMinute !== null &&
+                startValue < item.endMinute && endValue > item.startMinute
+            )) {
+                throw new Error("O horário seleccionado coincide com um período bloqueado.");
+            }
+
+            const existing = await tx.appointment.findMany({
+                where: { doctorId: data.doctorId, bookingDate: date, status: { not: "Cancelado" } },
+                select: { bookingHour: true, bookingEnd: true, durationMinutes: true, serviceId: true }
+            });
+            const legacyServiceIds = [...new Set(existing.filter(item => !item.bookingEnd && !item.durationMinutes).map(item => item.serviceId))];
+            const legacyDurations = legacyServiceIds.length
+                ? await tx.doctor_Service.findMany({
+                    where: { doctorId: data.doctorId, serviceId: { in: legacyServiceIds } },
+                    select: { serviceId: true, durationMinutes: true }
+                })
+                : [];
+            const durationByService = new Map(legacyDurations.map(item => [item.serviceId, item.durationMinutes]));
+
+            for (const item of existing) {
+                const [h, m] = item.bookingHour.split(":").map(Number);
+                const existingStart = h * 60 + m;
+                const existingDuration = item.durationMinutes ?? durationByService.get(item.serviceId) ?? 45;
+                const existingEnd = item.bookingEnd
+                    ? (() => { const [eh, em] = item.bookingEnd!.split(":").map(Number); return eh * 60 + em; })()
+                    : existingStart + existingDuration;
+                if (startValue < existingEnd && endValue > existingStart) {
+                    throw new Error("Este horário entra em conflito com outra consulta já marcada.");
+                }
+            }
+
+            await tx.appointment.create({
+                data: {
+                    patientId: data.patientId,
+                    doctorId: data.doctorId,
+                    serviceId: data.serviceId,
+                    bookingDate: date,
+                    bookingHour: data.bookingHour,
+                    bookingEnd: data.bookingEnd,
+                    durationMinutes: data.durationMinutes
+                }
+            });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }
 
     async findById(id: string): Promise<appointmentsSave | null> {
