@@ -10,7 +10,7 @@ type ExceptionInput = {
 };
 
 function dateOnly(value: string): Date {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) throw new Error("A data deve estar no formato YYYY-MM-DD.");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("A data deve estar no formato YYYY-MM-DD.");
     const date = new Date(`${value}T00:00:00.000Z`);
     if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new Error("Data inválida.");
     return date;
@@ -18,7 +18,7 @@ function dateOnly(value: string): Date {
 
 function minute(value?: string): number | null {
     if (value === undefined) return null;
-    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(value)) throw new Error("A hora deve estar no formato HH:mm.");
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) throw new Error("A hora deve estar no formato HH:mm.");
     const [h, m] = value.split(":").map(Number);
     return h * 60 + m;
 }
