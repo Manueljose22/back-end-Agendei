@@ -33,8 +33,12 @@ const doctorSelect = {
 } as const;
 
 export class DoctorsRepository implements IDoctorsRepository {
-    async serviceToDoctor({ serviceId, doctorId, price }: { serviceId: string; doctorId: string; price: number }): Promise<void> {
-        await prismaClient.doctor_Service.create({ data: { serviceId, doctorId, price } });
+    async serviceToDoctor({ serviceId, doctorId, price, durationMinutes }: { serviceId: string; doctorId: string; price: number; durationMinutes: number }): Promise<void> {
+        await prismaClient.doctor_Service.upsert({
+            where: { doctorId_serviceId: { doctorId, serviceId } },
+            create: { serviceId, doctorId, price, durationMinutes },
+            update: { price, durationMinutes }
+        });
     }
 
     async findDoctorService(doctorId: string): Promise<doctorServices[]> {
