@@ -4,12 +4,12 @@ import { DoctorsRepository } from "../../repositories/doctors/DoctorsRepository"
 
 class ServiceToDoctorController {
     async handle(request: Request, response: Response) {
-        const { serviceId, doctorId, price } = request.body;
+        const { serviceId, doctorId, price, durationMinutes } = request.body;
         try {
             const service = new ServiceToDoctorServices(new DoctorsRepository());
             await service.execute(
                 request.userId,
-                { serviceId, doctorId, price },
+                { serviceId, doctorId, price, durationMinutes },
                 request.userRole === "platform_admin"
             );
             return response.status(200).json({ message: "Serviço vinculado ao médico com sucesso!" });
