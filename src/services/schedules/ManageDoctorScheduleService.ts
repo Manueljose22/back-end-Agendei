@@ -129,7 +129,7 @@ export class ManageDoctorScheduleService {
             });
 
             // Substituir regras não remove consultas nem disponibilidades já materializadas.
-            await tx.scheduleRule.deleteMany({ where: { scheduleId: schedule.id } });
+            await tx.scheduleRule.updateMany({ where: { scheduleId: schedule.id, isActive: true }, data: { isActive: false } });
             if (normalized.length) {
                 await tx.scheduleRule.createMany({
                     data: normalized.map(rule => ({ ...rule, scheduleId: schedule.id }))
