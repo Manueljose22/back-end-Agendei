@@ -64,7 +64,6 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         const date = new Date(Date.UTC(year, month - 1, day));
         const toUtc = (minutes: number) => new Date(Date.UTC(year, month - 1, day, Math.floor(minutes / 60) - 1, minutes % 60));
         const startUtc = toUtc(startValue);
-        const endUtc = toUtc(endValue);
         const lockKey = `appointment:${data.doctorId}:${data.bookingDate}`;
 
         await prismaClient.$transaction(async (tx) => {
@@ -97,6 +96,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
             const durationMinutes = doctorService.durationMinutes;
             const endValue = startValue + durationMinutes;
+            const endUtc = toUtc(endValue);
             if (endValue > 24 * 60) throw new Error("A consulta não pode ultrapassar o fim do dia.");
 
             const availability = await tx.availability.findFirst({
