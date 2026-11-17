@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import CreateAvailabilityController from "../controllers/timetables/CreateAvailabilityController";
 import GetAvailabilityByDoctorController from "../controllers/timetables/GetAvailabilityByDoctorController";
@@ -10,18 +9,17 @@ import BookHourController from "../controllers/timetables/BookHourController";
 import UnbookHourController from "../controllers/timetables/UnbookHourController";
 import { ensureRole } from "../middlewares/auth/ensureRole";
 
-
 const timetablesRoutes = Router();
 
-
-
+// Rotas legadas: manter escrita restrita ao administrador da plataforma.
+// A gestão normal da agenda passa pelos endpoints /doctors/:doctorId/schedule.
 timetablesRoutes.post("/timetables", ensureRole("platform_admin"), CreateAvailabilityController.handle);
 timetablesRoutes.get("/:doctorId", ensureRole("platform_admin", "hospital", "doctor", "patient"), GetAvailabilityByDoctorController.handle);
 timetablesRoutes.patch("/:id", ensureRole("platform_admin"), UpdateAvailabilityController.handle);
-timetablesRoutes.delete("/:id", ensuredAuthenticated, ensureActiveHospital, DeleteAvailabilityController.handle);
-timetablesRoutes.patch("/block/:id", ensuredAuthenticated, ensureActiveHospital, BlockDayController.handle);
-timetablesRoutes.patch("/unblock/:id", ensuredAuthenticated, ensureActiveHospital, UnblockDayController.handle);
-timetablesRoutes.patch("/book/:timetableId", ensuredAuthenticated, ensureActiveHospital, BookHourController.handle);
-timetablesRoutes.patch("/unbook/:timetableId", ensuredAuthenticated, ensureActiveHospital, UnbookHourController.handle);
+timetablesRoutes.delete("/:id", ensureRole("platform_admin"), DeleteAvailabilityController.handle);
+timetablesRoutes.patch("/block/:id", ensureRole("platform_admin"), BlockDayController.handle);
+timetablesRoutes.patch("/unblock/:id", ensureRole("platform_admin"), UnblockDayController.handle);
+timetablesRoutes.patch("/book/:timetableId", ensureRole("platform_admin"), BookHourController.handle);
+timetablesRoutes.patch("/unbook/:timetableId", ensureRole("platform_admin"), UnbookHourController.handle);
 
 export { timetablesRoutes };
