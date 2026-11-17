@@ -139,7 +139,7 @@ export class ManageDoctorScheduleService {
             return tx.doctorSchedule.findUnique({
                 where: { id: schedule.id },
                 include: {
-                    rules: { orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
+                    rules: { where: { isActive: true }, orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
                     exceptions: { orderBy: { date: "asc" } }
                 }
             });
