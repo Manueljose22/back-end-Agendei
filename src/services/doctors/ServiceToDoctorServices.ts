@@ -5,11 +5,11 @@ class ServiceToDoctorServices {
 
     async execute(
         actorHospitalId: string,
-        { serviceId, doctorId, price }: { serviceId: string; doctorId: string; price: number },
+        { serviceId, doctorId, price, durationMinutes = 45 }: { serviceId: string; doctorId: string; price: number; durationMinutes?: number },
         isPlatformAdmin = false
     ): Promise<void> {
-        if (!serviceId || !doctorId || !Number.isFinite(price) || price < 0) {
-            throw new Error("Informe um serviço, um médico e um preço válido.");
+        if (!serviceId || !doctorId || !Number.isFinite(price) || price < 0 ||\n            !Number.isInteger(durationMinutes) || durationMinutes < 5 || durationMinutes > 240) {
+            throw new Error("Informe serviço, médico, preço válido e duração entre 5 e 240 minutos.");
         }
 
         const doctor = await this.doctorsRepository.findById(doctorId, undefined, true);
@@ -22,7 +22,7 @@ class ServiceToDoctorServices {
         const serviceBelongs = await this.doctorsRepository.serviceBelongsToHospital(serviceId, doctor.hospitalId);
         if (!serviceBelongs) throw new Error("O serviço seleccionado não pertence ao hospital do médico.");
 
-        await this.doctorsRepository.serviceToDoctor({ serviceId, doctorId, price });
+        await this.doctorsRepository.serviceToDoctor({ serviceId, doctorId, price, durationMinutes });
     }
 }
 
