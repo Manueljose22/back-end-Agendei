@@ -8,7 +8,8 @@ class ServiceToDoctorServices {
         { serviceId, doctorId, price, durationMinutes = 45 }: { serviceId: string; doctorId: string; price: number; durationMinutes?: number },
         isPlatformAdmin = false
     ): Promise<void> {
-        if (!serviceId || !doctorId || !Number.isFinite(price) || price < 0 ||\n            !Number.isInteger(durationMinutes) || durationMinutes < 5 || durationMinutes > 240) {
+        if (!serviceId || !doctorId || !Number.isFinite(price) || price < 0 ||
+            !Number.isInteger(durationMinutes) || durationMinutes < 5 || durationMinutes > 240) {
             throw new Error("Informe serviço, médico, preço válido e duração entre 5 e 240 minutos.");
         }
 
