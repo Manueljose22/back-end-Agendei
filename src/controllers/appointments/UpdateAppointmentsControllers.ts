@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
-import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
 import { UpdateAppointmentsServices } from "../../services/appointments/UpdateAppointmentsServices";
 
 class UpdateAppointmentsControllers {
@@ -10,8 +9,7 @@ class UpdateAppointmentsControllers {
 
         try {
             const appointmentsRepository = new AppointmentsRepository();
-            const timetablesRepository = new TimetablesRepository();
-            const service = new UpdateAppointmentsServices(appointmentsRepository, timetablesRepository);
+            const service = new UpdateAppointmentsServices(appointmentsRepository);
 
             await service.execute(
                 id,
