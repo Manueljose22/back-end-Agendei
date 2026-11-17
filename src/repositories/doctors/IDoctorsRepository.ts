@@ -46,6 +46,7 @@ export type doctorServices = {
   idService: string;
   title: string;
   price: number;
+  durationMinutes: number;
 };
 
 export type UpdateDoctor = Partial<Omit<doctorRequest, "hospitalId" | "password">>;
