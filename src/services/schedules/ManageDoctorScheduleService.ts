@@ -12,7 +12,7 @@ type ScheduleRuleInput = {
 type Actor = { id: string; role: string };
 
 function parseTime(value: string): number {
-    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(value)) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
         throw new Error("Os horários devem estar no formato HH:mm.");
     }
     const [hours, minutes] = value.split(":").map(Number);
@@ -21,7 +21,7 @@ function parseTime(value: string): number {
 
 function parseDate(value?: string | null): Date | null {
     if (!value) return null;
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
         throw new Error("As datas devem estar no formato YYYY-MM-DD.");
     }
     const date = new Date(`${value}T00:00:00.000Z`);
