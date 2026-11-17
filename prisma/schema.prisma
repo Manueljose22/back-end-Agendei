@@ -7,17 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleHospitals {
-  admin
-  owner
-  doctor
-}
-
-enum HospitalStatus {
-  ACTIVE
-  SUSPENDED
-}
-
 model Admin {
   id           String   @id @default(uuid())
   name         String
@@ -38,28 +27,27 @@ model Hospital {
   email       String            @unique
   password    String
   role        RoleHospitals     @default(admin)
-  status      HospitalStatus    @default(ACTIVE)
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @default(now()) @map("updated_at")
-  images      ImagesHospitals[]
+  status      HospitalStatus    @default(ACTIVE)
   doctors     Doctor[]
+  images      ImagesHospitals[]
   specialties Specialty[]
 
   @@map("Hospitals")
 }
 
 model Patient {
-  id        String    @id @default(uuid())
-  name      String
-  email     String?   @unique
-  password  String?
-  photo     String?
-  phone     String?
-  dateBirth DateTime?
-  address   String?
-  gender    String?
-  pushToken String?
-
+  id              String            @id @default(uuid())
+  name            String
+  email           String?           @unique
+  password        String?
+  photo           String?
+  phone           String?
+  dateBirth       DateTime?
+  address         String?
+  gender          String?
+  pushToken       String?
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @default(now()) @map("updated_at")
   Appointment     Appointment[]
@@ -69,13 +57,13 @@ model Patient {
 }
 
 model Doctor {
-  id                String  @id @default(uuid())
+  id                String            @id @default(uuid())
   name              String
   photo             String?
-  email             String  @unique
+  email             String            @unique
   password          String?
   phone             String?
-  bio               String? @db.Text
+  bio               String?
   address           String?
   yaersOfExperience Int?
   numberOfPatients  Int?
@@ -83,16 +71,15 @@ model Doctor {
   specialtyId       String
   hospitalId        String?
   pushToken         String?
-  status            String? @default(value: "activo")
-
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @default(now()) @map("updated_at")
-  Doctor_Service  Doctor_Service[]
-  Appointment     Appointment[]
-  Specialty       Specialty?        @relation(fields: [specialtyId], references: [id])
-  history_Medical history_Medical[]
-  Availability    Availability[]
-  Hospital        Hospital?         @relation(fields: [hospitalId], references: [id])
+  status            String?           @default("activo")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @default(now()) @map("updated_at")
+  Appointment       Appointment[]
+  Hospital          Hospital?         @relation(fields: [hospitalId], references: [id])
+  Specialty         Specialty         @relation(fields: [specialtyId], references: [id])
+  Doctor_Service    Doctor_Service[]
+  Availability      Availability[]
+  history_Medical   history_Medical[]
 
   @@map("Doctors")
 }
@@ -102,16 +89,14 @@ model Appointment {
   patientId   String
   doctorId    String
   serviceId   String
-  status      String   @default(value: "Pendente")
+  status      String   @default("Pendente")
   bookingDate DateTime @map("booking_date")
   bookingHour String   @map("booking_hour")
-
-  createdAt  DateTime @default(now()) @map("createdAt")
-  upadatedAt DateTime @default(now())
-
-  Patient Patient @relation(fields: [patientId], references: [id])
-  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
-  Service Service @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now()) @map("createdAt")
+  upadatedAt  DateTime @default(now())
+  Doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  Patient     Patient  @relation(fields: [patientId], references: [id])
+  Service     Service  @relation(fields: [serviceId], references: [id])
 
   @@index([patientId, bookingDate])
   @@index([doctorId, bookingDate])
@@ -119,17 +104,16 @@ model Appointment {
 }
 
 model Specialty {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String
   color       String
   hospitalId  String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-
-  hospital Hospital  @relation(fields: [hospitalId], references: [id])
-  doctor   Doctor[]
-  Services Service[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  doctor      Doctor[]
+  Services    Service[]
+  hospital    Hospital  @relation(fields: [hospitalId], references: [id])
 
   @@map("Specialties")
 }
@@ -144,8 +128,8 @@ model Service {
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @default(now()) @map("updated_at")
-  Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
+  Doctor_Service Doctor_Service[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
 
   @@map("Services")
@@ -164,14 +148,13 @@ model Doctor_Service {
 }
 
 model Availability {
-  id        String   @id @default(uuid())
-  doctorId  String
-  date      DateTime
-  hourStart DateTime
-  hourEnd   DateTime
-  isBlocked Boolean  @default(false)
-  createdAt DateTime @default(now())
-
+  id         String                   @id @default(uuid())
+  doctorId   String
+  date       DateTime
+  hourStart  DateTime
+  hourEnd    DateTime
+  isBlocked  Boolean                  @default(false)
+  createdAt  DateTime                 @default(now())
   doctor     Doctor                   @relation(fields: [doctorId], references: [id])
   timetables Timetables_Appointment[]
 
@@ -201,19 +184,28 @@ model history_Medical {
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
-
-  Patient Patient @relation(fields: [patientId], references: [id])
-  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
+  Doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  Patient   Patient  @relation(fields: [patientId], references: [id])
 
   @@map("history_medicals")
 }
 
 model ImagesHospitals {
-  id         String @id @default(uuid())
+  id         String   @id @default(uuid())
   urlImagem  String
   hospitalId String
-
-  Hospital Hospital @relation(fields: [hospitalId], references: [id])
+  Hospital   Hospital @relation(fields: [hospitalId], references: [id])
 
   @@map("Images_Hospitals")
+}
+
+enum RoleHospitals {
+  admin
+  owner
+  doctor
+}
+
+enum HospitalStatus {
+  ACTIVE
+  SUSPENDED
 }
