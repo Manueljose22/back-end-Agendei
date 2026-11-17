@@ -52,7 +52,7 @@ export type UpdateDoctor = Partial<Omit<doctorRequest, "hospitalId" | "password"
 
 export interface IDoctorsRepository {
   save(data: doctorRequest): Promise<void>;
-  serviceToDoctor(data: { serviceId: string; doctorId: string; price: number }): Promise<void>;
+  serviceToDoctor(data: { serviceId: string; doctorId: string; price: number; durationMinutes: number }): Promise<void>;
   findByName(name: string, hospitalId?: string): Promise<doctorSave | null>;
   findById(id: string, hospitalId?: string, includeSuspended?: boolean): Promise<doctorSave | null>;
   findDoctorService(id: string): Promise<doctorServices[] | null>;
