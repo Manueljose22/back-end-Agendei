@@ -8,10 +8,10 @@ class AddAppointmentsServices {
         if (!patientId) throw new Error("Paciente não identificado.");
         if (!serviceId) throw new Error("Informe o serviço a agendar.");
         if (!doctorId) throw new Error("Informe o médico pretendido.");
-        if (!bookingDate || !/^\\d{4}-\\d{2}-\\d{2}$/.test(bookingDate)) {
+        if (!bookingDate || !/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)) {
             throw new Error("Informe uma data válida no formato YYYY-MM-DD.");
         }
-        if (!bookingHour || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(bookingHour.substring(0, 5))) {
+        if (!bookingHour || !/^([01]\d|2[0-3]):[0-5]\d$/.test(bookingHour.substring(0, 5))) {
             throw new Error("Informe uma hora válida no formato HH:mm.");
         }
 
