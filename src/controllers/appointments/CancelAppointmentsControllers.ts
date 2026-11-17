@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
 import { CancelAppointmentsServices } from "../../services/appointments/CancelAppointmentsServices";
-import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
 
 class CancelAppointmentsControllers {
     async handle(request: Request, response: Response) {
@@ -9,8 +8,7 @@ class CancelAppointmentsControllers {
 
         try {
             const appointmentsRepository = new AppointmentsRepository();
-            const timetablesRepository = new TimetablesRepository();
-            const service = new CancelAppointmentsServices(appointmentsRepository, timetablesRepository);
+            const service = new CancelAppointmentsServices(appointmentsRepository);
 
             await service.execute(id, request.userId, request.userRole);
 
