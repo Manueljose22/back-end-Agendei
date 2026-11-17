@@ -109,8 +109,9 @@ export class DoctorAvailabilityService {
             await prismaClient.availability.createMany({ data: rows, skipDuplicates: true });
         }
 
+        const blockedDates = schedule.exceptions.filter(item => item.type === "BLOCK_DAY").map(item => item.date);
         const availabilities = await prismaClient.availability.findMany({
-            where: { doctorId, isBlocked: false, date: { gte: start, lte: end },
+            where: { doctorId, isBlocked: false, date: { gte: start, lte: end, notIn: blockedDates },
                 OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }] },
             orderBy: [{ date: "asc" }, { hourStart: "asc" }]
         });
