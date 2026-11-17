@@ -43,6 +43,7 @@ export class DoctorsRepository implements IDoctorsRepository {
             select: {
                 serviceId: true,
                 price: true,
+                durationMinutes: true,
                 Service: { select: { title: true } }
             }
         });
@@ -50,7 +51,8 @@ export class DoctorsRepository implements IDoctorsRepository {
         return records.map(item => ({
             idService: item.serviceId,
             title: item.Service.title,
-            price: item.price
+            price: item.price,
+            durationMinutes: item.durationMinutes
         }));
     }
 
