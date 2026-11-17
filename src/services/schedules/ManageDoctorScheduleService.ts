@@ -41,7 +41,7 @@ export class ManageDoctorScheduleService {
                 Hospital: { select: { status: true } },
                 DoctorSchedule: {
                     include: {
-                        rules: { orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
+                        rules: { where: { isActive: true }, orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
                         exceptions: { orderBy: { date: "asc" } }
                     }
                 }
