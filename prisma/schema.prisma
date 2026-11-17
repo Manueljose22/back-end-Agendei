@@ -75,7 +75,7 @@ model Doctor {
   email             String  @unique
   password          String?
   phone             String?
-  bio               String? @db.Text
+  bio               String?
   address           String?
   yaersOfExperience Int?
   numberOfPatients  Int?
