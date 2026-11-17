@@ -9,7 +9,6 @@ import UnblockDayController from "../controllers/timetables/UnblockDayController
 import BookHourController from "../controllers/timetables/BookHourController";
 import UnbookHourController from "../controllers/timetables/UnbookHourController";
 import { ensureRole } from "../middlewares/auth/ensureRole";
-import { ensureActiveHospital } from "../middlewares/auth/ensureActiveHospital";
 
 
 const timetablesRoutes = Router();
