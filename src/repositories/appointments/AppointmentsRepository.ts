@@ -455,12 +455,26 @@ export class AppointmentsRepository implements IAppointmentsRepository {
     }
 
     async cancel(id: string): Promise<void> {
-        const result = await prismaClient.appointment.updateMany({
-            where: { id, status: { not: "Cancelado" } },
-            data: { status: "Cancelado", upadatedAt: new Date() }
-        });
-        if (result.count !== 1) {
-            throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
-        }
+        await prismaClient.$transaction(async (tx) => {
+            const appointment = await tx.appointment.findUnique({
+                where: { id },
+                select: { doctorId: true, bookingDate: true, status: true }
+            });
+            if (!appointment || appointment.status === "Cancelado") {
+                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+            }
+
+            const date = appointment.bookingDate.toISOString().slice(0, 10);
+            const lockKey = `appointment:${appointment.doctorId}:${date}`;
+            await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+
+            const result = await tx.appointment.updateMany({
+                where: { id, status: { not: "Cancelado" } },
+                data: { status: "Cancelado", upadatedAt: new Date() }
+            });
+            if (result.count !== 1) {
+                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+            }
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }
 }
