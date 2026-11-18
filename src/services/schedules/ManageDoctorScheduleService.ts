@@ -48,7 +48,7 @@ export class ManageDoctorScheduleService {
             }
         });
 
-        if (!doctor || doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE") {
+        if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
             throw new Error("Médico ou hospital indisponível.");
         }
 
@@ -78,7 +78,7 @@ export class ManageDoctorScheduleService {
             throw new Error("Não tem permissões para gerir agendas.");
         }
         if (actor.role !== "platform_admin" &&
-            (doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE")) {
+            (doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE")) {
             throw new Error("O médico ou hospital não está activo.");
         }
 
