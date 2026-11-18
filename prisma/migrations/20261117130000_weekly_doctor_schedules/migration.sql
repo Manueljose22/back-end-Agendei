@@ -55,7 +55,6 @@ ALTER TABLE "availabilities"
 ADD COLUMN "schedule_rule_id" TEXT;
 
 -- A doctor may now have several distinct working periods on the same date.
-ALTER TABLE "availabilities"
 DROP INDEX IF EXISTS "availabilities_doctorId_date_key";
 
 CREATE UNIQUE INDEX "doctor_schedules_doctorId_key"
