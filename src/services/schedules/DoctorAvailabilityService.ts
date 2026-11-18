@@ -46,7 +46,7 @@ function assertManager(actor: Actor, doctor: { id: string; hospitalId: string | 
     if (actor.role === "doctor" && actor.id !== doctor.id) throw new Error("Só pode gerir a sua própria agenda.");
     if (actor.role === "hospital" && actor.id !== doctor.hospitalId) throw new Error("Este médico não pertence ao seu hospital.");
     if (!["doctor", "hospital", "platform_admin"].includes(actor.role)) throw new Error("Não tem permissões para gerir agendas.");
-    if (actor.role !== "platform_admin" && (doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE")) {
+    if (actor.role !== "platform_admin" && (doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE")) {
         throw new Error("O médico ou hospital não está activo.");
     }
 }
@@ -58,7 +58,7 @@ export class DoctorAvailabilityService {
             select: { id: true, status: true, Hospital: { select: { status: true } },
                 DoctorSchedule: { include: { rules: { where: { isActive: true } }, exceptions: true } } }
         });
-        if (!doctor || doctor.status !== "activo" || doctor.Hospital?.status !== "ACTIVE") {
+        if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
             throw new Error("Médico ou hospital indisponível.");
         }
         const schedule = doctor.DoctorSchedule;
