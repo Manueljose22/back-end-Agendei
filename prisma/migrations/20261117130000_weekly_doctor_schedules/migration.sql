@@ -72,8 +72,7 @@ ON "availabilities"("schedule_rule_id", "date");
 CREATE UNIQUE INDEX "availabilities_doctorId_date_hourStart_hourEnd_key"
 ON "availabilities"("doctorId", "date", "hourStart", "hourEnd");
 
-CREATE INDEX "availabilities_doctorId_date_idx"
-ON "availabilities"("doctorId", "date");
+-- The doctor/date index already exists from the initial migration.
 
 ALTER TABLE "doctor_schedules"
 ADD CONSTRAINT "doctor_schedules_doctorId_fkey"
