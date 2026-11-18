@@ -68,7 +68,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
 
         await prismaClient.$transaction(async (tx) => {
             // Serializa reservas do mesmo médico no mesmo dia para evitar dupla marcação concorrente.
-            await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+            await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock`;
 
             const doctor = await tx.doctor.findUnique({
                 where: { id: data.doctorId },
@@ -338,7 +338,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 .sort()
                 .map(value => `appointment:${current.doctorId}:${value}`);
             for (const lockKey of lockKeys) {
-                await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+                await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock`;
             }
 
             const doctor = await tx.doctor.findUnique({
@@ -466,7 +466,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
 
             const date = appointment.bookingDate.toISOString().slice(0, 10);
             const lockKey = `appointment:${appointment.doctorId}:${date}`;
-            await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+            await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock`;
 
             const result = await tx.appointment.updateMany({
                 where: { id, status: { not: "Cancelado" } },
