@@ -74,7 +74,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 where: { id: data.doctorId },
                 select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
             });
-            if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
+            if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
                 throw new Error("Médico ou hospital indisponível para agendamentos.");
             }
             const schedule = doctor.DoctorSchedule;
@@ -345,7 +345,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 where: { id: current.doctorId },
                 select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
             });
-            if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
+            if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
                 throw new Error("Médico ou hospital indisponível para agendamentos.");
             }
             const schedule = doctor.DoctorSchedule;
