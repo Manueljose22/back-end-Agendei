@@ -59,7 +59,7 @@ export class DoctorAvailabilityService {
             select: { id: true, status: true, Hospital: { select: { status: true } },
                 DoctorSchedule: { include: { rules: { where: { isActive: true } }, exceptions: true } } }
         });
-        if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
+        if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
             throw new Error("Médico ou hospital indisponível.");
         }
         const schedule = doctor.DoctorSchedule;
