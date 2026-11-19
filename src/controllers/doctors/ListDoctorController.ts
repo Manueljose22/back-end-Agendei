@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { DoctorsRepository } from "../../repositories/doctors/DoctorsRepository";
 import { ListDoctorsServices } from "../../services/doctors/ListDoctorsServices";
 
 class ListDoctorController {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         try {
             const isHospital = request.userRole === "hospital";
             const isAdmin = request.userRole === "platform_admin";
@@ -14,8 +15,7 @@ class ListDoctorController {
             );
             return response.status(200).json(result);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível listar os médicos.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
