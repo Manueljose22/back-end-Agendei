@@ -1,6 +1,7 @@
 import { HospitalStatus } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../../config/prisma/prismaClient";
+import { AppError } from "../../errors/AppError";
 
 /**
  * Bloqueia operações de gestão quando a conta hospitalar ou o hospital
@@ -8,7 +9,7 @@ import { prismaClient } from "../../config/prisma/prismaClient";
  */
 export const ensureActiveHospital = async (
     request: Request,
-    response: Response,
+    _response: Response,
     next: NextFunction
 ) => {
     try {
@@ -31,9 +32,7 @@ export const ensureActiveHospital = async (
         }
 
         if (hospitalStatus === HospitalStatus.SUSPENDED) {
-            return response.status(403).json({
-                message: "Este hospital está suspenso. As operações de gestão estão bloqueadas."
-            });
+            return next(new AppError("Este hospital está suspenso. As operações de gestão estão bloqueadas.", 403));
         }
 
         return next();
