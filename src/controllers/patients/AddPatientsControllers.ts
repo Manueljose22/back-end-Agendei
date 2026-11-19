@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { AddPatientsServices } from "../../services/patients/AddPatientsServices";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { patientsRequest } from "../../repositories/patients/IPatientsRepository";
@@ -6,7 +7,7 @@ import { uploadFilesWithPaths, removeStorageFiles } from "../../middlewares/uplo
 import { toPatientPublic } from "../../services/patients/patientResponse";
 
 class AddPatientsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         let uploadedPath: string | null = null;
 
         try {
