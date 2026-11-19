@@ -187,7 +187,11 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     durationMinutes
                 }
             });
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }));
+        }, {
+            isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+            maxWait: 10_000,
+            timeout: 15_000
+        }));
     }
 
     async findById(id: string): Promise<appointmentsSave | null> {
