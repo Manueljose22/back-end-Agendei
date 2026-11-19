@@ -8,7 +8,7 @@ export const errorHandler = (
     response: Response,
     _next: NextFunction
 ) => {
-    if (response.headersSent) return;
+    if (response.headersSent) return _next(error);
 
     if (error instanceof AppError) {
         return response.status(error.statusCode).json({ message: error.message });
