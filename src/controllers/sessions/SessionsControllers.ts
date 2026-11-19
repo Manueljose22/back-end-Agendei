@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { payloadRequest } from '../../repositories/sessions/ISessionsRepository';
 import { SessionRepository } from '../../repositories/sessions/SessionsRepository';
 import { SessionServices } from '../../services/session/SessionServices';
@@ -7,7 +7,7 @@ import { SessionServices } from '../../services/session/SessionServices';
 
 
 class SessionsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { email, password } = request.body as payloadRequest;
         try {
@@ -19,8 +19,8 @@ class SessionsControllers {
 
             return response.status(200).json(result);
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
