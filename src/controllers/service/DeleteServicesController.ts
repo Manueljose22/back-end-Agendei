@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ServicesRepository } from '../../repositories/services/ServicesRepository';
 import { DeleteServicesService } from '../../services/services/DeleteServicesService';
 
@@ -7,7 +7,7 @@ import { DeleteServicesService } from '../../services/services/DeleteServicesSer
 
 class DeleteServicesController {
 
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { id } = request.params;
 
@@ -20,8 +20,8 @@ class DeleteServicesController {
 
             return response.json({ message: 'Registro eliminado com sucesso!' });
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
