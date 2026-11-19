@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { DeleteAdminServices } from '../../services/admin/DeleteAdminServices';
 
@@ -7,7 +7,7 @@ import { DeleteAdminServices } from '../../services/admin/DeleteAdminServices';
 
 
 class DeleteAdminControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         
         const { id } = request.params;
 
@@ -20,8 +20,8 @@ class DeleteAdminControllers {
 
             return response.status(200).json({ message: 'Registro excluído com sucesso.' })
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
