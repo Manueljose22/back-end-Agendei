@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { ProfilePatientsServices } from "../../services/patients/ProfilePatientsServices";
 import { toPatientPublic } from "../../services/patients/patientResponse";
 
 class ProfilePatientsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         try {
             const repository = new PatientsRepository();
             const service = new ProfilePatientsServices(repository);
@@ -12,8 +13,7 @@ class ProfilePatientsControllers {
 
             return response.status(200).json(result ? toPatientPublic(result) : null);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível consultar o perfil.";
-            return response.status(404).json({ message });
+            return next(error);
         }
     }
 }
