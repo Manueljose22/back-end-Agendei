@@ -1,5 +1,5 @@
 
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
 import { UpdateAvailabilityService } from "../../services/timetables/UpdateAvailabilityService";
 
@@ -8,7 +8,7 @@ import { UpdateAvailabilityService } from "../../services/timetables/UpdateAvail
 
 
 class UpdateAvailabilityController {
-  async handle(request: Request, response: Response): Promise<Response> {
+  async handle(request: Request, response: Response, next: NextFunction) {
     const { id } = request.params;
     const { hourStart, hourEnd } = request.body;
 
@@ -21,8 +21,8 @@ class UpdateAvailabilityController {
       await updateAvailabilityService.execute(id, { hourStart, hourEnd });
 
       return response.status(204).send();
-    } catch (error: any) {
-      return response.status(400).json({ error: error.message });
+    } catch (error: unknown) {
+      return next(error);
     }
   }
 }
