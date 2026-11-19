@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 
@@ -13,7 +14,7 @@ class DeleteAdminServices {
         const admin = await this.IUsersRepository.findById(id);
 
         if (!admin) {
-            throw new Error('Não existe este usuário.');
+            throw new AppError('Não existe este usuário.', 404);
         }
 
         await this.IUsersRepository.delete(id)
