@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IServicesRepository, servicesRequest } from "../../repositories/services/IServicesRepository";
 
 
@@ -14,13 +15,13 @@ class CreateServiceServices {
         const service = await this.iserviceRepository.findByName(data.title);
 
         if (service) {
-            throw new Error('Já existe um registro com este nome!');
+            throw new AppError('Já existe um registro com este nome!', 409);
         }
 
         if (!data.title) {
-            throw new Error('Preencha o campo nome!');
+            throw new AppError('Preencha o campo nome!', 400);
         } else if (!data.specialtyId) {
-            throw new Error('Preencha o campo especialidade!');
+            throw new AppError('Preencha o campo especialidade!', 400);
         }
 
         await this.iserviceRepository.save(data);
