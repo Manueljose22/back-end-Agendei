@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { hash } from "bcrypt";
 import { createUsersToken } from "../../middlewares/auth/create-users-token";
 import {
@@ -13,17 +14,17 @@ class AddPatientsServices {
         name, email, password, address, dateBirth, gender, phone, photo, pushToken
     }: patientsRequest): Promise<{ user: patientsSave; token: string }> {
         if (!name?.trim()) {
-            throw new Error("Preencha o campo nome.");
+            throw new AppError("Preencha o campo nome.", 400);
         }
 
         if (!password || password.length < 8) {
-            throw new Error("A senha deve ter pelo menos 8 caracteres.");
+            throw new AppError("A senha deve ter pelo menos 8 caracteres.", 400);
         }
 
         if (email) {
             const patient = await this.patientsRepository.findByEmail(email);
             if (patient) {
-                throw new Error("Já existe um paciente registado com este email.");
+                throw new AppError("Já existe um paciente registado com este email.", 409);
             }
         }
 
