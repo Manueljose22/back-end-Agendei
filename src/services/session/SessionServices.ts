@@ -10,7 +10,7 @@ class SessionServices {
         const user = await this.sessionRepository.findByEmail(email);
 
         if (!user || !user.password || !(await compare(password, user.password))) {
-            throw new Error("Credenciais inválidas!");
+            throw new AppError("Credenciais inválidas!", 401);
         }
 
         const token = await createUsersToken(user);
