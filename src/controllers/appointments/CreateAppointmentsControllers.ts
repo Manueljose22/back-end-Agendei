@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from "express";
 import { AppointmentsRepository } from '../../repositories/appointments/AppointmentsRepository';
 import { CreateAppointmentsServices } from '../../services/appointments/CreateAppointmentsServices';
 
@@ -7,7 +7,7 @@ import { CreateAppointmentsServices } from '../../services/appointments/CreateAp
 
 class CreateAppointmentsControllers {
 
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { serviceId, doctorId, bookingDate, bookingHour, clientId } = request.body;
         
@@ -21,8 +21,8 @@ class CreateAppointmentsControllers {
 
             return response.status(200).json({message: 'Agendamento feito com sucesso.'});
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
