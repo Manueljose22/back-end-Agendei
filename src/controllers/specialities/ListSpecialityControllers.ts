@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ListSpecialitiesService } from '../../services/specialities/ListSpecialitiesService';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
@@ -7,7 +7,7 @@ import { SpecialityRepository } from '../../repositories/specialities/Speciality
 
 
 class ListSpecialityControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         try {
             const specialityRepository = new SpecialityRepository()
@@ -15,8 +15,8 @@ class ListSpecialityControllers {
             const result = await service.execute();
             return response.json(result)
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
