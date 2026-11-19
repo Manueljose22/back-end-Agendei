@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ServicesRepository } from '../../repositories/services/ServicesRepository';
 import { GetAllServicesService } from '../../services/services/GetAllServicesService';
 
@@ -7,7 +7,7 @@ import { GetAllServicesService } from '../../services/services/GetAllServicesSer
 
 class GetAllServicesController {
 
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         try {
 
@@ -18,8 +18,8 @@ class GetAllServicesController {
 
             return response.json(result);
             
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
