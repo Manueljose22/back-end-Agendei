@@ -57,7 +57,7 @@ export class DoctorAvailabilityService {
         const doctor = await prismaClient.doctor.findUnique({
             where: { id: doctorId },
             select: { id: true, status: true, Hospital: { select: { status: true } },
-                DoctorSchedule: { include: { rules: { where: { isActive: true } }, exceptions: true } } }
+                DoctorSchedule: { include: { rules: { where: { isActive: true } }, exceptions: { where: { isActive: true } } } } }
         });
         if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
             throw new Error("Médico ou hospital indisponível.");
@@ -76,7 +76,7 @@ export class DoctorAvailabilityService {
             const key = item.date.toISOString().slice(0, 10);
             exceptionByDate.set(key, [...(exceptionByDate.get(key) ?? []), item]);
         }
-        const rows: Array<{ doctorId: string; date: Date; hourStart: Date; hourEnd: Date; scheduleRuleId: string | null }> = [];
+        const rows: Array<{ doctorId: string; date: Date; hourStart: Date; hourEnd: Date; scheduleRuleId: string | null; scheduleExceptionId: string | null }> = [];
 
         for (let cursor = new Date(start); cursor <= end; cursor = new Date(cursor.getTime() + 86400000)) {
             const dateKey = cursor.toISOString().slice(0, 10);
@@ -91,7 +91,8 @@ export class DoctorAvailabilityService {
                     doctorId, date: new Date(cursor),
                     hourStart: localDateAtMinute(cursor, rule.startMinute),
                     hourEnd: localDateAtMinute(cursor, rule.endMinute),
-                    scheduleRuleId: rule.id
+                    scheduleRuleId: rule.id,
+                    scheduleExceptionId: null
                 });
             }
 
@@ -101,7 +102,8 @@ export class DoctorAvailabilityService {
                     doctorId, date: new Date(cursor),
                     hourStart: localDateAtMinute(cursor, exception.startMinute),
                     hourEnd: localDateAtMinute(cursor, exception.endMinute),
-                    scheduleRuleId: null
+                    scheduleRuleId: null,
+                    scheduleExceptionId: exception.id
                 });
             }
         }
@@ -113,7 +115,11 @@ export class DoctorAvailabilityService {
         const blockedDates = schedule.exceptions.filter(item => item.type === "BLOCK_DAY").map(item => item.date);
         const availabilities = await prismaClient.availability.findMany({
             where: { doctorId, isBlocked: false, date: { gte: start, lte: end, notIn: blockedDates },
-                OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }] },
+                OR: [
+                    { scheduleRuleId: null, scheduleExceptionId: null },
+                    { scheduleRule: { is: { isActive: true } } },
+                    { scheduleException: { is: { isActive: true } } }
+                ] },
             orderBy: [{ date: "asc" }, { hourStart: "asc" }]
         });
         const exceptions = schedule.exceptions.filter(item => item.date >= start && item.date <= end);
@@ -137,17 +143,46 @@ export class DoctorAvailabilityService {
             throw new Error("Esta excepção exige um período válido com início anterior ao fim.");
         }
 
-        const schedule = await prismaClient.doctorSchedule.findUnique({ where: { doctorId } });
+        const schedule = await prismaClient.doctorSchedule.findUnique({
+            where: { doctorId },
+            include: {
+                rules: { where: { isActive: true } },
+                exceptions: { where: { date, isActive: true } }
+            }
+        });
         if (!schedule) throw new Error("Configure primeiro a agenda semanal do médico.");
 
         if (input.type === "EXTRA_PERIOD") {
-            const overlap = await prismaClient.availability.findFirst({
-                where: { doctorId, date,
-                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }],
+            const weekday = isoWeekday(date);
+            const overlapsWeeklyRule = schedule.rules.some(rule =>
+                rule.weekday === weekday &&
+                (!rule.effectiveFrom || date >= rule.effectiveFrom) &&
+                (!rule.effectiveUntil || date <= rule.effectiveUntil) &&
+                startMinute! < rule.endMinute &&
+                endMinute! > rule.startMinute
+            );
+            const overlapsExtraException = schedule.exceptions.some(exception =>
+                exception.type === "EXTRA_PERIOD" &&
+                exception.startMinute !== null &&
+                exception.endMinute !== null &&
+                startMinute! < exception.endMinute &&
+                endMinute! > exception.startMinute
+            );
+            const overlapsLegacyAvailability = await prismaClient.availability.findFirst({
+                where: {
+                    doctorId,
+                    date,
+                    scheduleRuleId: null,
+                    scheduleExceptionId: null,
                     hourStart: { lt: localDateAtMinute(date, endMinute!) },
-                    hourEnd: { gt: localDateAtMinute(date, startMinute!) } }
+                    hourEnd: { gt: localDateAtMinute(date, startMinute!) }
+                },
+                select: { id: true }
             });
-            if (overlap) throw new Error("O período extraordinário sobrepõe-se a uma disponibilidade existente.");
+
+            if (overlapsWeeklyRule || overlapsExtraException || overlapsLegacyAvailability) {
+                throw new Error("O período extraordinário sobrepõe-se a uma disponibilidade existente.");
+            }
         }
 
         return prismaClient.scheduleException.create({
@@ -163,9 +198,10 @@ export class DoctorAvailabilityService {
         });
         if (!doctor) throw new Error("Médico não encontrado.");
         assertManager(actor, doctor);
-        const result = await prismaClient.scheduleException.deleteMany({
-            where: { id: exceptionId, schedule: { is: { doctorId } } }
+        const result = await prismaClient.scheduleException.updateMany({
+            where: { id: exceptionId, isActive: true, schedule: { is: { doctorId } } },
+            data: { isActive: false }
         });
-        if (result.count !== 1) throw new Error("Excepção não encontrada.");
+        if (result.count !== 1) throw new Error("Excepção não encontrada ou já removida.");
     }
 }
