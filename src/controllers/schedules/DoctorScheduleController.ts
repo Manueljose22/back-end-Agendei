@@ -1,20 +1,19 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { ManageDoctorScheduleService } from "../../services/schedules/ManageDoctorScheduleService";
 
 const service = new ManageDoctorScheduleService();
 
 class DoctorScheduleController {
-    async get(request: Request, response: Response) {
+    async get(request: Request, response: Response, next: NextFunction) {
         try {
             const schedule = await service.get(request.params.doctorId);
             return response.json(schedule);
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Não foi possível consultar a agenda.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 
-    async replaceRules(request: Request, response: Response) {
+    async replaceRules(request: Request, response: Response, next: NextFunction) {
         try {
             const { rules, bookingWindowDays } = request.body;
             const schedule = await service.replaceRules(
@@ -28,10 +27,7 @@ class DoctorScheduleController {
                 schedule
             });
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Não foi possível actualizar a agenda.";
-            const status = message.includes("permissões") || message.includes("própria agenda") ||
-                message.includes("pertence ao seu hospital") ? 403 : 400;
-            return response.status(status).json({ message });
+            return next(error);
         }
     }
 }
