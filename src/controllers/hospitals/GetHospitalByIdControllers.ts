@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from "../../errors/AppError";
 import { GetHospitalByIdService } from '../../services/hospitals/GetHospitalByIdService';
 import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 class GetHospitalByIdControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
 
         try {
@@ -14,8 +15,7 @@ class GetHospitalByIdControllers {
 
             return response.json(result);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível consultar o hospital.";
-            return response.status(404).json({ message });
+            return next(error);
         }
     }
 }
