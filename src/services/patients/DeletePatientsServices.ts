@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IPatientsRepository } from "../../repositories/patients/IPatientsRepository";
 
 class DeletePatientsServices {
@@ -7,11 +8,11 @@ class DeletePatientsServices {
         const patient = await this.patientsRepository.findById(id);
 
         if (!patient) {
-            throw new Error("Paciente não encontrado.");
+            throw new AppError("Paciente não encontrado.", 404);
         }
 
         if (!isPlatformAdmin && patient.id !== actorId) {
-            throw new Error("Não tem permissão para eliminar este registo.");
+            throw new AppError("Não tem permissão para eliminar este registo.", 403);
         }
 
         await this.patientsRepository.delete(id);
