@@ -13,7 +13,6 @@ router.get("/admin/profile", ...adminOnly, ProfileAdminControllers.handle);
 router.get("/admin/", ...adminOnly, ListAdminController.handle);
 router.get("/admin/:id", ...adminOnly, GetAdminByIdControllers.handle);
 router.patch("/admin/:id", ...adminOnly, UpdateAdminControllers.handle);
-router.post("/admin/appointments/register", ...adminOnly, CreateAppointmentsControllers.handle);
 router.get("/admin/appointments/:id", ...adminOnly, ListAppointmentByIdControllers.handle);
 
 export { router as adminsRoutes };
