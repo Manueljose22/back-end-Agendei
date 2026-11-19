@@ -15,7 +15,7 @@ class UpdatePatientsControllers {
         let uploadedPath: string | null = null;
 
         if (request.userRole === "patient" && request.userId !== id) {
-            return response.status(404).json({ message: "Paciente não encontrado." });
+            return next(new AppError("Paciente não encontrado.", 404));
         }
 
         try {
