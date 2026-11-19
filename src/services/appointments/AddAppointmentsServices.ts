@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 import { DoctorAvailabilityService } from "../schedules/DoctorAvailabilityService";
 
@@ -5,14 +6,14 @@ class AddAppointmentsServices {
     constructor(private appointmentsRepository: IAppointmentsRepository) {}
 
     async execute({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
-        if (!patientId) throw new Error("Paciente não identificado.");
-        if (!serviceId) throw new Error("Informe o serviço a agendar.");
-        if (!doctorId) throw new Error("Informe o médico pretendido.");
+        if (!patientId) throw new AppError("Paciente não identificado.", 401);
+        if (!serviceId) throw new AppError("Informe o serviço a agendar.", 400);
+        if (!doctorId) throw new AppError("Informe o médico pretendido.", 400);
         if (!bookingDate || !/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)) {
-            throw new Error("Informe uma data válida no formato YYYY-MM-DD.");
+            throw new AppError("Informe uma data válida no formato YYYY-MM-DD.", 400);
         }
         if (!bookingHour || !/^([01]\d|2[0-3]):[0-5]\d$/.test(bookingHour.substring(0, 5))) {
-            throw new Error("Informe uma hora válida no formato HH:mm.");
+            throw new AppError("Informe uma hora válida no formato HH:mm.", 400);
         }
 
         const normalizedHour = bookingHour.substring(0, 5);
