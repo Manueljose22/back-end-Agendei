@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 import { GetSpecialtyByHospitalService } from '../../services/specialities/GetSpecialtyByHospitalService';
 
@@ -7,7 +7,7 @@ import { GetSpecialtyByHospitalService } from '../../services/specialities/GetSp
 
 
 class GetSpecialtyByHospitalControllers{
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { userId } = request
 
@@ -17,8 +17,8 @@ class GetSpecialtyByHospitalControllers{
             const result = await service.execute(userId);
             return response.json(result)
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
