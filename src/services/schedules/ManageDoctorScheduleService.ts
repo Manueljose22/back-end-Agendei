@@ -42,7 +42,7 @@ export class ManageDoctorScheduleService {
                 DoctorSchedule: {
                     include: {
                         rules: { where: { isActive: true }, orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
-                        exceptions: { orderBy: { date: "asc" } }
+                        exceptions: { where: { isActive: true }, orderBy: { date: "asc" } }
                     }
                 }
             }
@@ -140,7 +140,7 @@ export class ManageDoctorScheduleService {
                 where: { id: schedule.id },
                 include: {
                     rules: { where: { isActive: true }, orderBy: [{ weekday: "asc" }, { startMinute: "asc" }] },
-                    exceptions: { orderBy: { date: "asc" } }
+                    exceptions: { where: { isActive: true }, orderBy: { date: "asc" } }
                 }
             });
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
