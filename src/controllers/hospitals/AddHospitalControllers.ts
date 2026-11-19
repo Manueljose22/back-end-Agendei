@@ -38,11 +38,7 @@ class AddHospitalControllers {
                 }
             }
 
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível cadastrar o hospital.";
-
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
