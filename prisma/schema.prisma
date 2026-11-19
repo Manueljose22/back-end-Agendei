@@ -192,8 +192,15 @@ model ScheduleException {
   startMinute Int?                  @map("start_minute")
   endMinute   Int?                  @map("end_minute")
   reason      String?
+  isActive    Boolean               @default(true) @map("is_active")
   createdAt   DateTime              @default(now()) @map("created_at")
+<<<<<<< HEAD
   schedule    DoctorSchedule        @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+=======
+
+  schedule       DoctorSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  availabilities Availability[]
+>>>>>>> f92082ac290b6d64dcc93754addf73eb08dfec23
 
   @@index([scheduleId, date])
   @@map("schedule_exceptions")
@@ -205,12 +212,24 @@ model Availability {
   date           DateTime
   hourStart      DateTime
   hourEnd        DateTime
+<<<<<<< HEAD
   isBlocked      Boolean                  @default(false)
   createdAt      DateTime                 @default(now())
   scheduleRuleId String?                  @map("schedule_rule_id")
   doctor         Doctor                   @relation(fields: [doctorId], references: [id])
   scheduleRule   ScheduleRule?            @relation(fields: [scheduleRuleId], references: [id])
   timetables     Timetables_Appointment[]
+=======
+  isBlocked      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  scheduleRuleId     String?  @map("schedule_rule_id")
+  scheduleExceptionId String? @map("schedule_exception_id")
+
+  doctor             Doctor                   @relation(fields: [doctorId], references: [id])
+  scheduleRule       ScheduleRule?            @relation(fields: [scheduleRuleId], references: [id], onDelete: SetNull)
+  scheduleException  ScheduleException?      @relation(fields: [scheduleExceptionId], references: [id], onDelete: SetNull)
+  timetables         Timetables_Appointment[]
+>>>>>>> f92082ac290b6d64dcc93754addf73eb08dfec23
 
   @@unique([scheduleRuleId, date])
   @@unique([doctorId, date, hourStart, hourEnd])
