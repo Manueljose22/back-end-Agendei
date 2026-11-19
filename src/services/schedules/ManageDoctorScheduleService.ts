@@ -1,3 +1,4 @@
+import { DoctorStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 
@@ -48,7 +49,7 @@ export class ManageDoctorScheduleService {
             }
         });
 
-        if (!doctor || doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE") {
+        if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
             throw new Error("Médico ou hospital indisponível.");
         }
 
