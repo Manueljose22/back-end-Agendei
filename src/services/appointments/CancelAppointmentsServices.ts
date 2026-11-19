@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
@@ -8,7 +9,7 @@ class CancelAppointmentsServices {
         const appointment = await this.appointmentsRepository.findById(id);
 
         if (!appointment) {
-            throw new Error("Consulta não encontrada.");
+            throw new AppError("Consulta não encontrada.", 404);
         }
 
         const canManage =
@@ -18,11 +19,11 @@ class CancelAppointmentsServices {
             (role === "hospital" && appointment.hospitalId === userId);
 
         if (!canManage) {
-            throw new Error("Não tem permissão para cancelar esta consulta.");
+            throw new AppError("Não tem permissão para cancelar esta consulta.", 403);
         }
 
         if (appointment.status.toLowerCase() === "cancelado") {
-            throw new Error("Esta consulta já se encontra cancelada.");
+            throw new AppError("Esta consulta já se encontra cancelada.", 409);
         }
 
         // O cancelamento apenas altera o estado; a disponibilidade é calculada
