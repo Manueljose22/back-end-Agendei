@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import {
     IPatientsRepository,
     patientsProfileUpdate
@@ -15,17 +16,17 @@ class UpdatePatientsServices {
         const patient = await this.patientsRepository.findById(id);
 
         if (!patient) {
-            throw new Error("Paciente não encontrado.");
+            throw new AppError("Paciente não encontrado.", 404);
         }
 
         if (!isPlatformAdmin && patient.id !== actorId) {
-            throw new Error("Não tem permissão para alterar este perfil.");
+            throw new AppError("Não tem permissão para alterar este perfil.", 403);
         }
 
         if (data.email && data.email !== patient.email) {
             const existingPatient = await this.patientsRepository.findByEmail(data.email);
             if (existingPatient && existingPatient.id !== id) {
-                throw new Error("Já existe um paciente registado com este email.");
+                throw new AppError("Já existe um paciente registado com este email.", 409);
             }
         }
 
