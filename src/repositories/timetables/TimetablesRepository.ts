@@ -1,4 +1,5 @@
 import { prismaClient } from "../../config/prisma/prismaClient";
+import { AppError } from "../../errors/AppError";
 import { IAvailability, IAvailabilityInput, ITimetablesRepository, IUpdateAvailability } from "./ITimetablesRepository";
 
 
@@ -104,30 +105,75 @@ export class TimetablesRepository implements ITimetablesRepository {
 
   //Deletar disponibilidade e horários associados
   async deleteAvailability(id: string): Promise<void> {
-    await prismaClient.timetables_Appointment.deleteMany({
-      where: { availabilityId: id },
-    });
+    await prismaClient.$transaction(async (transaction) => {
+      const availability = await transaction.availability.findUnique({
+        where: { id },
+        select: { id: true }
+      });
 
-    await prismaClient.availability.delete({
-      where: { id },
+      if (!availability) {
+        throw new AppError("Disponibilidade não encontrada.", 404);
+      }
+
+      const bookedHours = await transaction.timetables_Appointment.count({
+        where: { availabilityId: id, isBooked: true }
+      });
+
+      if (bookedHours > 0) {
+        throw new AppError("Não é possível eliminar uma disponibilidade que contém horários reservados.", 409);
+      }
+
+      await transaction.timetables_Appointment.deleteMany({
+        where: { availabilityId: id }
+      });
+
+      await transaction.availability.delete({
+        where: { id }
+      });
     });
   }
 
 
   // ✅ Marcar um horário como reservado
   async bookHour(timetableId: string): Promise<void> {
-    await prismaClient.timetables_Appointment.update({
-      where: { id: timetableId },
-      data: { isBooked: true },
+    const result = await prismaClient.timetables_Appointment.updateMany({
+      where: { id: timetableId, isBooked: false },
+      data: { isBooked: true }
     });
+
+    if (result.count === 1) return;
+
+    const timetable = await prismaClient.timetables_Appointment.findUnique({
+      where: { id: timetableId },
+      select: { id: true }
+    });
+
+    if (!timetable) {
+      throw new AppError("Horário não encontrado.", 404);
+    }
+
+    throw new AppError("Este horário já se encontra reservado.", 409);
   }
 
   
   // ✅ Liberar um horário (ex: cancelamento)
   async unbookHour(timetableId: string): Promise<void> {
-    await prismaClient.timetables_Appointment.update({
-      where: { id: timetableId },
-      data: { isBooked: false },
+    const result = await prismaClient.timetables_Appointment.updateMany({
+      where: { id: timetableId, isBooked: true },
+      data: { isBooked: false }
     });
+
+    if (result.count === 1) return;
+
+    const timetable = await prismaClient.timetables_Appointment.findUnique({
+      where: { id: timetableId },
+      select: { id: true }
+    });
+
+    if (!timetable) {
+      throw new AppError("Horário não encontrado.", 404);
+    }
+
+    throw new AppError("Este horário não se encontra reservado.", 409);
   }
 }
