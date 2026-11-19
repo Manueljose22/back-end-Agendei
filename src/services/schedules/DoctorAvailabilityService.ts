@@ -1,5 +1,5 @@
 import { AppError } from "../../errors/AppError";
-import { DoctorStatus } from "@prisma/client";
+import { DoctorStatus, Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 
 type Actor = { id: string; role: string };
