@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository, specialityInput, specialitySaved } from "../../repositories/specialities/ISpecialityRepository";
 
 
@@ -11,11 +12,11 @@ class AddSpecialityService {
         const speciality = await this.ISpecialityRepository.findByName(data.name);
       
         if (speciality) {
-            throw new Error("Especialidade já existe!")
+            throw new AppError("Especialidade já existe!", 409);
         }
 
         if (!data.name) {
-            throw new Error("Por favor, preencha o campo nome");
+            throw new AppError("Por favor, preencha o campo nome", 400);
         } 
 
 
