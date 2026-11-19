@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { UpdatePasswordPatientServices } from "../../services/patients/UpdatePasswordPatientServices";
 
 class UpdatePasswordPatientControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
 
         try {
@@ -14,8 +15,7 @@ class UpdatePasswordPatientControllers {
             return response.status(200).json({ message: "Senha actualizada com sucesso." });
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : "Não foi possível actualizar a senha.";
-            const status = message.includes("permissão") ? 403 : 400;
-            return response.status(status).json({ message });
+            return next(error);
         }
     }
 }
