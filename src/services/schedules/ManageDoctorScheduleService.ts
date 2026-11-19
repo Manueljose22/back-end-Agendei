@@ -1,4 +1,3 @@
-import { DoctorStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 
@@ -79,7 +78,7 @@ export class ManageDoctorScheduleService {
             throw new Error("Não tem permissões para gerir agendas.");
         }
         if (actor.role !== "platform_admin" &&
-            (doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE")) {
+            (doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE")) {
             throw new Error("O médico ou hospital não está activo.");
         }
 
