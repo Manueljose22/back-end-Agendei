@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { DoctorStatus } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 
@@ -11,15 +12,15 @@ type ExceptionInput = {
 };
 
 function dateOnly(value: string): Date {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("A data deve estar no formato YYYY-MM-DD.");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new AppError("A data deve estar no formato YYYY-MM-DD.", 400);
     const date = new Date(`${value}T00:00:00.000Z`);
-    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new Error("Data inválida.");
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new AppError("Data inválida.", 400);
     return date;
 }
 
 function minute(value?: string): number | null {
     if (value === undefined) return null;
-    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) throw new Error("A hora deve estar no formato HH:mm.");
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) throw new AppError("A hora deve estar no formato HH:mm.", 400);
     const [h, m] = value.split(":").map(Number);
     return h * 60 + m;
 }
@@ -44,11 +45,11 @@ function todayInLuanda(): Date {
 }
 
 function assertManager(actor: Actor, doctor: { id: string; hospitalId: string | null; status: DoctorStatus; Hospital: { status: string } | null }) {
-    if (actor.role === "doctor" && actor.id !== doctor.id) throw new Error("Só pode gerir a sua própria agenda.");
-    if (actor.role === "hospital" && actor.id !== doctor.hospitalId) throw new Error("Este médico não pertence ao seu hospital.");
-    if (!["doctor", "hospital", "platform_admin"].includes(actor.role)) throw new Error("Não tem permissões para gerir agendas.");
+    if (actor.role === "doctor" && actor.id !== doctor.id) throw new AppError("Só pode gerir a sua própria agenda.", 403);
+    if (actor.role === "hospital" && actor.id !== doctor.hospitalId) throw new AppError("Este médico não pertence ao seu hospital.", 403);
+    if (!["doctor", "hospital", "platform_admin"].includes(actor.role)) throw new AppError("Não tem permissões para gerir agendas.", 403);
     if (actor.role !== "platform_admin" && (doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE")) {
-        throw new Error("O médico ou hospital não está activo.");
+        throw new AppError("O médico ou hospital não está activo.", 409);
     }
 }
 
@@ -60,7 +61,7 @@ export class DoctorAvailabilityService {
                 DoctorSchedule: { include: { rules: { where: { isActive: true } }, exceptions: { where: { isActive: true } } } } }
         });
         if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
-            throw new Error("Médico ou hospital indisponível.");
+            throw new AppError("Médico ou hospital indisponível.", 409);
         }
         const schedule = doctor.DoctorSchedule;
         if (!schedule || !schedule.isActive) return { availabilities: [], exceptions: [] };
@@ -68,7 +69,7 @@ export class DoctorAvailabilityService {
         const start = from ? dateOnly(from) : todayInLuanda();
         const end = to ? dateOnly(to) : new Date(start.getTime() + schedule.bookingWindowDays * 86400000);
         if (end < start || (end.getTime() - start.getTime()) / 86400000 > 365) {
-            throw new Error("O intervalo deve ser válido e não pode ultrapassar 365 dias.");
+            throw new AppError("O intervalo deve ser válido e não pode ultrapassar 365 dias.", 400);
         }
 
         const exceptionByDate = new Map<string, typeof schedule.exceptions>();
@@ -131,16 +132,16 @@ export class DoctorAvailabilityService {
             where: { id: doctorId },
             select: { id: true, hospitalId: true, status: true, Hospital: { select: { status: true } } }
         });
-        if (!doctor) throw new Error("Médico não encontrado.");
+        if (!doctor) throw new AppError("Médico não encontrado.", 404);
         assertManager(actor, doctor);
 
         const date = dateOnly(input.date);
         const startMinute = minute(input.startTime);
         const endMinute = minute(input.endTime);
         if (input.type === "BLOCK_DAY") {
-            if (startMinute !== null || endMinute !== null) throw new Error("BLOCK_DAY não deve receber horários.");
+            if (startMinute !== null || endMinute !== null) throw new AppError("BLOCK_DAY não deve receber horários.", 400);
         } else if (startMinute === null || endMinute === null || startMinute >= endMinute) {
-            throw new Error("Esta excepção exige um período válido com início anterior ao fim.");
+            throw new AppError("Esta excepção exige um período válido com início anterior ao fim.", 400);
         }
 
         const schedule = await prismaClient.doctorSchedule.findUnique({
@@ -150,7 +151,7 @@ export class DoctorAvailabilityService {
                 exceptions: { where: { date, isActive: true } }
             }
         });
-        if (!schedule) throw new Error("Configure primeiro a agenda semanal do médico.");
+        if (!schedule) throw new AppError("Configure primeiro a agenda semanal do médico.", 400);
 
         if (input.type === "EXTRA_PERIOD") {
             const weekday = isoWeekday(date);
@@ -181,7 +182,7 @@ export class DoctorAvailabilityService {
             });
 
             if (overlapsWeeklyRule || overlapsExtraException || overlapsLegacyAvailability) {
-                throw new Error("O período extraordinário sobrepõe-se a uma disponibilidade existente.");
+                throw new AppError("O período extraordinário sobrepõe-se a uma disponibilidade existente.", 409);
             }
         }
 
@@ -196,12 +197,12 @@ export class DoctorAvailabilityService {
             where: { id: doctorId },
             select: { id: true, hospitalId: true, status: true, Hospital: { select: { status: true } } }
         });
-        if (!doctor) throw new Error("Médico não encontrado.");
+        if (!doctor) throw new AppError("Médico não encontrado.", 404);
         assertManager(actor, doctor);
         const result = await prismaClient.scheduleException.updateMany({
             where: { id: exceptionId, isActive: true, schedule: { is: { doctorId } } },
             data: { isActive: false }
         });
-        if (result.count !== 1) throw new Error("Excepção não encontrada ou já removida.");
+        if (result.count !== 1) throw new AppError("Excepção não encontrada ou já removida.", 404);
     }
 }
