@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { DoctorsRepository } from "../../repositories/doctors/DoctorsRepository";
 import { GetDoctorsByIdServices } from "../../services/doctors/GetDoctorsByIdServices";
 
 class GetDoctorsByIdControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         try {
             const { id } = request.params;
             const isHospital = request.userRole === "hospital";
@@ -16,12 +17,11 @@ class GetDoctorsByIdControllers {
                 isHospital || isAdmin || isOwnDoctorProfile
             );
             if (request.userRole === "doctor" && !isOwnDoctorProfile && result.status !== "ACTIVE") {
-                return response.status(404).json({ message: "Médico não encontrado." });
+                return next(new AppError("Médico não encontrado.", 404));
             }
             return response.status(200).json(result);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível consultar o médico.";
-            return response.status(404).json({ message });
+            return next(error);
         }
     }
 }
