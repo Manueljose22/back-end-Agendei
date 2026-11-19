@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
 import { UpdateAppointmentsServices } from "../../services/appointments/UpdateAppointmentsServices";
 
 class UpdateAppointmentsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
         const { bookingDate, bookingHour, serviceId } = request.body;
 
@@ -19,8 +19,8 @@ class UpdateAppointmentsControllers {
             );
 
             return response.status(200).json({ message: "Consulta actualizada com sucesso." });
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message });
+        } catch (error) {
+            return next(error);
         }
     }
 }
