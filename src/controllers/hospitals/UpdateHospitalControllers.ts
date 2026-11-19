@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from "../../errors/AppError";
 import {
     getStoragePathFromPublicUrl,
     removeStorageFiles,
@@ -8,7 +9,7 @@ import { UpdateHospitalService } from '../../services/hospitals/UpdateHospitalSe
 import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 class UpdateHospitalControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
         const data = request.body;
         const images = request.files as Express.Multer.File[] | undefined;
@@ -61,11 +62,7 @@ class UpdateHospitalControllers {
                 message: "Dados actualizados com sucesso."
             });
         } catch (error: unknown) {
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível actualizar o hospital.";
-
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
