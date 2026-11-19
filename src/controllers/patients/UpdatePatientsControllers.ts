@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { patientsProfileUpdate } from "../../repositories/patients/IPatientsRepository";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { UpdatePatientsServices } from "../../services/patients/UpdatePatientsServices";
@@ -9,7 +10,7 @@ import {
 } from "../../middlewares/upload/uploadsFiles";
 
 class UpdatePatientsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
         let uploadedPath: string | null = null;
 
@@ -59,8 +60,7 @@ class UpdatePatientsControllers {
             }
 
             const message = error instanceof Error ? error.message : "Não foi possível actualizar os dados do paciente.";
-            const status = message.includes("permissão") ? 403 : 400;
-            return response.status(status).json({ message });
+            return next(error);
         }
     }
 }
