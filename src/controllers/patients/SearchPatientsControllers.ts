@@ -1,14 +1,15 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { PatientsRepository } from "../../repositories/patients/PatientsRepository";
 import { SearchPatientsServices } from "../../services/patients/SearchPatientsServices";
 import { toPatientPublic } from "../../services/patients/patientResponse";
 
 class SearchPatientsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { q } = request.query;
 
         if (typeof q !== "string") {
-            return response.status(400).json({ message: "O parâmetro 'q' deve ser um texto." });
+            return next(new AppError("O parâmetro 'q' deve ser um texto.", 400));
         }
 
         try {
@@ -18,8 +19,7 @@ class SearchPatientsControllers {
 
             return response.status(200).json((patients ?? []).map(toPatientPublic));
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível pesquisar pacientes.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
