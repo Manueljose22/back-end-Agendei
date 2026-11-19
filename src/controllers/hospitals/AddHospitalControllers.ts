@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from "../../errors/AppError";
 import {
     removeStorageFiles,
     uploadFilesWithPaths
@@ -7,7 +8,7 @@ import { AddHospitalService } from '../../services/hospitals/AddHospitalService'
 import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 class AddHospitalControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const data = request.body;
         const images = request.files as Express.Multer.File[] | undefined;
         let uploadedPaths: string[] = [];
