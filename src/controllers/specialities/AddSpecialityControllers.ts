@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AddSpecialityService } from '../../services/specialities/AddSpecialityService';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
@@ -7,7 +7,7 @@ import { SpecialityRepository } from '../../repositories/specialities/Speciality
 
 
 class AddSpecialityControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const data = request.body;
         const {userId} = request;
@@ -21,8 +21,8 @@ class AddSpecialityControllers {
 
             return response.status(201).json({ message: "Especialidade cadastrada com sucesso." })
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
