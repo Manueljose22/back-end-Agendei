@@ -1,3 +1,4 @@
+import { DoctorStatus } from "@prisma/client";
 import { normalizeDoctorStatus } from "../../utils/doctorStatus";
 import { doctorRequest, IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
@@ -9,7 +10,7 @@ class AddDoctorsServices {
         if (!data.specialtyId) throw new Error("Preencha o campo especialidade!");
         if (!data.hospitalId) throw new Error("Hospital não identificado.");
 
-        data.status = normalizeDoctorStatus(data.status, undefined);
+        data.status = normalizeDoctorStatus(data.status, DoctorStatus.ACTIVE);
 
         const duplicate = await this.doctorsRepository.findByName(data.name.trim(), data.hospitalId);
         if (duplicate) throw new Error("Já existe um médico com este nome neste hospital.");
