@@ -36,8 +36,7 @@ class AddPatientsControllers {
                 }
             }
 
-            const message = error instanceof Error ? error.message : "Não foi possível cadastrar o paciente.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
