@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 import { DoctorAvailabilityService } from "../schedules/DoctorAvailabilityService";
@@ -13,9 +14,9 @@ class UpdateAppointmentsServices {
     ): Promise<void> {
         const appointment = await this.appointmentsRepository.findById(id);
 
-        if (!appointment) throw new Error("Consulta não encontrada.");
+        if (!appointment) throw new AppError("Consulta não encontrada.", 404);
         if (appointment.status.toLowerCase() === "cancelado") {
-            throw new Error("Não é possível alterar uma consulta cancelada.");
+            throw new AppError("Não é possível alterar uma consulta cancelada.", 409);
         }
 
         const canManage =
@@ -25,7 +26,7 @@ class UpdateAppointmentsServices {
             (role === "hospital" && appointment.hospitalId === userId);
 
         if (!canManage) {
-            throw new Error("Não tem permissão para alterar esta consulta.");
+            throw new AppError("Não tem permissão para alterar esta consulta.", 403);
         }
 
         const bookingDate = data.bookingDate ?? appointment.booking_date.toISOString().slice(0, 10);
@@ -33,16 +34,16 @@ class UpdateAppointmentsServices {
         const serviceId = data.serviceId ?? appointment.idService;
 
         if (!/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)) {
-            throw new Error("A data deve estar no formato YYYY-MM-DD.");
+            throw new AppError("A data deve estar no formato YYYY-MM-DD.", 400);
         }
         const parsedDate = new Date(`${bookingDate}T00:00:00.000Z`);
         if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== bookingDate) {
-            throw new Error("A data seleccionada é inválida.");
+            throw new AppError("A data seleccionada é inválida.", 400);
         }
         if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(bookingHour)) {
-            throw new Error("A hora deve estar no formato HH:mm.");
+            throw new AppError("A hora deve estar no formato HH:mm.", 400);
         }
-        if (!serviceId) throw new Error("É necessário seleccionar um serviço.");
+        if (!serviceId) throw new AppError("É necessário seleccionar um serviço.", 400);
 
         // Gera a disponibilidade do dia solicitado antes da validação transaccional da remarcação.
         const availabilityService = new DoctorAvailabilityService();
