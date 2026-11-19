@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { adminSave, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 
@@ -16,7 +17,7 @@ class GetAdminByIdServices {
         const admin = await this.IAdminRepository.findById(id);
 
         if (!admin) {
-            throw new Error('Não existe este usuário!');
+            throw new AppError('Não existe este usuário!', 404);
         }
 
         return admin;
