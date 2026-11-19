@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
+import { AppError } from "../../errors/AppError";
 
 type JWTPayload = {
     id: string;
@@ -16,22 +17,20 @@ export const ensuredAuthenticated = (request: Request, response: Response, next:
     const [scheme, token] = authHeader?.split(" ") ?? [];
 
     if (scheme !== "Bearer" || !token) {
-        return response.status(401).json({ message: "Token de autenticação não fornecido." });
+        return next(new AppError("Token de autenticação não fornecido.", 401));
     }
 
     const secret = process.env.JwtSecret;
 
     if (!secret) {
-        return response.status(500).json({ message: "Serviço de autenticação não configurado." });
+        return next(new AppError("Serviço de autenticação não configurado.", 500));
     }
 
     try {
         const payload = verify(token, secret) as JWTPayload;
 
         if (!payload.id || !validRoles.includes(payload.role)) {
-            return response.status(401).json({
-                message: "Token inválido ou sem perfil de acesso. Inicie sessão novamente."
-            });
+            return next(new AppError("Token inválido ou sem perfil de acesso. Inicie sessão novamente.", 401));
         }
 
         request.userId = payload.id;
@@ -41,6 +40,6 @@ export const ensuredAuthenticated = (request: Request, response: Response, next:
 
         return next();
     } catch {
-        return response.status(401).json({ message: "Token inválido ou expirado." });
+        return next(new AppError("Token inválido ou expirado.", 401));
     }
 };
