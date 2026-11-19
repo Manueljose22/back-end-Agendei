@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository } from "../../repositories/specialities/ISpecialityRepository";
 
 
@@ -14,7 +15,7 @@ class DeleteSpecialityByIdService {
         const speciality = await this.ISpecialityRepository.findById(id);
 
         if (!speciality) {
-            throw new Error("Especialidade não existe.");
+            throw new AppError("Especialidade não existe.", 404);
         }
 
         await this.ISpecialityRepository.delete(id);
