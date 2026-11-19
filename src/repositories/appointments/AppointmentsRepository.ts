@@ -353,6 +353,10 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             new Date(Date.UTC(year, month - 1, day, Math.floor(minutes / 60) - 1, minutes % 60));
 
         await prismaClient.$transaction(async (tx) => {
+            // Serializa alterações concorrentes sobre o mesmo registo antes de o ler.
+            const appointmentLockKey = `appointment-record:${id}`;
+            await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${appointmentLockKey}))) SELECT 1::int AS locked FROM lock`;
+
             const current = await tx.appointment.findUnique({
                 where: { id },
                 select: { doctorId: true, status: true, bookingDate: true }
@@ -479,11 +483,19 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     upadatedAt: new Date()
                 }
             });
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        }, {
+            isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+            maxWait: 10_000,
+            timeout: 15_000
+        });
     }
 
     async cancel(id: string): Promise<void> {
         await prismaClient.$transaction(async (tx) => {
+            // Serializa cancelamentos e remarcações da mesma consulta.
+            const appointmentLockKey = `appointment-record:${id}`;
+            await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${appointmentLockKey}))) SELECT 1::int AS locked FROM lock`;
+
             const appointment = await tx.appointment.findUnique({
                 where: { id },
                 select: { doctorId: true, bookingDate: true, status: true }
@@ -503,6 +515,10 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             if (result.count !== 1) {
                 throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
             }
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        }, {
+            isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+            maxWait: 10_000,
+            timeout: 15_000
+        });
     }
 }
