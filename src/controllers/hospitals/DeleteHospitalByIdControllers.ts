@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from "../../errors/AppError";
 import {
     getStoragePathFromPublicUrl,
     removeStorageFiles
@@ -7,7 +8,7 @@ import { DeleteHospitalByIdService } from '../../services/hospitals/DeleteHospit
 import { HospitalsRepository } from '../../repositories/hospitals/HospitalsRepository';
 
 class DeleteHospitalByIdControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
 
         try {
@@ -31,11 +32,7 @@ class DeleteHospitalByIdControllers {
                 message: "Hospital eliminado com sucesso."
             });
         } catch (error: unknown) {
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível eliminar o hospital.";
-
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
