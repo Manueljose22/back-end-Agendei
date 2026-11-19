@@ -130,14 +130,18 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     isBlocked: false,
                     hourStart: { lte: startUtc },
                     hourEnd: { gte: endUtc },
-                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }]
+                    OR: [
+                        { scheduleRuleId: null, scheduleExceptionId: null },
+                        { scheduleRule: { is: { isActive: true } } },
+                        { scheduleException: { is: { isActive: true } } }
+                    ]
                 },
                 select: { id: true }
             });
             if (!availability) throw new Error("O horário seleccionado não cabe num período disponível da agenda.");
 
             const exceptions = await tx.scheduleException.findMany({
-                where: { scheduleId: schedule.id, date },
+                where: { scheduleId: schedule.id, date, isActive: true },
                 select: { type: true, startMinute: true, endMinute: true }
             });
             if (exceptions.some(item => item.type === "BLOCK_DAY")) {
@@ -413,7 +417,11 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     isBlocked: false,
                     hourStart: { lte: startUtc },
                     hourEnd: { gte: endUtc },
-                    OR: [{ scheduleRuleId: null }, { scheduleRule: { is: { isActive: true } } }]
+                    OR: [
+                        { scheduleRuleId: null, scheduleExceptionId: null },
+                        { scheduleRule: { is: { isActive: true } } },
+                        { scheduleException: { is: { isActive: true } } }
+                    ]
                 },
                 select: { id: true }
             });
@@ -422,7 +430,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             }
 
             const exceptions = await tx.scheduleException.findMany({
-                where: { scheduleId: schedule.id, date },
+                where: { scheduleId: schedule.id, date, isActive: true },
                 select: { type: true, startMinute: true, endMinute: true }
             });
             if (exceptions.some(item => item.type === "BLOCK_DAY")) {
