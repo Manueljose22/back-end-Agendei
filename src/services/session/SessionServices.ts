@@ -1,4 +1,5 @@
 import { compare } from "bcrypt";
+import { AppError } from "../../errors/AppError";
 import { payloadRequest, payloadSave } from "../../repositories/sessions/ISessionsRepository";
 import { SessionRepository } from "../../repositories/sessions/SessionsRepository";
 import { createUsersToken } from "../../middlewares/auth/create-users-token";
