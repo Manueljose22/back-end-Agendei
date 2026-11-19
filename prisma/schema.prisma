@@ -217,7 +217,6 @@ model Availability {
   doctor              Doctor                   @relation(fields: [doctorId], references: [id])
   scheduleRule        ScheduleRule?            @relation(fields: [scheduleRuleId], references: [id], onDelete: SetNull)
   scheduleException   ScheduleException?       @relation(fields: [scheduleExceptionId], references: [id], onDelete: SetNull)
-  timetables          Timetables_Appointment[]
 
   @@unique([scheduleRuleId, date])
   @@unique([doctorId, date, hourStart, hourEnd])
@@ -226,18 +225,6 @@ model Availability {
   @@map("availabilities")
 }
 
-
-model Timetables_Appointment {
-  id             String       @id @default(uuid())
-  availabilityId String
-  hour           DateTime
-  isBooked       Boolean      @default(false)
-  availability   Availability @relation(fields: [availabilityId], references: [id])
-
-  @@unique([availabilityId, hour])
-  @@index([availabilityId])
-  @@map("timetables_appointments")
-}
 
 model history_Medical {
   id        String   @id @default(uuid())
