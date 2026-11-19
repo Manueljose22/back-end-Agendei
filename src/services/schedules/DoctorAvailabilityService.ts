@@ -110,7 +110,37 @@ export class DoctorAvailabilityService {
         }
 
         if (rows.length) {
-            await prismaClient.availability.createMany({ data: rows, skipDuplicates: true });
+            await prismaClient.$transaction(async tx => {
+                const rowsToCreate: typeof rows = [];
+
+                for (const row of rows) {
+                    const existing = await tx.availability.updateMany({
+                        where: {
+                            doctorId: row.doctorId,
+                            date: row.date,
+                            hourStart: row.hourStart,
+                            hourEnd: row.hourEnd
+                        },
+                        data: {
+                            scheduleRuleId: row.scheduleRuleId,
+                            scheduleExceptionId: row.scheduleExceptionId
+                        }
+                    });
+
+                    if (existing.count === 0) {
+                        rowsToCreate.push(row);
+                    }
+                }
+
+                if (rowsToCreate.length) {
+                    await tx.availability.createMany({
+                        data: rowsToCreate,
+                        skipDuplicates: true
+                    });
+                }
+            }, {
+                isolationLevel: "ReadCommitted"
+            });
         }
 
         const blockedDates = schedule.exceptions.filter(item => item.type === "BLOCK_DAY").map(item => item.date);
