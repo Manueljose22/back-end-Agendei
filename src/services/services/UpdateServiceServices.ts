@@ -1,37 +1,34 @@
 import { AppError } from "../../errors/AppError";
-import { IServicesRepository, servicesRequest,  } from "../../repositories/services/IServicesRepository";
-
-
-
-
-
+import { IServicesRepository, servicesRequest } from "../../repositories/services/IServicesRepository";
 
 class UpdateServiceServices {
+    constructor(private serviceRepository: IServicesRepository) {}
 
-    constructor(private iserviceRepository: IServicesRepository) { }
-
-    async execute(id: string, data: Omit< servicesRequest, 'id'> ): Promise<void | Error> {
-
-        const service = await this.iserviceRepository.findById(id);
+    async execute(id: string, data: Omit<servicesRequest, "id">): Promise<void> {
+        const service = await this.serviceRepository.findById(id);
 
         if (!service) {
-            throw new AppError('Serviço invalido!', 404);
+            throw new AppError("Serviço inválido.", 404);
         }
 
-        console.log(data);
-        
+        const title = data.title?.trim() || service.title;
 
-        const updateData = {
-            id: service.id,
-            title: data.title ?? service.title,
-            description: data.title ?? service.title,
+        if (title !== service.title) {
+            const existingService = await this.serviceRepository.findByName(title);
+
+            if (existingService && existingService.id !== id) {
+                throw new AppError("Já existe um registro com este nome!", 409);
+            }
+        }
+
+        await this.serviceRepository.update(id, {
+            title,
+            description: data.description ?? service.description,
             duraction: data.duraction ?? service.duraction,
             status: data.status ?? service.status,
             specialtyId: data.specialtyId ?? service.specialtyId,
             price: data.price ?? service.price
-        }
-
-        await this.iserviceRepository.update(id, updateData);
+        });
     }
 }
 
