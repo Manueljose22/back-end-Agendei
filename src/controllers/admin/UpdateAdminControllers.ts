@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { UpdateAdminServices } from '../../services/admin/UpdateAdminServices';
 
@@ -8,7 +8,7 @@ import { UpdateAdminServices } from '../../services/admin/UpdateAdminServices';
 
 class UpdateAdminControllers {
 
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { id } = request.params;
         const data = request.body
@@ -22,8 +22,8 @@ class UpdateAdminControllers {
 
             return response.json({message: 'Dados actualizados com sucesso.'});
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
