@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { TimetablesRepository } from "../../repositories/timetables/TimetablesRepository";
 import { CreateAvailabilityService } from "../../services/timetables/CreateAvailabilityService";
 
@@ -7,7 +7,7 @@ import { CreateAvailabilityService } from "../../services/timetables/CreateAvail
 
 
 class CreateAvailabilityController {
-  async handle(request: Request, response: Response): Promise<Response> {
+  async handle(request: Request, response: Response, next: NextFunction) {
     const { doctorId, date, hourStart, hourEnd } = request.body;
 
     const timetablesRepository = new TimetablesRepository();
@@ -16,8 +16,8 @@ class CreateAvailabilityController {
     try {
       await createAvailabilityService.execute({ doctorId, date, hourStart, hourEnd });
       return response.status(201).send();
-    } catch (error: any) {
-      return response.status(400).json({ error: error.message });
+    } catch (error: unknown) {
+      return next(error);
     }
   }
 }
