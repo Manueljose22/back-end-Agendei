@@ -7,7 +7,6 @@ import { appointmentsRoutes } from "./appointments.routes";
 import { adminsRoutes } from "./admins.routes";
 import { HospitalsRoutes } from "./hospitals.routes";
 import { SpecialitiesRoutes } from "./specialities.routes";
-import { timetablesRoutes } from "./timetables.routes";
 import { schedulesRoutes } from "./schedules.routes";
 
 
@@ -22,7 +21,6 @@ routes.use(appointmentsRoutes);
 routes.use(adminsRoutes);
 routes.use(HospitalsRoutes);
 routes.use(SpecialitiesRoutes);
-routes.use(timetablesRoutes);
 routes.use(schedulesRoutes);
 
 
