@@ -18,6 +18,11 @@ enum HospitalStatus {
   SUSPENDED
 }
 
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Admin {
   id           String   @id @default(uuid())
   name         String
@@ -83,7 +88,7 @@ model Doctor {
   specialtyId       String
   hospitalId        String?
   pushToken         String?
-  status            String? @default(value: "activo")
+  status            DoctorStatus @default(ACTIVE)
 
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @default(now()) @map("updated_at")
