@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository } from "./IAppointmentsRepository";
@@ -23,7 +24,7 @@ async function withSerializationRetry<T>(
         }
     }
 
-    throw new Error("Não foi possível concluir a operação após várias tentativas.");
+    throw new AppError("Não foi possível concluir a operação após várias tentativas.", 409);
 }
 
 export class AppointmentsRepository implements IAppointmentsRepository {
@@ -46,7 +47,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             });
 
             if (!doctorService) {
-                throw new Error("O serviço seleccionado não está associado a este médico.");
+                throw new AppError("O serviço seleccionado não está associado a este médico.", 400);
             }
 
             const reservation = await transaction.timetables_Appointment.updateMany({
@@ -65,7 +66,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             });
 
             if (reservation.count !== 1) {
-                throw new Error("Este horário acabou de ser reservado. Escolha outro horário.");
+                throw new AppError("Este horário acabou de ser reservado. Escolha outro horário.", 409);
             }
 
             await transaction.appointment.create({
@@ -99,10 +100,10 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
             });
             if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
-                throw new Error("Médico ou hospital indisponível para agendamentos.");
+                throw new AppError("Médico ou hospital indisponível para agendamentos.", 409);
             }
             const schedule = doctor.DoctorSchedule;
-            if (!schedule || !schedule.isActive) throw new Error("O médico ainda não configurou a agenda semanal.");
+            if (!schedule || !schedule.isActive) throw new AppError("O médico ainda não configurou a agenda semanal.", 409);
 
             const todayParts = new Intl.DateTimeFormat("en-CA", {
                 timeZone: "Africa/Luanda", year: "numeric", month: "2-digit", day: "2-digit"
@@ -111,17 +112,17 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             const today = new Date(`${part("year")}-${part("month")}-${part("day")}T00:00:00.000Z`);
             const latestDate = new Date(today.getTime() + schedule.bookingWindowDays * 86400000);
             if (date < today || date > latestDate) {
-                throw new Error("A data está fora do período permitido para agendamentos.");
+                throw new AppError("A data está fora do período permitido para agendamentos.", 400);
             }
 
             const doctorService = await tx.doctor_Service.findUnique({
                 where: { doctorId_serviceId: { doctorId: data.doctorId, serviceId: data.serviceId } }
             });
-            if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
+            if (!doctorService) throw new AppError("O serviço seleccionado não está associado a este médico.", 400);
             const durationMinutes = doctorService.durationMinutes;
             const endValue = startValue + durationMinutes;
             const endUtc = toUtc(endValue);
-            if (endValue > 24 * 60) throw new Error("A consulta não pode ultrapassar o fim do dia.");
+            if (endValue > 24 * 60) throw new AppError("A consulta não pode ultrapassar o fim do dia.", 400);
 
             const availability = await tx.availability.findFirst({
                 where: {
@@ -138,21 +139,21 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 },
                 select: { id: true }
             });
-            if (!availability) throw new Error("O horário seleccionado não cabe num período disponível da agenda.");
+            if (!availability) throw new AppError("O horário seleccionado não cabe num período disponível da agenda.", 409);
 
             const exceptions = await tx.scheduleException.findMany({
                 where: { scheduleId: schedule.id, date, isActive: true },
                 select: { type: true, startMinute: true, endMinute: true }
             });
             if (exceptions.some(item => item.type === "BLOCK_DAY")) {
-                throw new Error("O médico não está disponível nesta data.");
+                throw new AppError("O médico não está disponível nesta data.", 409);
             }
             if (exceptions.some(item =>
                 item.type === "BLOCK_PERIOD" &&
                 item.startMinute !== null && item.endMinute !== null &&
                 startValue < item.endMinute && endValue > item.startMinute
             )) {
-                throw new Error("O horário seleccionado coincide com um período bloqueado.");
+                throw new AppError("O horário seleccionado coincide com um período bloqueado.", 409);
             }
 
             const existing = await tx.appointment.findMany({
@@ -176,7 +177,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     ? (() => { const [eh, em] = item.bookingEnd!.split(":").map(Number); return eh * 60 + em; })()
                     : existingStart + existingDuration;
                 if (startValue < existingEnd && endValue > existingStart) {
-                    throw new Error("Este horário entra em conflito com outra consulta já marcada.");
+                    throw new AppError("Este horário entra em conflito com outra consulta já marcada.", 409);
                 }
             }
 
@@ -365,8 +366,8 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 where: { id },
                 select: { doctorId: true, status: true, bookingDate: true }
             });
-            if (!current) throw new Error("Consulta não encontrada.");
-            if (current.status === "Cancelado") throw new Error("Não é possível alterar uma consulta cancelada.");
+            if (!current) throw new AppError("Consulta não encontrada.", 404);
+            if (current.status === "Cancelado") throw new AppError("Não é possível alterar uma consulta cancelada.", 409);
 
             // Bloqueia as duas datas por ordem determinística para evitar deadlocks em remarcações.
             const oldDate = current.bookingDate.toISOString().slice(0, 10);
@@ -382,11 +383,11 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 select: { status: true, Hospital: { select: { status: true } }, DoctorSchedule: true }
             });
             if (!doctor || doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE") {
-                throw new Error("Médico ou hospital indisponível para agendamentos.");
+                throw new AppError("Médico ou hospital indisponível para agendamentos.", 409);
             }
             const schedule = doctor.DoctorSchedule;
             if (!schedule || !schedule.isActive) {
-                throw new Error("O médico ainda não configurou a agenda semanal.");
+                throw new AppError("O médico ainda não configurou a agenda semanal.", 409);
             }
 
             const todayParts = new Intl.DateTimeFormat("en-CA", {
@@ -396,17 +397,17 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             const today = new Date(`${part("year")}-${part("month")}-${part("day")}T00:00:00.000Z`);
             const latestDate = new Date(today.getTime() + schedule.bookingWindowDays * 86400000);
             if (date < today || date > latestDate) {
-                throw new Error("A data está fora do período permitido para agendamentos.");
+                throw new AppError("A data está fora do período permitido para agendamentos.", 400);
             }
 
             const doctorService = await tx.doctor_Service.findUnique({
                 where: { doctorId_serviceId: { doctorId: current.doctorId, serviceId: data.serviceId } }
             });
-            if (!doctorService) throw new Error("O serviço seleccionado não está associado a este médico.");
+            if (!doctorService) throw new AppError("O serviço seleccionado não está associado a este médico.", 400);
 
             const durationMinutes = doctorService.durationMinutes;
             const endValue = startValue + durationMinutes;
-            if (endValue > 24 * 60) throw new Error("A consulta não pode ultrapassar o fim do dia.");
+            if (endValue > 24 * 60) throw new AppError("A consulta não pode ultrapassar o fim do dia.", 400);
             const startUtc = toUtc(startValue);
             const endUtc = toUtc(endValue);
 
@@ -426,7 +427,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 select: { id: true }
             });
             if (!availability) {
-                throw new Error("O novo horário não cabe num período disponível da agenda.");
+                throw new AppError("O novo horário não cabe num período disponível da agenda.", 409);
             }
 
             const exceptions = await tx.scheduleException.findMany({
@@ -434,14 +435,14 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 select: { type: true, startMinute: true, endMinute: true }
             });
             if (exceptions.some(item => item.type === "BLOCK_DAY")) {
-                throw new Error("O médico não está disponível nesta data.");
+                throw new AppError("O médico não está disponível nesta data.", 409);
             }
             if (exceptions.some(item =>
                 item.type === "BLOCK_PERIOD" &&
                 item.startMinute !== null && item.endMinute !== null &&
                 startValue < item.endMinute && endValue > item.startMinute
             )) {
-                throw new Error("O horário seleccionado coincide com um período bloqueado.");
+                throw new AppError("O horário seleccionado coincide com um período bloqueado.", 409);
             }
 
             const existing = await tx.appointment.findMany({
@@ -476,7 +477,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     : existingStart + existingDuration;
 
                 if (startValue < existingEnd && endValue > existingStart) {
-                    throw new Error("Este horário entra em conflito com outra consulta já marcada.");
+                    throw new AppError("Este horário entra em conflito com outra consulta já marcada.", 409);
                 }
             }
 
@@ -509,7 +510,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 select: { doctorId: true, bookingDate: true, status: true }
             });
             if (!appointment || appointment.status === "Cancelado") {
-                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+                throw new AppError("A consulta já foi cancelada ou não pode ser actualizada.", 409);
             }
 
             const date = appointment.bookingDate.toISOString().slice(0, 10);
@@ -521,7 +522,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 data: { status: "Cancelado", upadatedAt: new Date() }
             });
             if (result.count !== 1) {
-                throw new Error("A consulta já foi cancelada ou não pode ser actualizada.");
+                throw new AppError("A consulta já foi cancelada ou não pode ser actualizada.", 409);
             }
         }, {
             isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
