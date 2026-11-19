@@ -1,31 +1,27 @@
 import { AppError } from "../../errors/AppError";
 import { IServicesRepository, servicesRequest } from "../../repositories/services/IServicesRepository";
 
-
-
-
-
-
 class CreateServiceServices {
+    constructor(private serviceRepository: IServicesRepository) {}
 
-    constructor(private iserviceRepository: IServicesRepository) { }
+    async execute(data: servicesRequest): Promise<void> {
+        const title = data.title?.trim();
 
-    async execute(data: servicesRequest): Promise<void | Error> {
-        
-        const service = await this.iserviceRepository.findByName(data.title);
+        if (!title) {
+            throw new AppError("Preencha o campo nome!", 400);
+        }
+
+        if (!data.specialtyId) {
+            throw new AppError("Preencha o campo especialidade!", 400);
+        }
+
+        const service = await this.serviceRepository.findByName(title);
 
         if (service) {
-            throw new AppError('Já existe um registro com este nome!', 409);
+            throw new AppError("Já existe um registro com este nome!", 409);
         }
 
-        if (!data.title) {
-            throw new AppError('Preencha o campo nome!', 400);
-        } else if (!data.specialtyId) {
-            throw new AppError('Preencha o campo especialidade!', 400);
-        }
-
-        await this.iserviceRepository.save(data);
-
+        await this.serviceRepository.save({ ...data, title });
     }
 }
 
