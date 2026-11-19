@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from "express";
 import { UpdateSpecialityService } from '../../services/specialities/UpdateSpecialityService';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
@@ -7,7 +7,7 @@ import { SpecialityRepository } from '../../repositories/specialities/Speciality
 
 
 class UpdateSpecialityControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { id } = request.params;
         const data = request.body;
@@ -19,9 +19,9 @@ class UpdateSpecialityControllers {
 
             return response.json({ message: "Dados actualizados com sucesso." });
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
-        }
+        } catch (error: unknown) {
+      return next(error);
+    }
     }
 }
 
