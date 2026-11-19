@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository, specialitySaved } from "../../repositories/specialities/ISpecialityRepository";
 
 
@@ -15,7 +16,7 @@ class GetSpecialtyByHospitalService {
         
         
         if (!speciality) {
-            throw new Error("Nenhum especialidade foi registrada.");
+            throw new AppError("Nenhum especialidade foi registrada.", 404);
         }
 
         return speciality;
