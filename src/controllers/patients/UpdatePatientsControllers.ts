@@ -59,7 +59,6 @@ class UpdatePatientsControllers {
                 }
             }
 
-            const message = error instanceof Error ? error.message : "Não foi possível actualizar os dados do paciente.";
             return next(error);
         }
     }
