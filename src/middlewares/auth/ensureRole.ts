@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { ensuredAuthenticated } from "./ensuredAuthenticated";
+import { AppError } from "../../errors/AppError";
 
 /**
  * RBAC: permite executar a rota apenas aos perfis explicitamente autorizados.
@@ -12,9 +13,7 @@ export const ensureRole = (...allowedRoles: AccountRole[]) => {
             if (error) return next(error);
 
             if (!allowedRoles.includes(request.userRole)) {
-                return response.status(403).json({
-                    message: "Não tem permissões para executar esta operação."
-                });
+                return next(new AppError("Não tem permissões para executar esta operação.", 403));
             }
 
             return next();
