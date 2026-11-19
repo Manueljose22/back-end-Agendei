@@ -1,3 +1,5 @@
+import { DoctorStatus } from "@prisma/client";
+
 export type doctorRequest = {
   name: string;
   photo: string | null;
@@ -10,7 +12,7 @@ export type doctorRequest = {
   numberOfPatients: number | null;
   rating: number | null;
   specialtyId: string;
-  status: string | null;
+  status: DoctorStatus;
   hospitalId: string | null;
 };
 
@@ -19,7 +21,7 @@ export type doctorSave = {
   name: string;
   photo: string | null;
   email: string;
-  status: string | null;
+  status: DoctorStatus;
   phone: string | null;
   bio: string | null;
   address: string | null;
