@@ -40,48 +40,6 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         });
     }
 
-    async createWithBookedHour(data: appointmentsRequest, timetableId: string): Promise<void> {
-        await prismaClient.$transaction(async (transaction) => {
-            const doctorService = await transaction.doctor_Service.findUnique({
-                where: { doctorId_serviceId: { doctorId: data.doctorId, serviceId: data.serviceId } }
-            });
-
-            if (!doctorService) {
-                throw new AppError("O serviço seleccionado não está associado a este médico.", 400);
-            }
-
-            const reservation = await transaction.timetables_Appointment.updateMany({
-                where: {
-                    id: timetableId,
-                    isBooked: false,
-                    availability: {
-                        is: {
-                            doctorId: data.doctorId,
-                            date: new Date(`${data.bookingDate}T00:00:00Z`),
-                            isBlocked: false
-                        }
-                    }
-                },
-                data: { isBooked: true }
-            });
-
-            if (reservation.count !== 1) {
-                throw new AppError("Este horário acabou de ser reservado. Escolha outro horário.", 409);
-            }
-
-            await transaction.appointment.create({
-                data: {
-                    patientId: data.patientId,
-                    doctorId: data.doctorId,
-                    serviceId: data.serviceId,
-                    bookingHour: data.bookingHour,
-                    bookingDate: new Date(`${data.bookingDate}T00:00:00Z`)
-                }
-            });
-        });
-    }
-
-
     async createWithSchedule(data: appointmentsRequest): Promise<void> {
         const [year, month, day] = data.bookingDate.split("-").map(Number);
         const [startHour, startMinute] = data.bookingHour.split(":").map(Number);
