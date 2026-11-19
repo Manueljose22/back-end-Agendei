@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository, specialityInput } from "../../repositories/specialities/ISpecialityRepository";
 import { SpecialityRepository } from "../../repositories/specialities/SpecialityRepository";
 
@@ -14,7 +15,7 @@ class UpdateSpecialityService {
         const speciality = await this.ISpecialityRepository.findById(id);
 
         if (!speciality) {
-            throw new Error("Especialidade não existe.");
+            throw new AppError("Especialidade não existe.", 404);
         }
 
 
