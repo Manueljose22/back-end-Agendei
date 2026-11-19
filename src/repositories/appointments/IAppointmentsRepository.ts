@@ -32,7 +32,6 @@ export type appointmentsSave = {
 }
 
 export interface IAppointmentsRepository {
-    save({patientId, serviceId, doctorId, bookingDate, bookingHour}: appointmentsRequest): Promise<void>;
     createWithSchedule(data: appointmentsRequest): Promise<void>;
     findAllByPatient(userId: string): Promise<appointmentsSave[] | null>;
     findById(id: string): Promise<appointmentsSave | null>;
