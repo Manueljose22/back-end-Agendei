@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IServicesRepository, servicesRequest,  } from "../../repositories/services/IServicesRepository";
 
 
@@ -14,7 +15,7 @@ class UpdateServiceServices {
         const service = await this.iserviceRepository.findById(id);
 
         if (!service) {
-            throw new Error('Serviço invalido!');
+            throw new AppError('Serviço invalido!', 404);
         }
 
         console.log(data);
