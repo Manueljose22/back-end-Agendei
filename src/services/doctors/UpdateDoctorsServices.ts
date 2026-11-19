@@ -1,3 +1,4 @@
+import { normalizeDoctorStatus } from "../../utils/doctorStatus";
 import { IDoctorsRepository, UpdateDoctor } from "../../repositories/doctors/IDoctorsRepository";
 
 class UpdateDoctorsServices {
@@ -30,7 +31,7 @@ class UpdateDoctorsServices {
             numberOfPatients: data.numberOfPatients,
             rating: data.rating,
             specialtyId: data.specialtyId,
-            status: data.status
+            status: data.status === undefined ? undefined : normalizeDoctorStatus(data.status)
         };
 
         await this.doctorsRepository.update(id, safeData, isPlatformAdmin ? undefined : actorHospitalId);
