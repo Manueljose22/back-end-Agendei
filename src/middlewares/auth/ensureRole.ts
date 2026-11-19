@@ -8,7 +8,7 @@ import { AppError } from "../../errors/AppError";
  * A autenticação é sempre validada antes de avaliar o papel.
  */
 export const ensureRole = (...allowedRoles: AccountRole[]) => {
-    return (request: Request, response: Response, next: NextFunction) => {
+    return (request: Request, _response: Response, next: NextFunction) => {
         return ensuredAuthenticated(request, response, (error?: unknown) => {
             if (error) return next(error);
 
