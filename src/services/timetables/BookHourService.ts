@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 
 import { ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
@@ -9,7 +10,7 @@ class BookHourService {
 
   async execute(timetableId: string): Promise<void> {
     if (!timetableId) {
-      throw new Error("O ID do horário é obrigatório.");
+      throw new AppError("O ID do horário é obrigatório.", 400);
     }
 
     await this.timetablesRepository.bookHour(timetableId);
