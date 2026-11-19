@@ -1,26 +1,27 @@
+import { AppError } from "../../errors/AppError";
 import { appointmentsRequest, IAppointmentsRepository } from "../../repositories/appointments/IAppointmentsRepository";
 
-
-
-
-
 class CreateAppointmentsServices {
+    constructor(private appointmentsRepository: IAppointmentsRepository) {}
 
-    constructor(private IAppointmentsRepository: IAppointmentsRepository) { }
-
-    async execute({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void | Error> {
-        
+    async execute({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
+        if (!patientId) {
+            throw new AppError("Paciente não identificado.", 401);
+        }
         if (!serviceId) {
-            throw new Error('Informe o serviço a agendar.')
-        } else if(!doctorId){
-            throw new Error('Informe o doctor com pretende a agendar.')
-        } else if(!bookingDate){
-            throw new Error('Informe a data a agendar.')
-        } else if(!bookingHour){
-            throw new Error('Informe a hora a agendar.')
+            throw new AppError("Informe o serviço a agendar.", 400);
+        }
+        if (!doctorId) {
+            throw new AppError("Informe o médico pretendido.", 400);
+        }
+        if (!bookingDate) {
+            throw new AppError("Informe a data a agendar.", 400);
+        }
+        if (!bookingHour) {
+            throw new AppError("Informe a hora a agendar.", 400);
         }
 
-        await this.IAppointmentsRepository.save({ patientId, serviceId, doctorId, bookingDate, bookingHour });
+        await this.appointmentsRepository.save({ patientId, serviceId, doctorId, bookingDate, bookingHour });
     }
 }
 
