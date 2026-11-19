@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { routes } from './routes/_index';
 import { prismaClient } from './config/prisma/prismaClient';
 import { errorHandler } from './middlewares/errorHandler';
+import { AppError } from './errors/AppError';
 
 dotenv.config();
 
@@ -31,6 +32,11 @@ process.on("SIGTERM", async () => {
 });
 
 app.use(routes);
+
+// Converte rotas inexistentes em erro tipado antes do handler global.
+app.use((request, _response, next) => {
+  next(new AppError(`Rota ${request.method} ${request.originalUrl} não encontrada.`, 404));
+});
 
 // Deve ser o último middleware, depois de todas as rotas.
 app.use(errorHandler);
