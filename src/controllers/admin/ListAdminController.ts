@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AdminRepository } from '../../repositories/admin/AdminRepository';
 import { ListAdminServices } from '../../services/admin/ListAdminServices';
 
@@ -9,7 +9,7 @@ import { ListAdminServices } from '../../services/admin/ListAdminServices';
 
 class ListAdminController {
 
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { search } = request.query;
 
@@ -22,8 +22,8 @@ class ListAdminController {
 
             return response.status(200).json(result);
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
