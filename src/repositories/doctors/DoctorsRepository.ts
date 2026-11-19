@@ -1,4 +1,5 @@
 import { HospitalStatus } from "@prisma/client";
+import { AppError } from "../../errors/AppError";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { IDoctorsRepository, doctorRequest, doctorSave, doctorServices, UpdateDoctor } from "./IDoctorsRepository";
 
@@ -134,15 +135,23 @@ export class DoctorsRepository implements IDoctorsRepository {
     }
 
     async update(id: string, data: UpdateDoctor, hospitalId?: string): Promise<void> {
-        await prismaClient.doctor.updateMany({
+        const result = await prismaClient.doctor.updateMany({
             where: { id, hospitalId: hospitalId ?? undefined },
             data
         });
+
+        if (result.count !== 1) {
+            throw new AppError("Médico não encontrado.", 404);
+        }
     }
 
     async delete(hospitalId: string, id: string): Promise<void> {
-        await prismaClient.doctor.deleteMany({
+        const result = await prismaClient.doctor.deleteMany({
             where: { id, hospitalId }
         });
+
+        if (result.count !== 1) {
+            throw new AppError("Médico não encontrado.", 404);
+        }
     }
 }
