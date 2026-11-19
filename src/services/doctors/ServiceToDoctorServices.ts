@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
 class ServiceToDoctorServices {
@@ -10,18 +11,18 @@ class ServiceToDoctorServices {
     ): Promise<void> {
         if (!serviceId || !doctorId || !Number.isFinite(price) || price < 0 ||
             !Number.isInteger(durationMinutes) || durationMinutes < 5 || durationMinutes > 240) {
-            throw new Error("Informe serviço, médico, preço válido e duração entre 5 e 240 minutos.");
+            throw new AppError("Informe serviço, médico, preço válido e duração entre 5 e 240 minutos.", 400);
         }
 
         const doctor = await this.doctorsRepository.findById(doctorId, undefined, true);
-        if (!doctor?.hospitalId) throw new Error("Médico não encontrado ou sem hospital associado.");
+        if (!doctor?.hospitalId) throw new AppError("Médico não encontrado ou sem hospital associado.", 404);
 
         if (!isPlatformAdmin && doctor.hospitalId !== actorHospitalId) {
-            throw new Error("O médico não pertence ao seu hospital.");
+            throw new AppError("O médico não pertence ao seu hospital.", 403);
         }
 
         const serviceBelongs = await this.doctorsRepository.serviceBelongsToHospital(serviceId, doctor.hospitalId);
-        if (!serviceBelongs) throw new Error("O serviço seleccionado não pertence ao hospital do médico.");
+        if (!serviceBelongs) throw new AppError("O serviço seleccionado não pertence ao hospital do médico.", 400);
 
         await this.doctorsRepository.serviceToDoctor({ serviceId, doctorId, price, durationMinutes });
     }
