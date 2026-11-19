@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository, specialitySaved } from "../../repositories/specialities/ISpecialityRepository";
 import { SpecialityRepository } from "../../repositories/specialities/SpecialityRepository";
 
@@ -14,7 +15,7 @@ class ListSpecialitiesService {
         const listSpeciality = await this.ISpecialityRepository.findAll();
 
         if (!listSpeciality) {
-            throw new Error("Não há Especialidade registrados.");
+            throw new AppError("Não há Especialidade registrados.", 404);
         }
 
         return listSpeciality;
