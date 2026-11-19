@@ -139,7 +139,7 @@ export class DoctorAvailabilityService {
                     });
                 }
             }, {
-                isolationLevel: "ReadCommitted"
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted
             });
         }
 
