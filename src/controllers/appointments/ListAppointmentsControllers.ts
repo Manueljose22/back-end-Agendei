@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
 import { ListAppointmentsServices } from "../../services/appointments/ListAppointmentsServices";
 
 class ListAppointmentsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { search } = request.query;
 
         try {
@@ -15,8 +15,8 @@ class ListAppointmentsControllers {
             });
 
             return response.status(200).json(result);
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message });
+        } catch (error) {
+            return next(error);
         }
     }
 }
