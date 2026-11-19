@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { IPatientsRepository, patientsSave } from "../../repositories/patients/IPatientsRepository";
 
 
@@ -16,7 +17,7 @@ class GetPatientsByIdServices {
         const client = await this.IPatientsRepository.findById(id);
 
         if (!client) {
-            throw new Error('Paciente não existe!');
+            throw new AppError("Paciente não existe!", 404);
         }
 
         return client;
