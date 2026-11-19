@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { hospitalUpdate, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 class UpdateHospitalService {
@@ -11,7 +12,7 @@ class UpdateHospitalService {
         const hospital = await this.IHospitalsRepository.findById(id);
 
         if (!hospital) {
-            throw new Error("Hospital não existe.");
+            throw new AppError("Hospital não existe.", 404);
         }
 
         const newData: hospitalUpdate = {
