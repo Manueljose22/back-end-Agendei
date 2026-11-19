@@ -1,18 +1,19 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { SpecialityRepository } from "../../repositories/specialities/SpecialityRepository";
 import { SearchSpecialitiesServices } from "../../services/specialities/SearchSpecialitiesServices";
 
 
 class SearchSpecialitiesControllers {
 
-  async handle(request: Request, response: Response) {
+  async handle(request: Request, response: Response, next: NextFunction) {
 
     const { q } = request.query;
 
     try {
 
       if (typeof q !== 'string') {
-        throw new Error("Query parameter 'q' must be a string.");
+        throw new AppError("O parâmetro q deve ser um texto.", 400);
       }
 
       const specialityRepository = new SpecialityRepository();
@@ -22,8 +23,8 @@ class SearchSpecialitiesControllers {
       
       return response.status(200).json(specialities);
 
-    } catch (error: any) {
-      return response.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      return next(error);
     }
   }
 }
