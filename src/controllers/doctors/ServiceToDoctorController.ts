@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { ServiceToDoctorServices } from "../../services/doctors/ServiceToDoctorServices";
 import { DoctorsRepository } from "../../repositories/doctors/DoctorsRepository";
 
 class ServiceToDoctorController {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { serviceId, doctorId, price, durationMinutes } = request.body;
         try {
             const service = new ServiceToDoctorServices(new DoctorsRepository());
@@ -14,8 +15,7 @@ class ServiceToDoctorController {
             );
             return response.status(200).json({ message: "Serviço vinculado ao médico com sucesso!" });
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível associar o serviço ao médico.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
