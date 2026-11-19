@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { HospitalStatus } from "@prisma/client";
 import { IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
@@ -8,7 +9,7 @@ class UpdateHospitalStatusService {
         const hospital = await this.hospitalsRepository.findById(id);
 
         if (!hospital) {
-            throw new Error("Hospital não existe.");
+            throw new AppError("Hospital não existe.", 404);
         }
 
         if (hospital.status === status) {
