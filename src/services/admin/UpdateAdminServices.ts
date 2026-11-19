@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { adminUpdate, IAdminRepository } from "../../repositories/admin/IAdminRepository";
 
 class UpdateAdminServices {
@@ -6,7 +7,7 @@ class UpdateAdminServices {
     async execute(id: string, data: adminUpdate): Promise<void> {
         const admin = await this.adminRepository.findById(id);
         if (!admin) {
-            throw new Error("Administrador não encontrado.");
+            throw new AppError("Administrador não encontrado.", 404);
         }
 
         const update: adminUpdate = {};
@@ -14,12 +15,12 @@ class UpdateAdminServices {
         if (data.email !== undefined) update.email = data.email;
 
         if (Object.keys(update).length === 0) {
-            throw new Error("Indique pelo menos um campo para actualizar.");
+            throw new AppError("Indique pelo menos um campo para actualizar.", 400);
         }
 
         if (update.email && update.email !== admin.email) {
             const existing = await this.adminRepository.findByEmail(update.email);
-            if (existing) throw new Error("Este email já está associado a outro administrador.");
+            if (existing) throw new AppError("Este email já está associado a outro administrador.", 409);
         }
 
         await this.adminRepository.update(id, update);
