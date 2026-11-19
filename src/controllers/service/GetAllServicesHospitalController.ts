@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ServicesRepository } from '../../repositories/services/ServicesRepository';
 import { GetAllServicesHospitalService } from '../../services/services/GetAllServicesHospitalService';
 
@@ -6,7 +6,7 @@ import { GetAllServicesHospitalService } from '../../services/services/GetAllSer
 
 
 class GetAllServicesHospitalController {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const {userId} = request;
         
         try {
@@ -18,8 +18,8 @@ class GetAllServicesHospitalController {
 
             return response.json(result)
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
