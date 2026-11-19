@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 
 import { IUpdateAvailability, ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
@@ -6,15 +7,15 @@ class UpdateAvailabilityService {
 
   async execute(id: string, data: IUpdateAvailability): Promise<void> {
     if (!id) {
-      throw new Error("O ID da disponibilidade é obrigatório.");
+      throw new AppError("O ID da disponibilidade é obrigatório.", 400);
     }
 
     if (!data.hourStart || !data.hourEnd) {
-      throw new Error("As horas de início e fim são obrigatórias.");
+      throw new AppError("As horas de início e fim são obrigatórias.", 400);
     }
 
     if (new Date(data.hourEnd) <= new Date(data.hourStart)) {
-      throw new Error("A hora de término deve ser após a hora de início.");
+      throw new AppError("A hora de término deve ser após a hora de início.", 400);
     }
 
     await this.timetablesRepository.updateAvailability(id, data);
