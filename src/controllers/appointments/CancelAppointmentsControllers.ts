@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AppointmentsRepository } from "../../repositories/appointments/AppointmentsRepository";
 import { CancelAppointmentsServices } from "../../services/appointments/CancelAppointmentsServices";
 
 class CancelAppointmentsControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
 
         try {
@@ -13,8 +13,8 @@ class CancelAppointmentsControllers {
             await service.execute(id, request.userId, request.userRole);
 
             return response.status(200).json({ message: "Consulta cancelada com sucesso." });
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message });
+        } catch (error) {
+            return next(error);
         }
     }
 }
