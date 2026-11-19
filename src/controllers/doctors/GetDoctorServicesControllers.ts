@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { DoctorsRepository } from "../../repositories/doctors/DoctorsRepository";
 import { GetDoctorServicesServices } from "../../services/doctors/GetDoctorServicesServices";
 
 class GetDoctorServicesControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
         const repository = new DoctorsRepository();
 
@@ -17,17 +18,16 @@ class GetDoctorServicesControllers {
                 isHospital || isAdmin || isOwnDoctorProfile
             );
 
-            if (!doctor) return response.status(404).json({ message: "Médico não encontrado ou sem permissão." });
+            if (!doctor) return next(new AppError("Médico não encontrado ou sem permissão.", 404));
             if (request.userRole === "doctor" && !isOwnDoctorProfile && doctor.status !== "ACTIVE") {
-                return response.status(404).json({ message: "Médico não encontrado." });
+                return next(new AppError("Médico não encontrado.", 404));
             }
 
             const service = new GetDoctorServicesServices(repository);
             const result = await service.execute(id);
             return response.status(200).json(result);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível consultar os serviços do médico.";
-            return response.status(400).json({ message });
+            return next(error);
         }
     }
 }
