@@ -1,17 +1,16 @@
 import { HospitalStatus } from "@prisma/client";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AppError } from "../../errors/AppError";
 import { HospitalsRepository } from "../../repositories/hospitals/HospitalsRepository";
 import { UpdateHospitalStatusService } from "../../services/hospitals/UpdateHospitalStatusService";
 
 class UpdateHospitalStatusController {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
         const { status } = request.body as { status?: unknown };
 
         if (status !== HospitalStatus.ACTIVE && status !== HospitalStatus.SUSPENDED) {
-            return response.status(400).json({
-                message: "Estado inválido. Utilize ACTIVE ou SUSPENDED."
-            });
+            return next(new AppError("Estado inválido. Utilize ACTIVE ou SUSPENDED.", 400));
         }
 
         try {
@@ -26,11 +25,7 @@ class UpdateHospitalStatusController {
                 hospital
             });
         } catch (error: unknown) {
-            const message = error instanceof Error
-                ? error.message
-                : "Não foi possível actualizar o estado do hospital.";
-
-            return response.status(404).json({ message });
+            return next(error);
         }
     }
 }
