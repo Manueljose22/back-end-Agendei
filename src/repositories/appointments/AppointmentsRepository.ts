@@ -2,6 +2,30 @@ import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { AppointmentAccess, appointmentsRequest, appointmentsSave, IAppointmentsRepository } from "./IAppointmentsRepository";
 
+async function withSerializationRetry<T>(
+    operation: () => Promise<T>,
+    maxAttempts = 3
+): Promise<T> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await operation();
+        } catch (error) {
+            const isSerializationConflict =
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === "P2034";
+
+            if (!isSerializationConflict || attempt === maxAttempts) {
+                throw error;
+            }
+
+            // Pequeno intervalo para permitir que a transacção concorrente termine.
+            await new Promise(resolve => setTimeout(resolve, 50 * attempt));
+        }
+    }
+
+    throw new Error("Não foi possível concluir a operação após várias tentativas.");
+}
+
 export class AppointmentsRepository implements IAppointmentsRepository {
     async save({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
         await prismaClient.appointment.create({
@@ -66,7 +90,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         const startUtc = toUtc(startValue);
         const lockKey = `appointment:${data.doctorId}:${data.bookingDate}`;
 
-        await prismaClient.$transaction(async (tx) => {
+        await withSerializationRetry(() => prismaClient.$transaction(async (tx) => {
             // Serializa reservas do mesmo médico no mesmo dia para evitar dupla marcação concorrente.
             await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock`;
 
@@ -163,7 +187,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     durationMinutes
                 }
             });
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }));
     }
 
     async findById(id: string): Promise<appointmentsSave | null> {
