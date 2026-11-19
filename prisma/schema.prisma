@@ -74,10 +74,10 @@ model Patient {
 }
 
 model Doctor {
-  id                String  @id @default(uuid())
+  id                String       @id @default(uuid())
   name              String
   photo             String?
-  email             String  @unique
+  email             String       @unique
   password          String?
   phone             String?
   bio               String?
