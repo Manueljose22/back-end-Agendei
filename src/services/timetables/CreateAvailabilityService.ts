@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 
 import { IAvailabilityInput, ITimetablesRepository } from "../../repositories/timetables/ITimetablesRepository";
 
@@ -9,17 +10,17 @@ class CreateAvailabilityService {
   async execute(data: IAvailabilityInput): Promise<void> {
     // Validação dos dados de entrada
     if (!data.doctorId || !data.date || !data.hourStart || !data.hourEnd) {
-      throw new Error("Todos os campos são obrigatórios.");
+      throw new AppError("Todos os campos são obrigatórios.", 400);
     }
 
     // Validação da data e horas
     const now = new Date();
     if (new Date(data.date) < now) {
-      throw new Error("A data de disponibilidade não pode ser no passado.");
+      throw new AppError("A data de disponibilidade não pode ser no passado.", 400);
     }
 
     if (new Date(data.hourEnd) <= new Date(data.hourStart)) {
-      throw new Error("A hora de término deve ser após a hora de início.");
+      throw new AppError("A hora de término deve ser após a hora de início.", 400);
     }
 
     // Criar a disponibilidade
