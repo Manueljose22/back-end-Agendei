@@ -1,3 +1,4 @@
+import { DoctorStatus } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 
 type Actor = { id: string; role: string };
@@ -42,11 +43,11 @@ function todayInLuanda(): Date {
     return dateOnly(`${get("year")}-${get("month")}-${get("day")}`);
 }
 
-function assertManager(actor: Actor, doctor: { id: string; hospitalId: string | null; status: string | null; Hospital: { status: string } | null }) {
+function assertManager(actor: Actor, doctor: { id: string; hospitalId: string | null; status: DoctorStatus; Hospital: { status: string } | null }) {
     if (actor.role === "doctor" && actor.id !== doctor.id) throw new Error("Só pode gerir a sua própria agenda.");
     if (actor.role === "hospital" && actor.id !== doctor.hospitalId) throw new Error("Este médico não pertence ao seu hospital.");
     if (!["doctor", "hospital", "platform_admin"].includes(actor.role)) throw new Error("Não tem permissões para gerir agendas.");
-    if (actor.role !== "platform_admin" && (doctor.status !== "Active" || doctor.Hospital?.status !== "ACTIVE")) {
+    if (actor.role !== "platform_admin" && (doctor.status !== "ACTIVE" || doctor.Hospital?.status !== "ACTIVE")) {
         throw new Error("O médico ou hospital não está activo.");
     }
 }
