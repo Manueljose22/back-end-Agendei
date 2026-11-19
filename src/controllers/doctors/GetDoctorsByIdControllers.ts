@@ -15,7 +15,7 @@ class GetDoctorsByIdControllers {
                 isHospital ? request.userId : undefined,
                 isHospital || isAdmin || isOwnDoctorProfile
             );
-            if (request.userRole === "doctor" && !isOwnDoctorProfile && result.status !== "activo") {
+            if (request.userRole === "doctor" && !isOwnDoctorProfile && result.status !== "ACTIVE") {
                 return response.status(404).json({ message: "Médico não encontrado." });
             }
             return response.status(200).json(result);

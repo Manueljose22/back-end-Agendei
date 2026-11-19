@@ -18,7 +18,7 @@ class GetDoctorServicesControllers {
             );
 
             if (!doctor) return response.status(404).json({ message: "Médico não encontrado ou sem permissão." });
-            if (request.userRole === "doctor" && !isOwnDoctorProfile && doctor.status !== "activo") {
+            if (request.userRole === "doctor" && !isOwnDoctorProfile && doctor.status !== "ACTIVE") {
                 return response.status(404).json({ message: "Médico não encontrado." });
             }
 
