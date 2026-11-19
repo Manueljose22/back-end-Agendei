@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { DeleteSpecialityByIdService } from '../../services/specialities/DeleteSpecialityByIdService';
 import { SpecialityRepository } from '../../repositories/specialities/SpecialityRepository';
 
@@ -7,7 +7,7 @@ import { SpecialityRepository } from '../../repositories/specialities/Speciality
 
 
 class DeleteSpecialityByIdControllers {
-    async handle(request: Request, response: Response) {
+    async handle(request: Request, response: Response, next: NextFunction) {
 
         const { id } = request.params
 
@@ -17,8 +17,8 @@ class DeleteSpecialityByIdControllers {
             const result = await service.execute(id);
             return response.json(result)
 
-        } catch (error: any) {
-            return response.status(400).json({ message: error.message })
+        } catch (error: unknown) {
+            return next(error);
         }
     }
 }
