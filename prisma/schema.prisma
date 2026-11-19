@@ -7,22 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleHospitals {
-  admin
-  owner
-  doctor
-}
-
-enum HospitalStatus {
-  ACTIVE
-  SUSPENDED
-}
-
-enum DoctorStatus {
-  ACTIVE
-  INACTIVE
-}
-
 model Admin {
   id           String   @id @default(uuid())
   name         String
@@ -43,28 +27,27 @@ model Hospital {
   email       String            @unique
   password    String
   role        RoleHospitals     @default(admin)
-  status      HospitalStatus    @default(ACTIVE)
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @default(now()) @map("updated_at")
-  images      ImagesHospitals[]
+  status      HospitalStatus    @default(ACTIVE)
   doctors     Doctor[]
+  images      ImagesHospitals[]
   specialties Specialty[]
 
   @@map("Hospitals")
 }
 
 model Patient {
-  id        String    @id @default(uuid())
-  name      String
-  email     String?   @unique
-  password  String?
-  photo     String?
-  phone     String?
-  dateBirth DateTime?
-  address   String?
-  gender    String?
-  pushToken String?
-
+  id              String            @id @default(uuid())
+  name            String
+  email           String?           @unique
+  password        String?
+  photo           String?
+  phone           String?
+  dateBirth       DateTime?
+  address         String?
+  gender          String?
+  pushToken       String?
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @default(now()) @map("updated_at")
   Appointment     Appointment[]
@@ -74,10 +57,10 @@ model Patient {
 }
 
 model Doctor {
-  id                String       @id @default(uuid())
+  id                String            @id @default(uuid())
   name              String
   photo             String?
-  email             String       @unique
+  email             String            @unique
   password          String?
   phone             String?
   bio               String?
@@ -88,17 +71,16 @@ model Doctor {
   specialtyId       String
   hospitalId        String?
   pushToken         String?
-  status            DoctorStatus @default(ACTIVE)
-
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @default(now()) @map("updated_at")
-  Doctor_Service  Doctor_Service[]
-  Appointment     Appointment[]
-  Specialty       Specialty?        @relation(fields: [specialtyId], references: [id])
-  history_Medical history_Medical[]
-  Availability    Availability[]
-  DoctorSchedule  DoctorSchedule?
-  Hospital        Hospital?         @relation(fields: [hospitalId], references: [id])
+  status            DoctorStatus      @default(ACTIVE)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @default(now()) @map("updated_at")
+  Appointment       Appointment[]
+  Hospital          Hospital?         @relation(fields: [hospitalId], references: [id])
+  Specialty         Specialty         @relation(fields: [specialtyId], references: [id])
+  Doctor_Service    Doctor_Service[]
+  Availability      Availability[]
+  DoctorSchedule    DoctorSchedule?
+  history_Medical   history_Medical[]
 
   @@map("Doctors")
 }
@@ -108,18 +90,16 @@ model Appointment {
   patientId       String
   doctorId        String
   serviceId       String
-  status          String   @default(value: "Pendente")
+  status          String   @default("Pendente")
   bookingDate     DateTime @map("booking_date")
   bookingHour     String   @map("booking_hour")
+  createdAt       DateTime @default(now()) @map("createdAt")
+  upadatedAt      DateTime @default(now())
   bookingEnd      String?  @map("booking_end")
   durationMinutes Int?     @map("duration_minutes")
-
-  createdAt  DateTime @default(now()) @map("createdAt")
-  upadatedAt DateTime @default(now())
-
-  Patient Patient @relation(fields: [patientId], references: [id])
-  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
-  Service Service @relation(fields: [serviceId], references: [id])
+  Doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  Patient         Patient  @relation(fields: [patientId], references: [id])
+  Service         Service  @relation(fields: [serviceId], references: [id])
 
   @@index([patientId, bookingDate])
   @@index([doctorId, bookingDate])
@@ -127,17 +107,16 @@ model Appointment {
 }
 
 model Specialty {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String
   color       String
   hospitalId  String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-
-  hospital Hospital  @relation(fields: [hospitalId], references: [id])
-  doctor   Doctor[]
-  Services Service[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  doctor      Doctor[]
+  Services    Service[]
+  hospital    Hospital  @relation(fields: [hospitalId], references: [id])
 
   @@map("Specialties")
 }
@@ -152,8 +131,8 @@ model Service {
   price          Float
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @default(now()) @map("updated_at")
-  Doctor_Service Doctor_Service[]
   Appointment    Appointment[]
+  Doctor_Service Doctor_Service[]
   specialty      Specialty?       @relation(fields: [specialtyId], references: [id])
 
   @@map("Services")
@@ -163,8 +142,8 @@ model Doctor_Service {
   doctorId        String
   serviceId       String
   price           Float
-  durationMinutes Int      @default(45) @map("duration_minutes")
   created_at      DateTime @default(now())
+  durationMinutes Int      @default(45) @map("duration_minutes")
   Doctor          Doctor   @relation(fields: [doctorId], references: [id])
   Service         Service  @relation(fields: [serviceId], references: [id])
 
@@ -172,42 +151,34 @@ model Doctor_Service {
   @@map("Doctors_Services")
 }
 
-enum ScheduleExceptionType {
-  BLOCK_DAY
-  BLOCK_PERIOD
-  EXTRA_PERIOD
-}
-
 model DoctorSchedule {
-  id                String   @id @default(uuid())
-  doctorId          String   @unique
-  timezone          String   @default("Africa/Luanda")
-  bookingWindowDays Int      @default(90) @map("booking_window_days")
-  isActive          Boolean  @default(true) @map("is_active")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  doctor     Doctor              @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  rules      ScheduleRule[]
-  exceptions ScheduleException[]
+  id                String              @id @default(uuid())
+  doctorId          String              @unique
+  timezone          String              @default("Africa/Luanda")
+  bookingWindowDays Int                 @default(90) @map("booking_window_days")
+  isActive          Boolean             @default(true) @map("is_active")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  doctor            Doctor              @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  exceptions        ScheduleException[]
+  rules             ScheduleRule[]
 
   @@map("doctor_schedules")
 }
 
 model ScheduleRule {
-  id             String    @id @default(uuid())
-  scheduleId     String    @map("schedule_id")
+  id             String         @id @default(uuid())
+  scheduleId     String         @map("schedule_id")
   weekday        Int
-  startMinute    Int       @map("start_minute")
-  endMinute      Int       @map("end_minute")
-  isActive       Boolean   @default(true) @map("is_active")
-  effectiveFrom  DateTime? @map("effective_from") @db.Date
-  effectiveUntil DateTime? @map("effective_until") @db.Date
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  schedule       DoctorSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  startMinute    Int            @map("start_minute")
+  endMinute      Int            @map("end_minute")
+  isActive       Boolean        @default(true) @map("is_active")
+  effectiveFrom  DateTime?      @map("effective_from") @db.Date
+  effectiveUntil DateTime?      @map("effective_until") @db.Date
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
   availabilities Availability[]
+  schedule       DoctorSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 
   @@index([scheduleId, weekday, isActive])
   @@map("schedule_rules")
@@ -222,26 +193,24 @@ model ScheduleException {
   endMinute   Int?                  @map("end_minute")
   reason      String?
   createdAt   DateTime              @default(now()) @map("created_at")
-
-  schedule DoctorSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  schedule    DoctorSchedule        @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 
   @@index([scheduleId, date])
   @@map("schedule_exceptions")
 }
 
 model Availability {
-  id             String   @id @default(uuid())
+  id             String                   @id @default(uuid())
   doctorId       String
   date           DateTime
   hourStart      DateTime
   hourEnd        DateTime
-  isBlocked      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  scheduleRuleId String?  @map("schedule_rule_id")
-
-  doctor       Doctor                   @relation(fields: [doctorId], references: [id])
-  scheduleRule ScheduleRule?            @relation(fields: [scheduleRuleId], references: [id], onDelete: SetNull)
-  timetables   Timetables_Appointment[]
+  isBlocked      Boolean                  @default(false)
+  createdAt      DateTime                 @default(now())
+  scheduleRuleId String?                  @map("schedule_rule_id")
+  doctor         Doctor                   @relation(fields: [doctorId], references: [id])
+  scheduleRule   ScheduleRule?            @relation(fields: [scheduleRuleId], references: [id])
+  timetables     Timetables_Appointment[]
 
   @@unique([scheduleRuleId, date])
   @@unique([doctorId, date, hourStart, hourEnd])
@@ -270,19 +239,39 @@ model history_Medical {
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
-
-  Patient Patient @relation(fields: [patientId], references: [id])
-  Doctor  Doctor  @relation(fields: [doctorId], references: [id])
+  Doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  Patient   Patient  @relation(fields: [patientId], references: [id])
 
   @@map("history_medicals")
 }
 
 model ImagesHospitals {
-  id         String @id @default(uuid())
+  id         String   @id @default(uuid())
   urlImagem  String
   hospitalId String
-
-  Hospital Hospital @relation(fields: [hospitalId], references: [id])
+  Hospital   Hospital @relation(fields: [hospitalId], references: [id])
 
   @@map("Images_Hospitals")
+}
+
+enum RoleHospitals {
+  admin
+  owner
+  doctor
+}
+
+enum HospitalStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ScheduleExceptionType {
+  BLOCK_DAY
+  BLOCK_PERIOD
+  EXTRA_PERIOD
 }
