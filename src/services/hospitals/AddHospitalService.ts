@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import { hospitalInput, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 class AddHospitalService {
@@ -7,23 +8,23 @@ class AddHospitalService {
         const { name, address, email, phone, password, nif, role } = data;
 
         if (!name) {
-            throw new Error("Por favor, preencha o campo nome");
+            throw new AppError("Por favor, preencha o campo nome", 400);
         } else if (!email) {
-            throw new Error("Por favor, preencha o email");
+            throw new AppError("Por favor, preencha o email", 400);
         } else if (!address) {
-            throw new Error("Por favor, preencha o campo endereço");
+            throw new AppError("Por favor, preencha o campo endereço", 400);
         } else if (!phone) {
-            throw new Error("Por favor, preencha o campo número de telefone.");
+            throw new AppError("Por favor, preencha o campo número de telefone.", 400);
         } else if (!password) {
-            throw new Error("Senha é obrigatório.");
+            throw new AppError("Senha é obrigatório.", 400);
         } else if (!nif) {
-            throw new Error("Por favor, preencha o campo nif.");
+            throw new AppError("Por favor, preencha o campo nif.", 400);
         }
 
         const hospital = await this.IHospitalsRepository.findByName(name);
 
         if (hospital) {
-            throw new Error("Hospital já existe!");
+            throw new AppError("Hospital já existe!", 409);
         }
 
         await this.IHospitalsRepository.create({
