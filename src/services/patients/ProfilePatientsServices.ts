@@ -1,24 +1,16 @@
+import { AppError } from "../../errors/AppError";
 import { IPatientsRepository, patientsSave } from "../../repositories/patients/IPatientsRepository";
 
-
-
-
-
-
-
 class ProfilePatientsServices {
+    constructor(private patientsRepository: IPatientsRepository) {}
 
-    constructor(private IPatientsRepository: IPatientsRepository) { }
-
-
-    async execute(id: string): Promise<patientsSave | null> {
-        
-        const patient = await this.IPatientsRepository.findById(id);
+    async execute(id: string): Promise<patientsSave> {
+        const patient = await this.patientsRepository.findById(id);
 
         if (!patient) {
-            throw new Error("Erro no servidor, por favor tente mais tarde!");
+            throw new AppError("Paciente não encontrado.", 404);
         }
-        
+
         return patient;
     }
 }
