@@ -14,7 +14,6 @@ class UpdatePasswordPatientControllers {
 
             return response.status(200).json({ message: "Senha actualizada com sucesso." });
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Não foi possível actualizar a senha.";
             return next(error);
         }
     }
