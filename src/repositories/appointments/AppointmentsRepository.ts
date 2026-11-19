@@ -28,18 +28,6 @@ async function withSerializationRetry<T>(
 }
 
 export class AppointmentsRepository implements IAppointmentsRepository {
-    async save({ patientId, serviceId, doctorId, bookingDate, bookingHour }: appointmentsRequest): Promise<void> {
-        await prismaClient.appointment.create({
-            data: {
-                patientId,
-                doctorId,
-                serviceId,
-                bookingHour,
-                bookingDate: new Date(`${bookingDate}T00:00:00Z`)
-            }
-        });
-    }
-
     async createWithSchedule(data: appointmentsRequest): Promise<void> {
         const [year, month, day] = data.bookingDate.split("-").map(Number);
         const [startHour, startMinute] = data.bookingHour.split(":").map(Number);
