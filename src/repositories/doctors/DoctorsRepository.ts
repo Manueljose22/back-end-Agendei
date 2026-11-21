@@ -1,4 +1,4 @@
-import { HospitalStatus } from "@prisma/client";
+import { DoctorStatus, HospitalStatus } from "@prisma/client";
 import { AppError } from "../../errors/AppError";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { IDoctorsRepository, doctorRequest, doctorSave, doctorServices, UpdateDoctor } from "./IDoctorsRepository";
@@ -77,6 +77,7 @@ export class DoctorsRepository implements IDoctorsRepository {
             where: {
                 id,
                 hospitalId: hospitalId ?? undefined,
+                status: includeSuspended ? undefined : DoctorStatus.ACTIVE,
                 Hospital: includeSuspended ? undefined : { is: { status: HospitalStatus.ACTIVE } }
             },
             select: doctorSelect
@@ -87,6 +88,7 @@ export class DoctorsRepository implements IDoctorsRepository {
         return prismaClient.doctor.findMany({
             where: {
                 hospitalId: hospitalId ?? undefined,
+                status: includeSuspended ? undefined : DoctorStatus.ACTIVE,
                 Hospital: includeSuspended ? undefined : { is: { status: HospitalStatus.ACTIVE } }
             },
             select: doctorSelect,
@@ -103,6 +105,7 @@ export class DoctorsRepository implements IDoctorsRepository {
             take: 10,
             where: {
                 hospitalId: hospitalId ?? undefined,
+                status: includeSuspended ? undefined : DoctorStatus.ACTIVE,
                 Hospital: includeSuspended ? undefined : { is: { status: HospitalStatus.ACTIVE } },
                 OR: [
                     { name: { contains: search, mode: "insensitive" } },
