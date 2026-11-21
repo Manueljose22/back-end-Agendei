@@ -17,8 +17,8 @@ const router = Router();
 
 const directoryRoles = ["platform_admin", "hospital", "doctor", "patient"] as const;
 
-// Directório: apenas hospitais activos são apresentados a pacientes e médicos.
-// Hospitais consultam apenas os seus médicos; administrador global consulta todos.
+// Directório público autenticado: apenas médicos e hospitais activos.
+// Hospitais e administrador global podem consultar os registos inactivos para gestão.
 router.get("/doctors", ensureRole(...directoryRoles), ensureRateLimiter(1, 100), ListDoctorController.handle);
 router.get("/doctors/search", ensureRole(...directoryRoles), ensureRateLimiter(1, 30), SearchDoctorsControllers.handle);
 
@@ -34,7 +34,7 @@ router.get("/doctor/:id/service", ensureRole(...directoryRoles), ensureRateLimit
 router.patch("/doctors/:id", ensureRole("hospital", "platform_admin"), ensureActiveHospital, UpdateDoctorsControllers.handle);
 router.delete("/doctors/:id", ensureRole("hospital", "platform_admin"), ensureActiveHospital, DeleteDoctorsControllers.handle);
 
-// Endpoint específico do hospital autenticado.
-router.get("/hospital/doctors", ensureRole("hospital"), ensureRateLimiter(1, 100), GetDoctorsByHospitalsControllers.handle);
+// Endpoint de gestão do hospital autenticado.
+router.get("/hospital/doctors", ensureRole("hospital"), ensureActiveHospital, ensureRateLimiter(1, 100), GetDoctorsByHospitalsControllers.handle);
 
 export { router as doctorsRoutes };
