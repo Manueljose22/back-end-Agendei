@@ -51,7 +51,7 @@ export type doctorServices = {
   durationMinutes: number;
 };
 
-export type UpdateDoctor = Partial<Omit<doctorRequest, "hospitalId" | "password">>;
+export type UpdateDoctor = Partial<Omit<doctorRequest, "hospitalId" | "password">> & { password?: string | null };
 
 export interface IDoctorsRepository {
   save(data: doctorRequest): Promise<void>;
