@@ -15,15 +15,11 @@ const parseOptionalNumber = (value: unknown, field: string, integer = true): num
 };
 
 class UpdateDoctorsServices {
-    constructor(private doctorsRepository: IDoctorsRepository) {}
+    constructor(private doctorsRepository: IDoctorsRepository) { }
 
-    async execute(
-        actorHospitalId: string,
-        id: string,
-        data: UpdateDoctor,
-        isPlatformAdmin = false
-    ): Promise<{ previousPhoto: string | null }> {
+    async execute(actorHospitalId: string, id: string, data: UpdateDoctor, isPlatformAdmin = false): Promise<{ previousPhoto: string | null }> {
         const doctor = await this.doctorsRepository.findById(id, undefined, true);
+    
         if (!doctor) throw new AppError("Médico não encontrado.", 404);
 
         const doctorHospitalId = doctor.hospitalId;
