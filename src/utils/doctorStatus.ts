@@ -1,9 +1,10 @@
 import { DoctorStatus } from "@prisma/client";
+import { AppError } from "../errors/AppError";
 
 export function normalizeDoctorStatus(value: unknown, fallback?: DoctorStatus): DoctorStatus {
     if (value === undefined || value === null || value === "") {
         if (fallback) return fallback;
-        throw new Error("Informe um estado válido para o médico.");
+        throw new AppError("Informe um estado válido para o médico.", 400);
     }
 
     const normalized = String(value)
@@ -20,5 +21,5 @@ export function normalizeDoctorStatus(value: unknown, fallback?: DoctorStatus): 
         return DoctorStatus.INACTIVE;
     }
 
-    throw new Error("Estado inválido. Utilize ACTIVE ou INACTIVE.");
+    throw new AppError("Estado inválido. Utilize ACTIVE ou INACTIVE.", 400);
 }
