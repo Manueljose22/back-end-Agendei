@@ -1,4 +1,5 @@
 import { AppError } from "../../errors/AppError";
+import { hash } from "bcrypt";
 import { normalizeDoctorStatus } from "../../utils/doctorStatus";
 import { IDoctorsRepository, UpdateDoctor } from "../../repositories/doctors/IDoctorsRepository";
 
@@ -51,6 +52,15 @@ class UpdateDoctorsServices {
             specialtyId: data.specialtyId,
             status: data.status === undefined ? undefined : normalizeDoctorStatus(data.status)
         };
+
+        // A senha só é alterada quando o cliente envia um novo valor.
+        // Valores vazios são ignorados para não apagar a credencial existente.
+        if (data.password !== undefined && data.password !== null && data.password !== "") {
+            if (data.password.length < 8) {
+                throw new AppError("A senha do médico deve ter pelo menos 8 caracteres.", 400);
+            }
+            safeData.password = await hash(data.password, 12);
+        }
 
         await this.doctorsRepository.update(id, safeData, isPlatformAdmin ? undefined : actorHospitalId);
 
