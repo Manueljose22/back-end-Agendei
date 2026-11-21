@@ -4,6 +4,17 @@ import { hash } from "bcrypt";
 import { normalizeDoctorStatus } from "../../utils/doctorStatus";
 import { doctorRequest, IDoctorsRepository } from "../../repositories/doctors/IDoctorsRepository";
 
+const parseOptionalNumber = (value: unknown, field: string, integer = true): number | null => {
+    if (value === undefined || value === null || value === "") return null;
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0 || (integer && !Number.isInteger(parsed))) {
+        throw new AppError(`O campo ${field} deve conter um número válido.`, 400);
+    }
+
+    return parsed;
+};
+
 class AddDoctorsServices {
     constructor(private doctorsRepository: IDoctorsRepository) {}
 
@@ -13,6 +24,9 @@ class AddDoctorsServices {
         if (!data.hospitalId) throw new AppError("Hospital não identificado.", 400);
 
         data.status = normalizeDoctorStatus(data.status, DoctorStatus.ACTIVE);
+        data.yaersOfExperience = parseOptionalNumber(data.yaersOfExperience, "anos de experiência");
+        data.numberOfPatients = parseOptionalNumber(data.numberOfPatients, "número de pacientes");
+        data.rating = parseOptionalNumber(data.rating, "classificação", false);
 
         if (data.password && data.password.length < 8) {
             throw new AppError("A senha do médico deve ter pelo menos 8 caracteres.", 400);
