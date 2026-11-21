@@ -7,7 +7,7 @@ const allowedMimeTypes = new Set([
     "image/webp",
 ]);
 
-// Mantém o middleware Multer exportado para as rotas de pacientes e hospitais.
+// Mantém o middleware Multer exportado para as rotas que precisam de uploads.
 export const uploadImage = multer({
     storage: multer.memoryStorage(),
     limits: {
@@ -23,19 +23,32 @@ export const uploadImage = multer({
     },
 });
 
-// Wrapper para devolver erros de upload como JSON no cadastro de médicos.
+// Wrapper para devolver erros do Multer como respostas 4xx, em vez de erros internos 500.
 export const uploadSingleImage = (
     request: Request,
     response: Response,
     next: NextFunction
 ): void => {
     uploadImage.single("photo")(request, response, (error: unknown) => {
-        if (error) {
-            const message = error instanceof Error ? error.message : "Não foi possível processar a imagem.";
-            response.status(400).json({ message });
+        if (!error) {
+            next();
             return;
         }
 
-        next();
+        if (error instanceof multer.MulterError) {
+            if (error.code === "LIMIT_FILE_SIZE") {
+                response.status(413).json({ message: "A imagem deve ter no máximo 5 MB." });
+                return;
+            }
+
+            response.status(400).json({ message: "Não foi possível processar o ficheiro enviado." });
+            return;
+        }
+
+        const message = error instanceof Error
+            ? error.message
+            : "Não foi possível processar a imagem.";
+
+        response.status(400).json({ message });
     });
 };
