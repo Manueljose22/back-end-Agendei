@@ -17,7 +17,7 @@ app.use(express.static('public'));
 app.use(cors({
     credentials: true,
     // origin: process.env.ORIGIN_CORS,
-    methods: 'GET, PUT, POST, DELETE',
+    methods: 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS',
 }));
 
 // Fecha conexões ao encerrar servidor
