@@ -2,6 +2,18 @@ import { AppError } from "../../errors/AppError";
 import { normalizeDoctorStatus } from "../../utils/doctorStatus";
 import { IDoctorsRepository, UpdateDoctor } from "../../repositories/doctors/IDoctorsRepository";
 
+const parseOptionalNumber = (value: unknown, field: string, integer = true): number | null | undefined => {
+    if (value === undefined) return undefined;
+    if (value === null || value === "") return null;
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0 || (integer && !Number.isInteger(parsed))) {
+        throw new AppError(`O campo ${field} deve conter um número válido.`, 400);
+    }
+
+    return parsed;
+};
+
 class UpdateDoctorsServices {
     constructor(private doctorsRepository: IDoctorsRepository) {}
 
@@ -33,9 +45,9 @@ class UpdateDoctorsServices {
             phone: data.phone,
             bio: data.bio,
             address: data.address,
-            yaersOfExperience: data.yaersOfExperience,
-            numberOfPatients: data.numberOfPatients,
-            rating: data.rating,
+            yaersOfExperience: parseOptionalNumber(data.yaersOfExperience, "anos de experiência"),
+            numberOfPatients: parseOptionalNumber(data.numberOfPatients, "número de pacientes"),
+            rating: parseOptionalNumber(data.rating, "classificação", false),
             specialtyId: data.specialtyId,
             status: data.status === undefined ? undefined : normalizeDoctorStatus(data.status)
         };
