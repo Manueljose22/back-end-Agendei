@@ -484,7 +484,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         });
     }
 
-    async cancel(id: string): Promise<void> {
+    async cancel(id: string, actorRole: "platform_admin" | "hospital" | "doctor" | "patient"): Promise<void> {
         await prismaClient.$transaction(async (tx) => {
             // Serializa cancelamentos e remarcações da mesma consulta.
             const appointmentLockKey = `appointment-record:${id}`;
@@ -492,7 +492,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
 
             const appointment = await tx.appointment.findUnique({
                 where: { id },
-                select: { doctorId: true, bookingDate: true, status: true }
+                select: { doctorId: true, bookingDate: true, status: true, patientId: true, Doctor: { select: { hospitalId: true } } }
             });
             if (!appointment || appointment.status === "Cancelado") {
                 throw new AppError("A consulta já foi cancelada ou não pode ser actualizada.", 409);
@@ -508,6 +508,46 @@ export class AppointmentsRepository implements IAppointmentsRepository {
             });
             if (result.count !== 1) {
                 throw new AppError("A consulta já foi cancelada ou não pode ser actualizada.", 409);
+            }
+
+            // O cancelamento e as notificações são confirmados ou revertidos juntos.
+            if (actorRole === "patient") {
+                await tx.notification.create({
+                    data: {
+                        appointmentId: id,
+                        recipientRole: "DOCTOR",
+                        doctorId: appointment.doctorId,
+                        type: "APPOINTMENT_CANCELLED",
+                        title: "Consulta cancelada pelo paciente",
+                        message: "O paciente cancelou a consulta agendada.",
+                        data: { appointmentId: id }
+                    }
+                });
+                if (appointment.Doctor.hospitalId) {
+                    await tx.notification.create({
+                        data: {
+                            appointmentId: id,
+                            recipientRole: "HOSPITAL",
+                            hospitalId: appointment.Doctor.hospitalId,
+                            type: "APPOINTMENT_CANCELLED",
+                            title: "Consulta cancelada pelo paciente",
+                            message: "Um paciente cancelou uma consulta do hospital.",
+                            data: { appointmentId: id }
+                        }
+                    });
+                }
+            } else {
+                await tx.notification.create({
+                    data: {
+                        appointmentId: id,
+                        recipientRole: "PATIENT",
+                        patientId: appointment.patientId,
+                        type: "APPOINTMENT_CANCELLED",
+                        title: "Consulta cancelada",
+                        message: "A sua consulta foi cancelada pelo médico ou hospital.",
+                        data: { appointmentId: id }
+                    }
+                });
             }
         }, {
             isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
