@@ -1,23 +1,14 @@
 import { AppError } from "../../errors/AppError";
-import { IServicesRepository} from "../../repositories/services/IServicesRepository";
-
-
-
-
+import { IServicesRepository } from "../../repositories/services/IServicesRepository";
 
 class DeleteServicesService {
+    constructor(private serviceRepository: IServicesRepository) {}
 
-    constructor(private IServiceRepository: IServicesRepository) { }
-
-    async execute(id: string): Promise<void | Error> {
-
-        const service = await this.IServiceRepository.findById(id);
-
-        if (!service) {
-           throw new AppError('Serviço invalido!', 404); 
+    async execute(id: string, hospitalId: string): Promise<void> {
+        const deleted = await this.serviceRepository.delete(id, hospitalId);
+        if (!deleted) {
+            throw new AppError("Serviço não encontrado ou sem permissão para o eliminar.", 404);
         }
-        
-        await this.IServiceRepository.delete(id)
     }
 }
 
