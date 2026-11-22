@@ -6,7 +6,7 @@ import { ListHospitalPatientsService } from "../../services/hospitals/ListHospit
 class ListHospitalPatientsController {
     async handle(request: Request, response: Response, next: NextFunction) {
         try {
-            const hospitalId = request.params.id;
+            const hospitalId = request.userId;
             const search = typeof request.query.search === "string" ? request.query.search : "";
 
             const repository = new PatientsRepository();
