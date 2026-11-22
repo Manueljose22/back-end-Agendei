@@ -487,7 +487,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
     async confirm(id: string): Promise<void> {
         await prismaClient.$transaction(async (tx) => {
             const lockKey = `appointment-record:${id}`;
-            await tx.$queryRaw<{ locked: number }[]>\`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock\`;
+            await tx.$queryRaw<{ locked: number }[]>`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock`;
 
             const appointment = await tx.appointment.findUnique({
                 where: { id },
