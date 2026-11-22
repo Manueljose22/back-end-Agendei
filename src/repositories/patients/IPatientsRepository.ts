@@ -42,6 +42,7 @@ export interface IPatientsRepository {
   findById(id: string): Promise<patientsSave | null>;
   findAll(search: string): Promise<patientsSave[] | null>;
   findSearch(search: string): Promise<patientsSave[] | null>;
+  findByHospital(hospitalId: string, search: string): Promise<patientsSave[]>;
   update(id: string, data: patientsProfileUpdate): Promise<patientsSave>;
   delete(id: string): Promise<void>;
   updatePassword(id: string, password: string): Promise<void>;

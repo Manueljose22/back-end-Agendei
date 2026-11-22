@@ -50,6 +50,27 @@ export class PatientsRepository implements IPatientsRepository {
         });
     }
 
+    async findByHospital(hospitalId: string, search: string): Promise<patientsSave[]> {
+        return prismaClient.patient.findMany({
+            where: {
+                Appointment: {
+                    some: {
+                        Doctor: {
+                            is: { hospitalId }
+                        }
+                    }
+                },
+                ...(search ? {
+                    OR: [
+                        { name: { contains: search, mode: "insensitive" } },
+                        { email: { contains: search, mode: "insensitive" } }
+                    ]
+                } : {})
+            },
+            orderBy: { name: "asc" }
+        });
+    }
+
     async update(id: string, data: patientsProfileUpdate): Promise<patientsSave> {
         return prismaClient.patient.update({
             where: { id },
