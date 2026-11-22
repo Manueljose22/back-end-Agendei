@@ -41,6 +41,6 @@ export interface IAppointmentsRepository {
         id: string,
         data: Pick<appointmentsRequest, "serviceId" | "bookingDate" | "bookingHour">
     ): Promise<void>;
-    cancel(id: string): Promise<void>;
+    cancel(id: string, actorRole: AccountRole): Promise<void>;
 
 }
