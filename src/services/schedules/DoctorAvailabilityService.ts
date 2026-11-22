@@ -139,7 +139,11 @@ export class DoctorAvailabilityService {
                     });
                 }
             }, {
-                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+                // A geração pode executar várias operações sequenciais no PostgreSQL remoto (Supabase).
+                // O limite padrão de 5s era insuficiente, mesmo para a geração de um único dia.
+                maxWait: 10_000,
+                timeout: 15_000
             });
         }
 
