@@ -7,6 +7,7 @@ import DeleteHospitalByIdControllers from "../controllers/hospitals/DeleteHospit
 import UpdateHospitalControllers from "../controllers/hospitals/UpdateHospitalControllers";
 import UpdateHospitalStatusController from "../controllers/hospitals/UpdateHospitalStatusController";
 import SearchHospitalsControllers from "../controllers/hospitals/SearchHospitalsControllers";
+import ListHospitalPatientsController from "../controllers/hospitals/ListHospitalPatientsController";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
 import {
     ensureHospitalAccess,
@@ -22,6 +23,15 @@ router.post('/hospitals/', ensureRateLimiter(15, 10), uploadMultipleImages, AddH
 
 router.get('/hospitals/', ensureHospitalAccess, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
 router.get('/hospitals/search', ensureHospitalAccess, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
+
+// A listagem é limitada aos pacientes com consultas associadas ao hospital autenticado.
+router.get(
+    '/hospitals/:id/patients',
+    ensureHospitalManagementAccess,
+    ensureActiveHospital,
+    ensureRateLimiter(1, 60),
+    ListHospitalPatientsController.handle
+);
 
 router.patch('/hospitals/:id/status', ensureRole("platform_admin"), UpdateHospitalStatusController.handle);
 
