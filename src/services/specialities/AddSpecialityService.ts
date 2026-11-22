@@ -1,27 +1,21 @@
 import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository, specialityInput, specialitySaved } from "../../repositories/specialities/ISpecialityRepository";
 
-
-
 class AddSpecialityService {
-
-    constructor(private ISpecialityRepository: ISpecialityRepository) { }
+    constructor(private specialityRepository: ISpecialityRepository) {}
 
     async execute(data: specialityInput): Promise<specialitySaved | Error> {
+        const name = data.name?.trim();
+        if (!name) {
+            throw new AppError("Por favor, preencha o campo nome.", 400);
+        }
 
-        const speciality = await this.ISpecialityRepository.findByName(data.name);
-      
+        const speciality = await this.specialityRepository.findByName(name);
         if (speciality) {
             throw new AppError("Especialidade já existe!", 409);
         }
 
-        if (!data.name) {
-            throw new AppError("Por favor, preencha o campo nome", 400);
-        } 
-
-
-       const newSpeciality = await this.ISpecialityRepository.create(data);
-       return newSpeciality
+        return this.specialityRepository.create({ ...data, name });
     }
 }
 
