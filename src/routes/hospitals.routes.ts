@@ -24,10 +24,10 @@ router.post('/hospitals/', ensureRateLimiter(15, 10), uploadMultipleImages, AddH
 router.get('/hospitals/', ensureHospitalAccess, ensureRateLimiter(1, 100), ListHospitalsControllers.handle);
 router.get('/hospitals/search', ensureHospitalAccess, ensureRateLimiter(1, 30), SearchHospitalsControllers.handle);
 
-// A listagem é limitada aos pacientes com consultas associadas ao hospital autenticado.
+// A listagem usa exclusivamente o hospital identificado pelo token JWT.
 router.get(
-    '/hospitals/:id/patients',
-    ensureHospitalManagementAccess,
+    '/hospitals/me/patients',
+    ensureRole("hospital"),
     ensureActiveHospital,
     ensureRateLimiter(1, 60),
     ListHospitalPatientsController.handle
