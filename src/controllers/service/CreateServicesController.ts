@@ -6,13 +6,9 @@ import { CreateServiceServices } from '../../services/services/CreateServiceServ
 class CreateServicesController {
     async handle(request: Request, response: Response, next: NextFunction) {
         const data = request.body as servicesRequest;
-
         try {
-            const servicesRepository = new ServicesRepository();
-            const service = new CreateServiceServices(servicesRepository);
-
-            await service.execute(data);
-
+            const service = new CreateServiceServices(new ServicesRepository());
+            await service.execute(data, request.userId);
             return response.status(201).json({ message: "Serviço criado com sucesso!" });
         } catch (error) {
             return next(error);
@@ -20,4 +16,4 @@ class CreateServicesController {
     }
 }
 
-export default new CreateServicesController;
+export default new CreateServicesController();

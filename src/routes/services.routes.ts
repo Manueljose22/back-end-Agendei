@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ensuredAuthenticated } from "../middlewares/auth/ensuredAuthenticated";
 import { ensureActiveHospital } from "../middlewares/auth/ensureActiveHospital";
+import { ensureRole } from "../middlewares/auth/ensureRole";
 import GetAllServicesController from "../controllers/service/GetAllServicesController";
 import CreateServicesController from "../controllers/service/CreateServicesController";
 import GetByIdServicesController from "../controllers/service/GetByIdServicesController";
@@ -9,26 +10,15 @@ import DeleteServicesController from "../controllers/service/DeleteServicesContr
 import GetAllServicesHospitalController from "../controllers/service/GetAllServicesHospitalController";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
-
-
-
-
 const router = Router();
 
-
 router.get('/services/', ensuredAuthenticated, ensureRateLimiter(1, 100), GetAllServicesController.handle);
-router.post('/services', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 100), CreateServicesController.handle);
+router.post('/services', ensureRole("hospital"), ensureActiveHospital, ensureRateLimiter(1, 100), CreateServicesController.handle);
 router.get('/services/:id', ensuredAuthenticated, ensureRateLimiter(1, 30), GetByIdServicesController.handle);
-router.patch('/services/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), UpdateServicesController.handle);
-router.delete('/services/:id', ensuredAuthenticated, ensureActiveHospital, ensureRateLimiter(1, 30), DeleteServicesController.handle);
+router.patch('/services/:id', ensureRole("hospital"), ensureActiveHospital, ensureRateLimiter(1, 30), UpdateServicesController.handle);
+router.delete('/services/:id', ensureRole("hospital"), ensureActiveHospital, ensureRateLimiter(1, 30), DeleteServicesController.handle);
 
-// web
-router.get("/hospital/services", ensuredAuthenticated, GetAllServicesHospitalController.handle)
+// Endpoint exclusivo para o hospital autenticado.
+router.get("/hospital/services", ensureRole("hospital"), ensureActiveHospital, GetAllServicesHospitalController.handle);
 
-
-
-
-
-
-export { router as ServicesRoutes }
-
+export { router as ServicesRoutes };

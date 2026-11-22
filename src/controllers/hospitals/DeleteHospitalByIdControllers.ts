@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from "../../errors/AppError";
 import {
     getStoragePathFromPublicUrl,
     removeStorageFiles
@@ -12,9 +11,12 @@ class DeleteHospitalByIdControllers {
         const { id } = request.params;
 
         try {
-            const hospitalsRepository = new HospitalsRepository();
-            const service = new DeleteHospitalByIdService(hospitalsRepository);
-            const imageUrls = await service.execute(id);
+            const service = new DeleteHospitalByIdService(new HospitalsRepository());
+            const imageUrls = await service.execute(
+                id,
+                request.userId,
+                request.userRole === "platform_admin"
+            );
 
             const imagePaths = imageUrls
                 .map(url => getStoragePathFromPublicUrl(url))
@@ -28,9 +30,7 @@ class DeleteHospitalByIdControllers {
                 }
             }
 
-            return response.json({
-                message: "Hospital eliminado com sucesso."
-            });
+            return response.json({ message: "Hospital eliminado com sucesso." });
         } catch (error: unknown) {
             return next(error);
         }

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from "../../errors/AppError";
 import {
     getStoragePathFromPublicUrl,
     removeStorageFiles,
@@ -16,21 +15,18 @@ class UpdateHospitalControllers {
         let uploadedPaths: string[] = [];
 
         try {
-            const uploadedFiles = images?.length
-                ? await uploadFilesWithPaths(images)
-                : [];
-
+            const uploadedFiles = images?.length ? await uploadFilesWithPaths(images) : [];
             uploadedPaths = uploadedFiles.map(file => file.path);
             const imageUrls = uploadedFiles.map(file => file.url);
 
-            const hospitalsRepository = new HospitalsRepository();
-            const service = new UpdateHospitalService(hospitalsRepository);
-
+            const service = new UpdateHospitalService(new HospitalsRepository());
             let previousImageUrls: string[];
 
             try {
                 previousImageUrls = await service.execute(
                     id,
+                    request.userId,
+                    request.userRole === "platform_admin",
                     data,
                     uploadedFiles.length > 0 ? imageUrls : undefined
                 );
@@ -42,7 +38,6 @@ class UpdateHospitalControllers {
                         console.error("Falha ao limpar novas imagens após erro na actualização do hospital:", cleanupError);
                     }
                 }
-
                 throw error;
             }
 
@@ -58,9 +53,7 @@ class UpdateHospitalControllers {
                 }
             }
 
-            return response.json({
-                message: "Dados actualizados com sucesso."
-            });
+            return response.json({ message: "Dados actualizados com sucesso." });
         } catch (error: unknown) {
             return next(error);
         }
