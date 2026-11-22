@@ -2,15 +2,20 @@ import { AppError } from "../../errors/AppError";
 import { hospitalUpdate, IHospitalsRepository } from "../../repositories/hospitals/IHospitalsRepository";
 
 class UpdateHospitalService {
-    constructor(private IHospitalsRepository: IHospitalsRepository) {}
+    constructor(private hospitalsRepository: IHospitalsRepository) {}
 
     async execute(
         id: string,
+        actorId: string,
+        isPlatformAdmin: boolean,
         { address, email, name, phone }: hospitalUpdate,
         images?: string[]
     ): Promise<string[]> {
-        const hospital = await this.IHospitalsRepository.findById(id);
+        if (!isPlatformAdmin && id !== actorId) {
+            throw new AppError("Não tem permissão para alterar os dados deste hospital.", 403);
+        }
 
+        const hospital = await this.hospitalsRepository.findById(id);
         if (!hospital) {
             throw new AppError("Hospital não existe.", 404);
         }
@@ -22,7 +27,7 @@ class UpdateHospitalService {
             phone: phone ?? hospital.phone
         };
 
-        return await this.IHospitalsRepository.update(id, newData, images);
+        return this.hospitalsRepository.update(id, newData, images);
     }
 }
 
