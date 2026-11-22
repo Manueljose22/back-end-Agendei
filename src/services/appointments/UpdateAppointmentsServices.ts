@@ -29,8 +29,16 @@ class UpdateAppointmentsServices {
             throw new AppError("Não tem permissão para alterar esta consulta.", 403);
         }
 
-        const bookingDate = data.bookingDate ?? appointment.booking_date.toISOString().slice(0, 10);
-        const bookingHour = (data.bookingHour ?? appointment.booking_hour).substring(0, 5);
+        // Alterações de data/hora devem passar pelo fluxo de proposta e aceitação do paciente.
+        if (data.bookingDate !== undefined || data.bookingHour !== undefined) {
+            throw new AppError(
+                "A alteração de data ou hora deve ser enviada como proposta de reagendamento para aceitação do paciente.",
+                409
+            );
+        }
+
+        const bookingDate = appointment.booking_date.toISOString().slice(0, 10);
+        const bookingHour = appointment.booking_hour.substring(0, 5);
         const serviceId = data.serviceId ?? appointment.idService;
 
         if (!/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)) {
