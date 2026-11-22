@@ -6,6 +6,7 @@ import AddAppointmentsControllers from "../controllers/appointments/AddAppointme
 import UpdateAppointmentsControllers from "../controllers/appointments/UpdateAppointmentsControllers";
 import ListAppointmentByPatientsControllers from "../controllers/appointments/ListAppointmentByPatientsControllers";
 import CancelAppointmentsControllers from "../controllers/appointments/CancelAppointmentsControllers";
+import ConfirmAppointmentController from "../controllers/appointments/ConfirmAppointmentController";
 import { ensureRateLimiter } from "../middlewares/rateLimiter";
 
 const router = Router();
@@ -33,9 +34,17 @@ router.post(
 
 router.patch(
   "/appointments/:id",
-  ensureRole("platform_admin", "hospital", "doctor", "patient"),
+  ensureRole("platform_admin", "hospital", "doctor"),
   ensureActiveHospital,
   UpdateAppointmentsControllers.handle
+);
+
+router.patch(
+  "/appointments/:id/confirm",
+  ensureRole("platform_admin", "hospital", "doctor"),
+  ensureActiveHospital,
+  ensureRateLimiter(10, 10),
+  ConfirmAppointmentController.handle
 );
 
 router.patch(
