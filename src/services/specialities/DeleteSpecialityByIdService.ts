@@ -1,25 +1,14 @@
 import { AppError } from "../../errors/AppError";
 import { ISpecialityRepository } from "../../repositories/specialities/ISpecialityRepository";
 
-
-
-
-
-
 class DeleteSpecialityByIdService {
+    constructor(private specialityRepository: ISpecialityRepository) {}
 
-    constructor(private ISpecialityRepository: ISpecialityRepository) { }
-
-    async execute(id: string): Promise<void> {
-
-        const speciality = await this.ISpecialityRepository.findById(id);
-
-        if (!speciality) {
-            throw new AppError("Especialidade não existe.", 404);
+    async execute(id: string, hospitalId: string): Promise<void> {
+        const deleted = await this.specialityRepository.delete(id, hospitalId);
+        if (!deleted) {
+            throw new AppError("Especialidade não encontrada ou sem permissão para a eliminar.", 404);
         }
-
-        await this.ISpecialityRepository.delete(id);
-
     }
 }
 
