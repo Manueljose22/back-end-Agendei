@@ -79,8 +79,8 @@ CREATE TABLE "public"."notifications" (
 CREATE INDEX "notifications_patient_id_is_read_created_at_idx"
   ON "public"."notifications"("patient_id", "is_read", "created_at");
 CREATE INDEX "notifications_doctor_id_is_read_created_at_idx"
-  ON "public"."notifications"("doctor_id", "is_read", "createdAt");
+  ON "public"."notifications"("doctor_id", "is_read", "created_at");
 CREATE INDEX "notifications_hospital_id_is_read_created_at_idx"
-  ON "public"."notifications"("hospital_id", "is_read", "createdAt");
+  ON "public"."notifications"("hospital_id", "is_read", "created_at");
 CREATE INDEX "notifications_appointment_id_created_at_idx"
-  ON "public"."notifications"("appointment_id", "createdAt");
+  ON "public"."notifications"("appointment_id", "created_at");
