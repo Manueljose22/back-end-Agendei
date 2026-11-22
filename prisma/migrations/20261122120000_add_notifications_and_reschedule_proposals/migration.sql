@@ -55,7 +55,7 @@ CREATE TABLE "public"."notifications" (
   "reschedule_proposal_id" TEXT,
   "data" JSONB,
   "is_read" BOOLEAN NOT NULL DEFAULT false,
-  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "notifications_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "notifications_patient_id_fkey"
     FOREIGN KEY ("patient_id") REFERENCES "public"."Patients"("id")
@@ -77,10 +77,10 @@ CREATE TABLE "public"."notifications" (
 );
 
 CREATE INDEX "notifications_patient_id_is_read_created_at_idx"
-  ON "public"."notifications"("patient_id", "is_read", "created_at");
+  ON "public"."notifications"("patient_id", "is_read", "createdAt");
 CREATE INDEX "notifications_doctor_id_is_read_created_at_idx"
-  ON "public"."notifications"("doctor_id", "is_read", "created_at");
+  ON "public"."notifications"("doctor_id", "is_read", "createdAt");
 CREATE INDEX "notifications_hospital_id_is_read_created_at_idx"
-  ON "public"."notifications"("hospital_id", "is_read", "created_at");
+  ON "public"."notifications"("hospital_id", "is_read", "createdAt");
 CREATE INDEX "notifications_appointment_id_created_at_idx"
-  ON "public"."notifications"("appointment_id", "created_at");
+  ON "public"."notifications"("appointment_id", "createdAt");
