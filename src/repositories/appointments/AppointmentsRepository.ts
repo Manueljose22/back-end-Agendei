@@ -484,6 +484,44 @@ export class AppointmentsRepository implements IAppointmentsRepository {
         });
     }
 
+    async confirm(id: string): Promise<void> {
+        await prismaClient.$transaction(async (tx) => {
+            const lockKey = `appointment-record:${id}`;
+            await tx.$queryRaw<{ locked: number }[]>\`WITH lock AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtext(${lockKey}))) SELECT 1::int AS locked FROM lock\`;
+
+            const appointment = await tx.appointment.findUnique({
+                where: { id },
+                select: { patientId: true, status: true }
+            });
+            if (!appointment) throw new AppError("Consulta não encontrada.", 404);
+            if (appointment.status !== "Pendente") {
+                throw new AppError("Apenas consultas pendentes podem ser confirmadas.", 409);
+            }
+
+            const updated = await tx.appointment.updateMany({
+                where: { id, status: "Pendente" },
+                data: { status: "Confirmado", upadatedAt: new Date() }
+            });
+            if (updated.count !== 1) throw new AppError("A consulta já foi actualizada.", 409);
+
+            await tx.notification.create({
+                data: {
+                    appointmentId: id,
+                    recipientRole: "PATIENT",
+                    patientId: appointment.patientId,
+                    type: "APPOINTMENT_CONFIRMED",
+                    title: "Consulta confirmada",
+                    message: "A sua consulta foi confirmada pelo médico ou hospital.",
+                    data: { appointmentId: id }
+                }
+            });
+        }, {
+            isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+            maxWait: 10_000,
+            timeout: 15_000
+        });
+    }
+
     async cancel(id: string, actorRole: "platform_admin" | "hospital" | "doctor" | "patient"): Promise<void> {
         await prismaClient.$transaction(async (tx) => {
             // Serializa cancelamentos e remarcações da mesma consulta.
