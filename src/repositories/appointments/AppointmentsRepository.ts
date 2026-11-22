@@ -127,7 +127,7 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                 }
             }
 
-            await tx.appointment.create({
+            const appointment = await tx.appointment.create({
                 data: {
                     patientId: data.patientId,
                     doctorId: data.doctorId,
@@ -136,8 +136,47 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     bookingHour: data.bookingHour,
                     bookingEnd: `${String(Math.floor(endValue / 60)).padStart(2, "0")}:${String(endValue % 60).padStart(2, "0")}`,
                     durationMinutes
+                },
+                select: { id: true }
+            });
+
+            // As notificações internas são gravadas na mesma transacção do agendamento.
+            const notificationData = {
+                appointmentId: appointment.id,
+                type: "APPOINTMENT_CREATED" as const,
+                title: "Novo pedido de consulta",
+                message: "Foi criado um novo pedido de agendamento.",
+                data: { appointmentId: appointment.id }
+            };
+            await tx.notification.create({
+                data: {
+                    ...notificationData,
+                    recipientRole: "PATIENT",
+                    patientId: data.patientId
                 }
             });
+            await tx.notification.create({
+                data: {
+                    ...notificationData,
+                    recipientRole: "DOCTOR",
+                    doctorId: data.doctorId
+                }
+            });
+            if (doctor.Hospital) {
+                const hospital = await tx.doctor.findUnique({
+                    where: { id: data.doctorId },
+                    select: { hospitalId: true }
+                });
+                if (hospital?.hospitalId) {
+                    await tx.notification.create({
+                        data: {
+                            ...notificationData,
+                            recipientRole: "HOSPITAL",
+                            hospitalId: hospital.hospitalId
+                        }
+                    });
+                }
+            }
         }, {
             isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
             maxWait: 10_000,
