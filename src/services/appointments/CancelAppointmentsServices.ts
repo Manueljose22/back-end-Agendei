@@ -28,7 +28,7 @@ class CancelAppointmentsServices {
 
         // O cancelamento apenas altera o estado; a disponibilidade é calculada
         // pela agenda e pelas consultas activas, sem libertar slots legados.
-        await this.appointmentsRepository.cancel(id);
+        await this.appointmentsRepository.cancel(id, role);
     }
 }
 
