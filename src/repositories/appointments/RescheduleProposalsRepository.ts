@@ -142,8 +142,6 @@ export class RescheduleProposalsRepository {
     async create(input: CreateRescheduleProposalInput): Promise<{ id: string }> {
         const [year, month, day] = input.proposedDate.split("-").map(Number);
         const date = new Date(Date.UTC(year, month - 1, day));
-        const [hour, minute] = input.proposedHour.split(":").map(Number);
-        const startValue = hour * 60 + minute;
         const dateKey = input.proposedDate;
 
         try {
