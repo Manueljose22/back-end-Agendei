@@ -18,6 +18,7 @@ type ExpoResponse = {
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const MAX_ATTEMPTS = 5;
+const EXPO_BATCH_SIZE = 100;
 
 class NotificationPushWorker {
     private running = false;
@@ -101,19 +102,6 @@ class NotificationPushWorker {
             const extraData = rawData && typeof rawData === "object" && !Array.isArray(rawData)
                 ? rawData as Record<string, unknown>
                 : {};
-            const messages = tokens.map(item => ({
-                to: item.token,
-                sound: "default",
-                title: notification.title,
-                body: notification.message,
-                data: {
-                    ...extraData,
-                    notificationId: notification.id,
-                    type: notification.type,
-                    appointmentId: notification.appointmentId
-                }
-            }));
-
             const headers: Record<string, string> = {
                 Accept: "application/json",
                 "Accept-encoding": "gzip, deflate",
@@ -123,38 +111,62 @@ class NotificationPushWorker {
                 headers.Authorization = `Bearer ${process.env.EXPO_ACCESS_TOKEN}`;
             }
 
-            const response = await fetch(EXPO_PUSH_URL, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(messages),
-                signal: AbortSignal.timeout(10000)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Expo Push respondeu HTTP ${response.status}.`);
-            }
-
-            const payload = await response.json() as ExpoResponse;
-            const tickets = Array.isArray(payload.data) ? payload.data : payload.data ? [payload.data] : [];
-            if (tickets.length !== tokens.length) {
-                throw new Error("Resposta do Expo Push incompleta.");
-            }
-
             const failures: string[] = [];
-            for (let index = 0; index < tickets.length; index++) {
-                const ticket = tickets[index];
-                if (ticket.status === "ok") continue;
+            let invalidTokens = 0;
 
-                if (ticket.details?.error === "DeviceNotRegistered") {
-                    await prismaClient.expoPushToken.deleteMany({ where: { id: tokens[index].id } });
-                    continue;
+            for (let offset = 0; offset < tokens.length; offset += EXPO_BATCH_SIZE) {
+                const chunk = tokens.slice(offset, offset + EXPO_BATCH_SIZE);
+                const messages = chunk.map(item => ({
+                    to: item.token,
+                    sound: "default",
+                    title: notification.title,
+                    body: notification.message,
+                    data: {
+                        ...extraData,
+                        notificationId: notification.id,
+                        type: notification.type,
+                        appointmentId: notification.appointmentId
+                    }
+                }));
+
+                const response = await fetch(EXPO_PUSH_URL, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify(messages),
+                    signal: AbortSignal.timeout(10000)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Expo Push respondeu HTTP ${response.status}.`);
                 }
 
-                failures.push(ticket.message ?? ticket.details?.error ?? "Falha desconhecida no Expo Push.");
+                const payload = await response.json() as ExpoResponse;
+                const tickets = Array.isArray(payload.data) ? payload.data : payload.data ? [payload.data] : [];
+                if (tickets.length !== chunk.length) {
+                    throw new Error("Resposta do Expo Push incompleta.");
+                }
+
+                for (let index = 0; index < tickets.length; index++) {
+                    const ticket = tickets[index];
+                    if (ticket.status === "ok") continue;
+
+                    if (ticket.details?.error === "DeviceNotRegistered") {
+                        invalidTokens++;
+                        await prismaClient.expoPushToken.deleteMany({ where: { id: chunk[index].id } });
+                        continue;
+                    }
+
+                    failures.push(ticket.message ?? ticket.details?.error ?? "Falha desconhecida no Expo Push.");
+                }
             }
 
             if (failures.length > 0) {
                 throw new Error(failures.join("; ").slice(0, 1000));
+            }
+
+            if (invalidTokens === tokens.length) {
+                await this.finish(job.id, "SKIPPED", "A Expo indicou que todos os dispositivos já não estão registados.");
+                return;
             }
 
             await this.finish(job.id, "SENT", null);
