@@ -37,24 +37,42 @@ class NotificationPushWorker {
     }
 
     private async claimJob(): Promise<ClaimedPushJob | null> {
-        const claimed = await prismaClient.$transaction(tx => tx.$queryRaw<ClaimedPushJob[]>`
-            WITH candidate AS (
-                SELECT "id"
-                FROM "public"."notification_push_jobs"
-                WHERE (
-                    ("status" IN ('PENDING', 'RETRY') AND "next_attempt_at" <= NOW())
-                    OR ("status" = 'PROCESSING' AND "locked_at" < NOW() - INTERVAL '2 minutes')
+        const claimed = await prismaClient.$transaction(async tx => {
+            // Um job abandonado conta como uma tentativa falhada. Ao atingir o limite,
+            // fica FAILED em vez de ser recuperado indefinidamente.
+            await tx.$executeRaw`
+                UPDATE "public"."notification_push_jobs"
+                SET
+                    "status" = CASE
+                        WHEN "attempts" + 1 >= ${MAX_ATTEMPTS} THEN 'FAILED'
+                        ELSE 'RETRY'
+                    END,
+                    "attempts" = "attempts" + 1,
+                    "next_attempt_at" = NOW(),
+                    "locked_at" = NULL,
+                    "last_error" = 'Worker interrompido durante o processamento; tentativa contabilizada na recuperação.',
+                    "updated_at" = NOW()
+                WHERE "status" = 'PROCESSING'
+                  AND "locked_at" < NOW() - INTERVAL '2 minutes'
+            `;
+
+            return tx.$queryRaw<ClaimedPushJob[]>`
+                WITH candidate AS (
+                    SELECT "id"
+                    FROM "public"."notification_push_jobs"
+                    WHERE "status" IN ('PENDING', 'RETRY')
+                      AND "next_attempt_at" <= NOW()
+                    ORDER BY "created_at" ASC
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT 1
                 )
-                ORDER BY "created_at" ASC
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-            )
-            UPDATE "public"."notification_push_jobs" AS job
-            SET "status" = 'PROCESSING', "locked_at" = NOW(), "updated_at" = NOW()
-            FROM candidate
-            WHERE job."id" = candidate."id"
-            RETURNING job."id", job."notification_id" AS "notificationId", job."attempts"
-        `);
+                UPDATE "public"."notification_push_jobs" AS job
+                SET "status" = 'PROCESSING', "locked_at" = NOW(), "updated_at" = NOW()
+                FROM candidate
+                WHERE job."id" = candidate."id"
+                RETURNING job."id", job."notification_id" AS "notificationId", job."attempts"
+            `;
+        });
         return claimed[0] ?? null;
     }
 
