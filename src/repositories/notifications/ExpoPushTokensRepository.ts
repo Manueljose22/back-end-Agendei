@@ -1,5 +1,6 @@
 import { NotificationRecipientRole } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
+import { AppError } from "../../errors/AppError";
 import { AccountRole } from "../sessions/ISessionsRepository";
 
 export type PushRecipient = {
@@ -16,11 +17,56 @@ export class ExpoPushTokensRepository {
             hospitalId: recipient.role === "hospital" ? recipient.userId : null
         };
 
-        await prismaClient.expoPushToken.upsert({
+        const existing = await prismaClient.expoPushToken.findUnique({
             where: { token },
-            create: { token, recipientRole, ...owner },
-            update: { recipientRole, ...owner, updatedAt: new Date() }
+            select: {
+                recipientRole: true,
+                patientId: true,
+                doctorId: true,
+                hospitalId: true
+            }
         });
+
+        if (existing) {
+            const sameOwner = existing.recipientRole === recipientRole
+                && existing.patientId === owner.patientId
+                && existing.doctorId === owner.doctorId
+                && existing.hospitalId === owner.hospitalId;
+
+            if (!sameOwner) {
+                throw new AppError("Este dispositivo já está associado a outra conta. Termine a sessão anterior e remova o token antes de o reutilizar.", 409);
+            }
+
+            await prismaClient.expoPushToken.update({
+                where: { token },
+                data: { updatedAt: new Date() }
+            });
+            return;
+        }
+
+        try {
+            await prismaClient.expoPushToken.create({
+                data: { token, recipientRole, ...owner }
+            });
+        } catch (error) {
+            // Uma inscrição concorrente pode ter criado o mesmo token entretanto.
+            const racedToken = await prismaClient.expoPushToken.findUnique({
+                where: { token },
+                select: {
+                    recipientRole: true,
+                    patientId: true,
+                    doctorId: true,
+                    hospitalId: true
+                }
+            });
+            const sameOwner = racedToken
+                && racedToken.recipientRole === recipientRole
+                && racedToken.patientId === owner.patientId
+                && racedToken.doctorId === owner.doctorId
+                && racedToken.hospitalId === owner.hospitalId;
+
+            if (!sameOwner) throw new AppError("Não foi possível associar este dispositivo à conta.", 409);
+        }
     }
 
     async remove(token: string, recipient: PushRecipient): Promise<void> {
