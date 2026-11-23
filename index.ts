@@ -1,11 +1,8 @@
 import { app } from "./src/app";
+import { notificationPushWorker } from "./src/services/notifications/NotificationPushWorker";
 
-
+notificationPushWorker.start();
 
 app.listen(process.env.PORT, () => {
-    try {
-        console.log(`Servidor rodando na porta: ${process.env.PORT}`);
-    } catch (error: any) {
-        console.log(error.message);
-    }
-})
+    console.log(`Servidor rodando na porta: ${process.env.PORT}`);
+});
