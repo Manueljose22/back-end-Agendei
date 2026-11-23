@@ -36,7 +36,7 @@ class NotificationPushWorker {
     }
 
     private async claimJob(): Promise<ClaimedPushJob | null> {
-        const claimed = await prismaClient.$transaction(tx => tx.$queryRaw<ClaimedPushJob[]>\`
+        const claimed = await prismaClient.$transaction(tx => tx.$queryRaw<ClaimedPushJob[]>`
             WITH candidate AS (
                 SELECT "id"
                 FROM "public"."notification_push_jobs"
@@ -53,7 +53,7 @@ class NotificationPushWorker {
             FROM candidate
             WHERE job."id" = candidate."id"
             RETURNING job."id", job."notification_id" AS "notificationId", job."attempts"
-        \`);
+        `);
         return claimed[0] ?? null;
     }
 
