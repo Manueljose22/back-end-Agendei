@@ -2,7 +2,7 @@ import { AppError } from "../../errors/AppError";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { ExpoPushTokensRepository } from "../../repositories/notifications/ExpoPushTokensRepository";
 
-const expoTokenPattern = /^(Expo|Exponent)PushToken\\[[A-Za-z0-9_-]+\\]$/;
+const expoTokenPattern = /^(Expo|Exponent)PushToken\[[A-Za-z0-9_-]+\]$/;
 
 export class RegisterExpoPushTokenService {
     constructor(private readonly repository: ExpoPushTokensRepository) {}
