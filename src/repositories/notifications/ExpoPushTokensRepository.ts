@@ -1,4 +1,4 @@
-import { NotificationRecipientRole } from "@prisma/client";
+import { NotificationRecipientRole, Prisma } from "@prisma/client";
 import { prismaClient } from "../../config/prisma/prismaClient";
 import { AppError } from "../../errors/AppError";
 import { AccountRole } from "../sessions/ISessionsRepository";
@@ -49,6 +49,9 @@ export class ExpoPushTokensRepository {
                 data: { token, recipientRole, ...owner }
             });
         } catch (error) {
+            if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+                throw error;
+            }
             // Uma inscrição concorrente pode ter criado o mesmo token entretanto.
             const racedToken = await prismaClient.expoPushToken.findUnique({
                 where: { token },
