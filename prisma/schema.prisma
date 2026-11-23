@@ -34,6 +34,7 @@ model Hospital {
   images      ImagesHospitals[]
   specialties Specialty[]
   notifications Notification[]
+  pushTokens   ExpoPushToken[]
 
   @@map("Hospitals")
 }
@@ -54,6 +55,7 @@ model Patient {
   Appointment     Appointment[]
   history_Medical history_Medical[]
   notifications    Notification[]
+  pushTokens       ExpoPushToken[]
 
   @@map("Patients")
 }
@@ -84,6 +86,7 @@ model Doctor {
   DoctorSchedule    DoctorSchedule?
   history_Medical   history_Medical[]
   notifications     Notification[]
+  pushTokens        ExpoPushToken[]
 
   @@map("Doctors")
 }
@@ -342,10 +345,48 @@ model Notification {
   doctor              Doctor?                   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   hospital            Hospital?                 @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   appointment         Appointment               @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  pushJob             NotificationPushJob?
 
   @@index([patientId, isRead, createdAt])
   @@index([doctorId, isRead, createdAt])
   @@index([hospitalId, isRead, createdAt])
   @@index([appointmentId, createdAt])
   @@map("notifications")
+}
+
+
+model ExpoPushToken {
+  id           String                    @id @default(uuid())
+  token        String                    @unique
+  recipientRole NotificationRecipientRole @map("recipient_role")
+  patientId    String?                   @map("patient_id")
+  doctorId     String?                   @map("doctor_id")
+  hospitalId   String?                   @map("hospital_id")
+  createdAt    DateTime                  @default(now()) @map("created_at")
+  updatedAt    DateTime                  @updatedAt @map("updated_at")
+  patient      Patient?                  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor       Doctor?                   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital     Hospital?                 @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([hospitalId])
+  @@map("expo_push_tokens")
+}
+
+model NotificationPushJob {
+  id             String       @id @default(uuid())
+  notificationId String       @unique @map("notification_id")
+  status         String       @default("PENDING")
+  attempts       Int          @default(0)
+  nextAttemptAt  DateTime     @default(now()) @map("next_attempt_at")
+  lockedAt       DateTime?    @map("locked_at")
+  sentAt         DateTime?    @map("sent_at")
+  lastError      String?      @map("last_error")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt, createdAt])
+  @@map("notification_push_jobs")
 }
