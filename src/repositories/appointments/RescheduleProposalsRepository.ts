@@ -234,6 +234,15 @@ export class RescheduleProposalsRepository {
 
     async respond(input: RespondToRescheduleProposalInput): Promise<void> {
         await prismaClient.$transaction(async tx => {
+            // Lê apenas o ID da consulta para obter o lock; os dados de negócio são relidos depois do lock.
+            const proposalReference = await tx.rescheduleProposal.findUnique({
+                where: { id: input.proposalId },
+                select: { appointmentId: true }
+            });
+            if (!proposalReference) throw new AppError("Proposta de reagendamento não encontrada.", 404);
+            await this.lock(tx, `appointment-record:${proposalReference.appointmentId}`);
+
+            // Releitura após o lock evita decidir com estado antigo se cancelamento ou resposta concorrente ocorreu.
             const proposal = await tx.rescheduleProposal.findUnique({
                 where: { id: input.proposalId },
                 include: {
@@ -247,7 +256,6 @@ export class RescheduleProposalsRepository {
                 }
             });
             if (!proposal) throw new AppError("Proposta de reagendamento não encontrada.", 404);
-            await this.lock(tx, `appointment-record:${proposal.appointmentId}`);
 
             const current = await tx.rescheduleProposal.findUnique({
                 where: { id: input.proposalId },
