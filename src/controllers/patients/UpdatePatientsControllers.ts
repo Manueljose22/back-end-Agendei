@@ -16,6 +16,21 @@ class UpdatePatientsControllers {
 
         try {
             const data = request.body as patientsRequest;
+            const rawDateBirth = request.body.dateBirth as unknown;
+
+            // O Multer recebe campos multipart como strings; converter a data
+            // antes de a enviar ao Prisma (e preservar a data actual se vier vazia).
+            if (typeof rawDateBirth === "string") {
+                if (rawDateBirth.trim() === "") {
+                    data.dateBirth = null;
+                } else {
+                    const parsedDate = new Date(rawDateBirth);
+                    if (Number.isNaN(parsedDate.getTime())) {
+                        throw new Error("Data de nascimento inválida. Use o formato AAAA-MM-DD.");
+                    }
+                    data.dateBirth = parsedDate;
+                }
+            }
 
             if (request.file) {
                 const [uploadedFile] = await uploadFilesWithPaths(request.file);
