@@ -9,7 +9,7 @@ class SessionServices {
 
     async execute({ email, password }: payloadRequest): Promise<{ user: Omit<payloadSave, "password">; token: string }> {
         const user = await this.sessionRepository.findByEmail(email);
-
+        
         if (!user || !user.password || !(await compare(password, user.password))) {
             throw new AppError("Credenciais inválidas!", 401);
         }

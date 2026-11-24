@@ -20,6 +20,24 @@ class UpdatePatientsControllers {
 
         try {
             const data = request.body as patientsProfileUpdate;
+            const rawDateBirth: unknown = request.body.dateBirth;
+
+            // Campos multipart chegam como strings; converter a data antes do Prisma.
+            // Se vier vazia, omitir o campo para preservar a data já guardada.
+            if (typeof rawDateBirth === "string") {
+                if (rawDateBirth.trim() === "") {
+                    delete data.dateBirth;
+                } else {
+                    const parsedDate = new Date(rawDateBirth);
+                    if (Number.isNaN(parsedDate.getTime())) {
+                        throw new AppError(
+                            "Data de nascimento inválida. Use o formato AAAA-MM-DD.",
+                            400
+                        );
+                    }
+                    data.dateBirth = parsedDate;
+                }
+            }
 
             if (request.file) {
                 const [uploadedFile] = await uploadFilesWithPaths(request.file);
