@@ -28,13 +28,19 @@ export const ensuredAuthenticated = async (request: Request, response: Response,
         return next(new AppError("Serviço de autenticação não configurado.", 500));
     }
 
+    let payload: JWTPayload;
+
     try {
-        const payload = verify(token, secret) as JWTPayload;
+        payload = verify(token, secret) as JWTPayload;
+    } catch {
+        return next(new AppError("Token inválido ou expirado.", 401));
+    }
 
-        if (!payload.id || !validRoles.includes(payload.role)) {
-            return next(new AppError("Token inválido ou sem perfil de acesso. Inicie sessão novamente.", 401));
-        }
+    if (!payload.id || !validRoles.includes(payload.role)) {
+        return next(new AppError("Token inválido ou sem perfil de acesso. Inicie sessão novamente.", 401));
+    }
 
+    try {
         if (payload.role === "patient") {
             const patient = await prismaClient.patient.findUnique({
                 where: { id: payload.id },
@@ -52,7 +58,7 @@ export const ensuredAuthenticated = async (request: Request, response: Response,
         if (payload.role === "hospital") request.hospitalId = payload.id;
 
         return next();
-    } catch {
-        return next(new AppError("Token inválido ou expirado.", 401));
+    } catch (error: unknown) {
+        return next(error);
     }
 };
