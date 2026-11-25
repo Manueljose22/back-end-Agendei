@@ -10,7 +10,7 @@ export class PatientsRepository implements IPatientsRepository {
     async updatePassword(id: string, password: string): Promise<void> {
         await prismaClient.patient.update({
             where: { id },
-            data: { password }
+            data: { password, tokenVersion: { increment: 1 } }
         });
     }
 
@@ -79,6 +79,23 @@ export class PatientsRepository implements IPatientsRepository {
     }
 
     async delete(id: string): Promise<void> {
-        await prismaClient.patient.delete({ where: { id } });
+        await this.deactivate(id);
+    }
+
+    async deactivate(id: string): Promise<void> {
+        await prismaClient.patient.update({
+            where: { id },
+            data: {
+                name: "Conta eliminada",
+                email: null,
+                password: null,
+                photo: null,
+                phone: null,
+                address: null,
+                gender: null,
+                pushToken: null,
+                tokenVersion: { increment: 1 }
+            }
+        });
     }
 }
