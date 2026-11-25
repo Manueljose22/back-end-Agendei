@@ -2,17 +2,19 @@ import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import { AccountRole } from "../../repositories/sessions/ISessionsRepository";
 import { AppError } from "../../errors/AppError";
+import { prismaClient } from "../../config/prisma/prismaClient";
 
 type JWTPayload = {
     id: string;
     role: AccountRole;
     iat: number;
     exp: number;
+    tokenVersion?: number;
 };
 
 const validRoles: AccountRole[] = ["platform_admin", "hospital", "doctor", "patient"];
 
-export const ensuredAuthenticated = (request: Request, response: Response, next: NextFunction) => {
+export const ensuredAuthenticated = async (request: Request, response: Response, next: NextFunction) => {
     const authHeader = request.headers.authorization;
     const [scheme, token] = authHeader?.split(" ") ?? [];
 
@@ -31,6 +33,17 @@ export const ensuredAuthenticated = (request: Request, response: Response, next:
 
         if (!payload.id || !validRoles.includes(payload.role)) {
             return next(new AppError("Token inválido ou sem perfil de acesso. Inicie sessão novamente.", 401));
+        }
+
+        if (payload.role === "patient") {
+            const patient = await prismaClient.patient.findUnique({
+                where: { id: payload.id },
+                select: { tokenVersion: true, password: true }
+            });
+
+            if (!patient || !patient.password || payload.tokenVersion !== patient.tokenVersion) {
+                return next(new AppError("Sessão inválida ou revogada. Inicie sessão novamente.", 401));
+            }
         }
 
         request.userId = payload.id;
