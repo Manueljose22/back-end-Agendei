@@ -6,7 +6,7 @@ export class SessionRepository implements ISessionRepository {
         const [patient, hospital, doctor, admin] = await Promise.all([
             prismaClient.patient.findUnique({
                 where: { email },
-                select: { id: true, name: true, email: true, password: true }
+                select: { id: true, name: true, email: true, password: true, tokenVersion: true }
             }),
             prismaClient.hospital.findUnique({
                 where: { email },
@@ -30,7 +30,8 @@ export class SessionRepository implements ISessionRepository {
                 name: patient.name,
                 email: patient.email,
                 password: patient.password,
-                role: "patient"
+                role: "patient",
+                tokenVersion: patient.tokenVersion
             });
         }
         if (hospital?.password && hospital.email) {
