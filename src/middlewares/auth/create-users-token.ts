@@ -5,9 +5,10 @@ type UserTokenPayload = {
     id: string;
     email: string | null;
     role: AccountRole;
+    tokenVersion?: number;
 };
 
-export const createUsersToken = async ({ id, email, role }: UserTokenPayload): Promise<string> => {
+export const createUsersToken = async ({ id, email, role, tokenVersion }: UserTokenPayload): Promise<string> => {
     const secret = process.env.JwtSecret;
 
     if (!secret) {
@@ -15,7 +16,7 @@ export const createUsersToken = async ({ id, email, role }: UserTokenPayload): P
     }
 
     return sign(
-        { id, email, role },
+        { id, email, role, ...(role === "patient" ? { tokenVersion: tokenVersion ?? 0 } : {}) },
         secret,
         { expiresIn: "1d" }
     );
