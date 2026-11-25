@@ -31,6 +31,7 @@ export type patientsSave = {
   address: string | null;
   gender: string | null;
   pushToken: string | null;
+  tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -46,4 +47,5 @@ export interface IPatientsRepository {
   update(id: string, data: patientsProfileUpdate): Promise<patientsSave>;
   delete(id: string): Promise<void>;
   updatePassword(id: string, password: string): Promise<void>;
+  deactivate(id: string): Promise<void>;
 }
