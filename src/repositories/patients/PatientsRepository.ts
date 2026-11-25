@@ -83,19 +83,23 @@ export class PatientsRepository implements IPatientsRepository {
     }
 
     async deactivate(id: string): Promise<void> {
-        await prismaClient.patient.update({
-            where: { id },
-            data: {
+        await prismaClient.$transaction(async (tx) => {
+            await tx.expoPushToken.deleteMany({ where: { patientId: id } });
+            await tx.patient.update({
+                where: { id },
+                data: {
                 name: "Conta eliminada",
                 email: null,
                 password: null,
                 photo: null,
                 phone: null,
+                dateBirth: null,
                 address: null,
                 gender: null,
                 pushToken: null,
-                tokenVersion: { increment: 1 }
-            }
+                    tokenVersion: { increment: 1 }
+                }
+            });
         });
     }
 }
