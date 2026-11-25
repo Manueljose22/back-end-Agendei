@@ -7,7 +7,7 @@ import { createUsersToken } from "../../middlewares/auth/create-users-token";
 class SessionServices {
     constructor(private sessionRepository: SessionRepository) {}
 
-    async execute({ email, password }: payloadRequest): Promise<{ user: Omit<payloadSave, "password">; token: string }> {
+    async execute({ email, password }: payloadRequest): Promise<{ user: Omit<payloadSave, "password" | "tokenVersion">; token: string }> {
         const user = await this.sessionRepository.findByEmail(email);
         
         if (!user || !user.password || !(await compare(password, user.password))) {
@@ -15,7 +15,7 @@ class SessionServices {
         }
 
         const token = await createUsersToken(user);
-        const { password: _password, ...safeUser } = user;
+        const { password: _password, tokenVersion: _tokenVersion, ...safeUser } = user;
 
         return {
             user: safeUser,
