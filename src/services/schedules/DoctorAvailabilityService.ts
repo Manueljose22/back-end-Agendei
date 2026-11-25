@@ -110,26 +110,62 @@ export class DoctorAvailabilityService {
         }
 
         if (rows.length) {
-            await prismaClient.$transaction(async tx => {
-                const rowsToCreate: typeof rows = [];
+            // Consulta as disponibilidades existentes numa única operação, evitando
+            // executar um updateMany por cada dia dentro da transacção interactiva.
+            const existingRows = await prismaClient.availability.findMany({
+                where: {
+                    doctorId,
+                    date: { gte: start, lte: end }
+                },
+                select: {
+                    id: true,
+                    date: true,
+                    hourStart: true,
+                    hourEnd: true
+                }
+            });
 
-                for (const row of rows) {
-                    const existing = await tx.availability.updateMany({
-                        where: {
-                            doctorId: row.doctorId,
-                            date: row.date,
-                            hourStart: row.hourStart,
-                            hourEnd: row.hourEnd
-                        },
+            const existingByKey = new Map(
+                existingRows.map(item => [
+                    `${item.date.getTime()}|${item.hourStart.getTime()}|${item.hourEnd.getTime()}`,
+                    item.id
+                ])
+            );
+            const rowsToCreate: typeof rows = [];
+            const updatesByRelation = new Map<string, {
+                ids: string[];
+                scheduleRuleId: string | null;
+                scheduleExceptionId: string | null;
+            }>();
+
+            for (const row of rows) {
+                const key = `${row.date.getTime()}|${row.hourStart.getTime()}|${row.hourEnd.getTime()}`;
+                const existingId = existingByKey.get(key);
+
+                if (!existingId) {
+                    rowsToCreate.push(row);
+                    continue;
+                }
+
+                const relationKey = `${row.scheduleRuleId ?? "null"}|${row.scheduleExceptionId ?? "null"}`;
+                const group = updatesByRelation.get(relationKey) ?? {
+                    ids: [],
+                    scheduleRuleId: row.scheduleRuleId,
+                    scheduleExceptionId: row.scheduleExceptionId
+                };
+                group.ids.push(existingId);
+                updatesByRelation.set(relationKey, group);
+            }
+
+            await prismaClient.$transaction(async tx => {
+                for (const group of updatesByRelation.values()) {
+                    await tx.availability.updateMany({
+                        where: { id: { in: group.ids } },
                         data: {
-                            scheduleRuleId: row.scheduleRuleId,
-                            scheduleExceptionId: row.scheduleExceptionId
+                            scheduleRuleId: group.scheduleRuleId,
+                            scheduleExceptionId: group.scheduleExceptionId
                         }
                     });
-
-                    if (existing.count === 0) {
-                        rowsToCreate.push(row);
-                    }
                 }
 
                 if (rowsToCreate.length) {
@@ -140,10 +176,8 @@ export class DoctorAvailabilityService {
                 }
             }, {
                 isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-                // A geração pode executar várias operações sequenciais no PostgreSQL remoto (Supabase).
-                // O limite padrão de 5s era insuficiente, mesmo para a geração de um único dia.
                 maxWait: 10_000,
-                timeout: 15_000
+                timeout: 30_000
             });
         }
 
