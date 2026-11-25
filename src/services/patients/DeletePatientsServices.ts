@@ -15,7 +15,7 @@ class DeletePatientsServices {
             throw new AppError("Não tem permissão para eliminar este registo.", 403);
         }
 
-        await this.patientsRepository.delete(id);
+        await this.patientsRepository.deactivate(id);
     }
 }
 
