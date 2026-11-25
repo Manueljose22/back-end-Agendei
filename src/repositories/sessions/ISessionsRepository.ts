@@ -11,6 +11,7 @@ export type payloadSave = {
     email: string;
     password: string;
     role: AccountRole;
+    tokenVersion?: number;
 };
 
 export interface ISessionRepository {
