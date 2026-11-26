@@ -33,9 +33,11 @@ router.post(
   AddAppointmentsControllers.handle
 );
 
+// O paciente pode actualizar a data/hora do próprio agendamento.
+// Médico e hospital continuam a usar o fluxo de proposta de reagendamento.
 router.patch(
   "/appointments/:id",
-  ensureRole("platform_admin", "hospital", "doctor"),
+  ensureRole("platform_admin", "hospital", "doctor", "patient"),
   ensureActiveHospital,
   UpdateAppointmentsControllers.handle
 );
