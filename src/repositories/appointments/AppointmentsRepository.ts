@@ -349,7 +349,13 @@ export class AppointmentsRepository implements IAppointmentsRepository {
 
             const current = await tx.appointment.findUnique({
                 where: { id },
-                select: { doctorId: true, status: true, bookingDate: true }
+                select: {
+                    doctorId: true,
+                    patientId: true,
+                    status: true,
+                    bookingDate: true,
+                    Doctor: { select: { hospitalId: true } }
+                }
             });
             if (!current) throw new AppError("Consulta não encontrada.", 404);
             if (current.status === "Cancelado") throw new AppError("Não é possível alterar uma consulta cancelada.", 409);
@@ -477,6 +483,37 @@ export class AppointmentsRepository implements IAppointmentsRepository {
                     upadatedAt: new Date()
                 }
             });
+
+            // Notifica médico e hospital dentro da mesma transacção do reagendamento.
+            const notificationData = {
+                appointmentId: id,
+                type: "APPOINTMENT_RESCHEDULED" as const,
+                title: "Consulta reagendada pelo paciente",
+                message: `O paciente alterou a consulta para ${data.bookingDate} às ${data.bookingHour}.`,
+                data: {
+                    appointmentId: id,
+                    bookingDate: data.bookingDate,
+                    bookingHour: data.bookingHour
+                }
+            };
+
+            await tx.notification.create({
+                data: {
+                    ...notificationData,
+                    recipientRole: "DOCTOR",
+                    doctorId: current.doctorId
+                }
+            });
+
+            if (current.Doctor.hospitalId) {
+                await tx.notification.create({
+                    data: {
+                        ...notificationData,
+                        recipientRole: "HOSPITAL",
+                        hospitalId: current.Doctor.hospitalId
+                    }
+                });
+            }
         }, {
             isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
             maxWait: 10_000,
